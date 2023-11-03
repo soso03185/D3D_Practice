@@ -49,6 +49,32 @@ struct CB_LightDirBuffer
 	Vector4 pad[1];
 };
 
+/// <summary>
+/// Node (우선) 구조체 여기에 박아버리기.
+/// </summary>
+
+struct Node
+{
+	Matrix LocalTransform;
+	Matrix WorldTransform;
+	NodeAnimation *NodeAnimationPtr;
+};
+
+struct NodeAnimation
+{
+	AnimationKey AnimationKeys;
+public:
+	void Evaluate() { }
+};
+
+struct AnimationKey
+{
+	double Time;
+	float Position[3];
+	float Rotation[3];
+	float Scaling;
+};
+
 TutorialApp::TutorialApp(HINSTANCE hInstance)
 	:GameApp(hInstance)
 {
@@ -548,8 +574,14 @@ void TutorialApp::LoopChildNode(aiNode* node)
 
 	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
-		node->mChildren[i]->mTransformation *= node->mTransformation;
+		// ToDo 미완
+		node->mChildren[i]->mTransformation *= node->mTransformation; 
 	
+		//		   node->mChildren[i]
+		// root ->    직계 자식    ->   
+		// 
+		// 
+		// 
 		// 자식의 자식들 순회를 돌며 재귀
 		if (node->mChildren[i]->mNumChildren > 0)
 			LoopChildNode(node->mChildren[i]);

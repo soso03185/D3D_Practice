@@ -96,12 +96,7 @@ public:
 	bool m_show_demo_window = true;
 	float m_f;
 	int m_counter;
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="Width"></param>
-	/// <param name="Height"></param>
-	/// <returns></returns>
+
 
 	virtual bool Initialize(UINT Width, UINT Height);
 	virtual void Update();
