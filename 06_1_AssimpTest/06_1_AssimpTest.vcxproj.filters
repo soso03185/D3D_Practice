@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Mesh.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Assimp</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="SafeRelease.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="01_Basic.ico">
+      <Filter>etc</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>etc</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Assimp">
+      <UniqueIdentifier>{d8a6e005-da5a-4651-a265-77140e6a483f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="etc">
+      <UniqueIdentifier>{41a390fb-1a61-4726-ab38-dda7459c4a76}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureLoader.cpp">
+      <Filter>Assimp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Assimp</Filter>
+    </FxCompile>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Assimp</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="01_Basic.rc">
+      <Filter>etc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

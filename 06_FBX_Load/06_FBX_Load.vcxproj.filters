@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="BasicPixelShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicVertexShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TutorialApp.cpp" />
+    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Material.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TutorialApp.h" />
+    <ClInclude Include="targetver.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Material.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico">
+      <Filter>etc</Filter>
+    </Image>
+    <Image Include="01_Basic.ico">
+      <Filter>etc</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{d2107219-f86a-426e-b655-0c50ca714362}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="etc">
+      <UniqueIdentifier>{3c978ae3-e713-497d-8d56-eedca21f288d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="01_Basic.rc">
+      <Filter>etc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
