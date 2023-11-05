@@ -13,6 +13,8 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="TutorialApp.cpp" />
     <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Material.h" />
@@ -25,6 +27,8 @@
     <ClInclude Include="targetver.h">
       <Filter>etc</Filter>
     </ClInclude>
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Model.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">

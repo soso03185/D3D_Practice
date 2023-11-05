@@ -18,7 +18,6 @@
 #include <directxtk\DDSTextureLoader.h>
 #include <directxtk\WICTextureLoader.h>
 
-
 #define LOG_ERROR(...) \
 { \
     wchar_t buffer[256]; \

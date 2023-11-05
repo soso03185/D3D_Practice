@@ -1,16 +1,17 @@
 #include "TutorialApp.h"
 #include "../Common/Helper.h"
+
 #include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
 #include <directxtk\Mouse.h>
 #include <directxtk\Keyboard.h>
 
-#pragma comment (lib, "d3d11.lib")
-#pragma comment (lib,"d3dcompiler.lib")
-
 #include <imgui.h>
 #include <imgui_impl_win32.h>
 #include <imgui_impl_dx11.h>
+
+#pragma comment (lib, "d3d11.lib")
+#pragma comment (lib,"d3dcompiler.lib")
 
 #include <assimp\Importer.hpp>
 #include <assimp\postprocess.h>
@@ -47,32 +48,6 @@ struct CB_LightDirBuffer
 	Vector4 vLightColor;
 	Vector4 mWorldCameraPosition;
 	Vector4 pad[1];
-};
-
-/// <summary>
-/// Node (우선) 구조체 여기에 박아버리기.
-/// </summary>
-
-struct Node
-{
-	Matrix LocalTransform;
-	Matrix WorldTransform;
-	NodeAnimation *NodeAnimationPtr;
-};
-
-struct NodeAnimation
-{
-	AnimationKey AnimationKeys;
-public:
-	void Evaluate() { }
-};
-
-struct AnimationKey
-{
-	double Time;
-	float Position[3];
-	float Rotation[3];
-	float Scaling;
 };
 
 TutorialApp::TutorialApp(HINSTANCE hInstance)
@@ -500,7 +475,7 @@ bool TutorialApp::InitScene()
 		aiProcess_ConvertToLeftHanded;
 
 	const aiScene* fbxModel = importer.ReadFile("../Resource/BoxHuman.fbx", importFlags);
-	
+
 	if (!fbxModel)
 	{
 		LOG_ERRORA("Error loading FBX file: %s", importer.GetErrorString());
@@ -520,8 +495,6 @@ bool TutorialApp::InitScene()
 		// vertex , index 정보 바인딩
 		m_Meshes[i].Create(m_pDevice, fbxModel->mMeshes[i]);
 	}
-
-	LoopChildNode(fbxModel->mRootNode);
 
 	//      이제 이 두개만 쓰면 됨.
 	//?  m_Materials  ,  m_Meshes 
@@ -565,28 +538,6 @@ void TutorialApp::UninitScene()
 	SAFE_RELEASE(m_pTransformBuffer);
 	SAFE_RELEASE(m_pLightBuffer);		
 	SAFE_RELEASE(m_pAlphaBlendState);
-}
-
-void TutorialApp::LoopChildNode(aiNode* node)
-{		
-	// fbxModel.mRootNode->mChildren 를 한번 순회 하면
-	// 루트 노드의 직계 자식들이 Transfrom 변환 적용됨.
-
-	for (size_t i = 0; i < node->mNumChildren; i++)
-	{
-		// ToDo 미완
-		node->mChildren[i]->mTransformation *= node->mTransformation; 
-	
-		//		   node->mChildren[i]
-		// root ->    직계 자식    ->   
-		// 
-		// 
-		// 
-		// 자식의 자식들 순회를 돌며 재귀
-		if (node->mChildren[i]->mNumChildren > 0)
-			LoopChildNode(node->mChildren[i]);
-	}
-
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

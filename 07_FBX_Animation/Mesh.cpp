@@ -31,6 +31,7 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 		vertices[i].Tangent = Vector3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
 	}
 	
+
 	/// CreateVertexBuffer ///
 	D3D11_BUFFER_DESC vertexBD = {};
 	vertexBD.ByteWidth = sizeof(Vertex) * mesh->mNumVertices;
