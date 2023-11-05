@@ -21,7 +21,7 @@ public:
 	Node* m_pParent;
 	NodeAnimation* m_NodeAnimPtr;
 
-	vector<Mesh> m_MesheIndices;
+	vector<Mesh> m_MeshIndices;
 	vector<Node> m_Materials;
 
 public:

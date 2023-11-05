@@ -40,6 +40,6 @@ public:
 public:
 	void Update() {}
 	bool ReadFile(ID3D11Device* device, const char* filePath) {}
-
+	Material* GetMaterial(UINT index);
 };
 
