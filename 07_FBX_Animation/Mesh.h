@@ -28,8 +28,8 @@ public:
 
 	ID3D11Buffer* m_pVertexBuffer;
 	ID3D11Buffer* m_pIndexBuffer;
-
-	Matrix WorldTransform;
+	
+	Matrix* m_pNodeWorld;
 
 	UINT m_VertexCount = 0;
 	UINT m_VertexBufferStride = 0;		// 버텍스 하나의 크기.

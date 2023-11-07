@@ -29,17 +29,25 @@ struct Animation
 class Model
 {
 public:
-	Model() {}
-	~Model() {}
+	Model();
+	~Model();
 
 	Node m_RootNode;
 	vector<Mesh> m_Meshes;
 	vector<Material> m_Materials;
 	vector<Animation> m_Anims;
 
+	bool isDiffuse = true;
+	bool isNormalMap = true;
+	bool isSpecularMap = true;
+	bool isEmissive = true;
+	bool isOpacity = true;
+
 public:
-	void Update() {}
-	bool ReadFile(ID3D11Device* device, const char* filePath) {}
+	void Update(float deltaTime);
+	bool ReadFile(ID3D11Device* device, const char* filePath);
 	Material* GetMaterial(UINT index);
+
+	void Create();
 };
 

@@ -18,14 +18,14 @@ public:
 	Matrix m_Local;
 	Matrix m_World;
 	std::string m_Nname;
-	Node* m_pParent;
 	NodeAnimation* m_NodeAnimPtr;
 
-	vector<Mesh> m_MeshIndices;
-	vector<Node> m_Materials;
+	Node* m_pParent;
+
+	vector<UINT> m_MeshIndices;
+	vector<Node> m_Children;	
 
 public:
 	void Update() {};	
 	void Create(Model* model , aiNode* node);
 };
-

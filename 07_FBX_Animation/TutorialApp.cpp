@@ -1,5 +1,7 @@
 #include "TutorialApp.h"
 #include "../Common/Helper.h"
+#include "Model.h"
+#include "Node.h"
 
 #include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
@@ -171,7 +173,6 @@ void TutorialApp::ImguiRender()
 void TutorialApp::CubeRender()
 {
 	///  ConstantBuffer Binding  ///
-
 	CB_ConstantBuffer CB_Buff;
 	CB_Buff.mAmbient = m_Ambient;
 	CB_Buff.mSpecularPower = m_SpecularPower;
@@ -263,6 +264,7 @@ void TutorialApp::Render()
 	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pLightBuffer);
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
+	m_pDeviceContext->RSSetViewports(1, &viewport);
 
 	CubeRender();
 	ImguiRender();
@@ -466,40 +468,14 @@ bool TutorialApp::InitScene()
 
 
 	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
-	// 8. FBX Load
-	Assimp::Importer importer;
-	unsigned int importFlags = aiProcess_Triangulate |
-		aiProcess_GenNormals |
-		aiProcess_GenUVCoords |
-		aiProcess_CalcTangentSpace |
-		aiProcess_ConvertToLeftHanded;
+	// 8. FBX Load	
+	m_pModel = new Model();
+	m_pModel->ReadFile(m_pDevice, "../Resource/BoxHuman.fbx");
 
-	const aiScene* fbxModel = importer.ReadFile("../Resource/BoxHuman.fbx", importFlags);
+	m_Meshes = m_pModel->m_Meshes;
+	m_Materials = m_pModel->m_Materials;
 
-	if (!fbxModel)
-	{
-		LOG_ERRORA("Error loading FBX file: %s", importer.GetErrorString());
-		return false;
-	}
-	
-	m_Materials.resize(fbxModel->mNumMaterials);
-	for (int i = 0; i < fbxModel->mNumMaterials; i++)
-	{
-		// fbx에 적용된 맵(텍스쳐) 들을 가져오는 과정.
-		m_Materials[i].Create(m_pDevice, fbxModel->mMaterials[i]);
-	}
 
-	m_Meshes.resize(fbxModel->mNumMeshes);
-	for (int i = 0; i < fbxModel->mNumMeshes; i++)
-	{
-		// vertex , index 정보 바인딩
-		m_Meshes[i].Create(m_pDevice, fbxModel->mMeshes[i]);
-	}
-
-	//      이제 이 두개만 쓰면 됨.
-	//?  m_Materials  ,  m_Meshes 
-
-	///
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -528,7 +504,10 @@ bool TutorialApp::InitScene()
 void TutorialApp::UninitScene()
 {
 	m_Meshes.clear();
-	m_Materials.clear();
+	m_Materials.clear();	
+
+//	delete m_pModel;  // 이거 하면 끌때 mesh 해제해주는거에서 오류생김
+//	delete m_pNode;
 
 	SAFE_RELEASE(m_pVertexShader);
 	SAFE_RELEASE(m_pPixelShader);

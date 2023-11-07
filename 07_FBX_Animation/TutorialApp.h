@@ -7,13 +7,15 @@
 #include "../Common/GameApp.h"
 #include "Mesh.h"
 #include "Material.h"
-#include "Node.h"
 
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
 
 struct aiNode;
 struct aiAnimation;
+
+class Model;
+class Node;
 
 class TutorialApp :
 	public GameApp
@@ -44,7 +46,9 @@ public:
 
 	vector<Mesh> m_Meshes;
 	vector<Material> m_Materials;
-	vector<Node> m_Nodes;
+
+	Node* m_pNode = nullptr;
+	Model* m_pModel = nullptr;
 
 	// data
 	float m_Scale = 1.0f;
