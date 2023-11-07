@@ -52,7 +52,7 @@ public:
 
 	// data
 	float m_Scale = 1.0f;
-	float m_Cb_Trans[3] = {};
+	float m_Cb_Trans[3] = {0, -350.f, 500.0f};
 	float m_Cb_Rot[3] = { 0 };
 	float m_Cb_speed[3] = { 3 };
 

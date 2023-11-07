@@ -28,9 +28,8 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 		Vector4 originalPosition(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
 		Matrix m_pNodeWorldMatrix = *m_pNodeWorld; // 원하는 행렬 값으로 초기화
 		Vector4 transformedPosition = Vector4::Transform(originalPosition, m_pNodeWorldMatrix);
-		vertices[i].Position = transformedPosition;
 
-//		vertices[i].Position = Vector4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
+		vertices[i].Position = transformedPosition;
 		vertices[i].TexCoord = Vector2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 		vertices[i].Normal = Vector3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
 		vertices[i].Tangent = Vector3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);

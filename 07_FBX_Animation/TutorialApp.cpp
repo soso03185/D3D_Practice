@@ -146,7 +146,7 @@ void TutorialApp::ImguiRender()
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat3("Cam_Pos", m_Cam, -500.0f, 500.0f);
-		ImGui::SliderFloat3("Cube_Pos", m_Cb_Trans, -20.0f, 20.0f);
+		ImGui::SliderFloat3("Cube_Pos", m_Cb_Trans, -500.0f, 500.0f);
 		ImGui::SliderFloat3("Cube_Rot", m_Cb_Rot, -360.0f, 360.0f);
 		ImGui::SliderFloat("Cube_Scale", &m_Scale, 0.0f, 5.0f);
 
