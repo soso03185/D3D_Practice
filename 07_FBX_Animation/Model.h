@@ -1,30 +1,13 @@
 #pragma once
 
-#include "Mesh.h"
-#include "Material.h"
+//#include "Mesh.h"
+//#include "Material.h"
 #include "Node.h"
+#include "Animation.h"
 
-struct AnimationKey
-{
-	double Time;
-	float Position[3];
-	float Rotation[3];
-	float Scaling;
-};
-
-struct NodeAnimation
-{
-	AnimationKey AnimationKeys;
-public:
-	void Evaluate() { }
-};
-
-struct Animation
-{
-	NodeAnimation NodeAnim;
-	double Duration;
-};
-
+class Mesh;
+class Material;
+struct aiScene;
 
 class Model
 {
@@ -32,10 +15,12 @@ public:
 	Model();
 	~Model();
 
+	const aiScene* m_fbxModel;
+
 	Node m_RootNode;
 	vector<Mesh> m_Meshes;
 	vector<Material> m_Materials;
-	vector<Animation> m_Anims;
+	Animation m_Animation;
 
 	bool isDiffuse = true;
 	bool isNormalMap = true;
@@ -47,7 +32,5 @@ public:
 	void Update(float deltaTime);
 	bool ReadFile(ID3D11Device* device, const char* filePath);
 	Material* GetMaterial(UINT index);
-
-	void Create();
 };
 

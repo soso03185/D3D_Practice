@@ -1,5 +1,6 @@
 #include "TutorialApp.h"
 #include "../Common/Helper.h"
+#include "../Common/GameApp.h"
 #include "Model.h"
 #include "Node.h"
 
@@ -114,7 +115,17 @@ void TutorialApp::Update()
 	m_View = XMMatrixLookToLH(m_Eye, m_At, m_Up);
 
 	m_Projection = XMMatrixPerspectiveFovLH(m_Fov / 180.0f * 3.14f, m_ClientWidth / (FLOAT)m_ClientHeight, m_Near, m_Far);
+
+	m_pModel->Update(0.00001f);
+
 }
+
+//m_prev = gettickCount64;
+//m_cur = gettickCount64;
+//
+//m_prev = m_cur;
+//m_cur = gettickCount64;
+//deltatime = m_cur - m_prev;
 
 void TutorialApp::ImguiRender()
 {
@@ -161,7 +172,7 @@ void TutorialApp::ImguiRender()
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat("Specular", &m_SpecularPower, 1.0f, 500.0f);
-		ImGui::SliderFloat("Ambient", &m_Ambient, 0 , 1);
+		ImGui::SliderFloat("Ambient", &m_Ambient, 0, 1);
 
 		ImGui::End();
 	}
@@ -198,44 +209,50 @@ void TutorialApp::CubeRender()
 
 	CB_Light.vLightDir.Normalize();
 	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
-	
+
 	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
 
 
-	for (size_t i = 0; i < m_Meshes.size(); i++)
+	for (size_t i = 0; i < m_pModel->m_Meshes.size(); i++)
 	{
-		size_t mi = m_Meshes[i].m_MaterialIndex;
+		size_t mi = m_pModel->m_Meshes[i].m_MaterialIndex;
 
-		m_pDeviceContext->PSSetShaderResources(0, 1, &m_Materials[mi].m_pDiffuseRV);
-		m_pDeviceContext->PSSetShaderResources(1, 1, &m_Materials[mi].m_pNormalRV);
-		m_pDeviceContext->PSSetShaderResources(2, 1, &m_Materials[mi].m_pSpecularRV);
-		m_pDeviceContext->PSSetShaderResources(3, 1, &m_Materials[mi].m_pEmissiveRV);
-		m_pDeviceContext->PSSetShaderResources(4, 1, &m_Materials[mi].m_pOpacityRV);
+		m_pDeviceContext->PSSetShaderResources(0, 1, &m_pModel->m_Materials[mi].m_pDiffuseRV);
+		m_pDeviceContext->PSSetShaderResources(1, 1, &m_pModel->m_Materials[mi].m_pNormalRV);
+		m_pDeviceContext->PSSetShaderResources(2, 1, &m_pModel->m_Materials[mi].m_pSpecularRV);
+		m_pDeviceContext->PSSetShaderResources(3, 1, &m_pModel->m_Materials[mi].m_pEmissiveRV);
+		m_pDeviceContext->PSSetShaderResources(4, 1, &m_pModel->m_Materials[mi].m_pOpacityRV);
 
-		CB_Bool.UseDiffuseMap  = m_Materials[mi].m_pDiffuseRV  != nullptr ? isDiffuse : false;
-		CB_Bool.UseNormalMap   = m_Materials[mi].m_pNormalRV   != nullptr ? isNormalMap : false;
-		CB_Bool.UseSpecularMap = m_Materials[mi].m_pSpecularRV != nullptr ? isSpecularMap : false;
-		CB_Bool.UseEmissiveMap = m_Materials[mi].m_pEmissiveRV != nullptr ? isEmissive : false;
-		CB_Bool.UseOpacityMap  = m_Materials[mi].m_pOpacityRV  != nullptr ? isOpacity : false;
-		
+		CB_Bool.UseDiffuseMap = m_pModel->m_Materials[mi].m_pDiffuseRV != nullptr ? isDiffuse : false;
+		CB_Bool.UseNormalMap = m_pModel->m_Materials[mi].m_pNormalRV != nullptr ? isNormalMap : false;
+		CB_Bool.UseSpecularMap = m_pModel->m_Materials[mi].m_pSpecularRV != nullptr ? isSpecularMap : false;
+		CB_Bool.UseEmissiveMap = m_pModel->m_Materials[mi].m_pEmissiveRV != nullptr ? isEmissive : false;
+		CB_Bool.UseOpacityMap = m_pModel->m_Materials[mi].m_pOpacityRV != nullptr ? isOpacity : false;
+
 		if (CB_Bool.UseOpacityMap)	// 알파블렌드 상태설정 , 다른옵션은 기본값 
-			m_pDeviceContext->OMSetBlendState(m_pAlphaBlendState, nullptr, 0xffffffff); 
+			m_pDeviceContext->OMSetBlendState(m_pAlphaBlendState, nullptr, 0xffffffff);
 		else	// 설정해제 , 다른옵션은 기본값
-			m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);	
+			m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
+		// 내가 추가한 코드
+		{
+			CB_Transform.mWorld = XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
+			m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
+		}
 
 		m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
-		m_pDeviceContext->IASetIndexBuffer(m_Meshes[i].m_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+		m_pDeviceContext->IASetIndexBuffer(m_pModel->m_Meshes[i].m_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 		m_pDeviceContext->IASetVertexBuffers
 		(
 			0, 1,
-			&m_Meshes[i].m_pVertexBuffer,
-			&m_Meshes[i].m_VertexBufferStride,
-			&m_Meshes[i].m_VertexBufferOffset
+			&m_pModel->m_Meshes[i].m_pVertexBuffer,
+			&m_pModel->m_Meshes[i].m_VertexBufferStride,
+			&m_pModel->m_Meshes[i].m_VertexBufferOffset
 		);
 
-		m_pDeviceContext->DrawIndexed(m_Meshes[i].m_IndexCount, 0, 0);
+		m_pDeviceContext->DrawIndexed(m_pModel->m_Meshes[i].m_IndexCount, 0, 0);
 	}
 }
 
@@ -248,7 +265,7 @@ void TutorialApp::Render()
 
 	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_pDeviceContext->IASetInputLayout(m_pInputLayout);
-	
+
 	// vertex shader
 	m_pDeviceContext->VSSetShader(m_pVertexShader, nullptr, 0);
 	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
@@ -257,7 +274,7 @@ void TutorialApp::Render()
 	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pLightBuffer);
 
 	// pixel shader
-	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);	
+	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
 	m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pConstantBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformBuffer);
@@ -472,9 +489,6 @@ bool TutorialApp::InitScene()
 	m_pModel = new Model();
 	m_pModel->ReadFile(m_pDevice, "../Resource/BoxHuman.fbx");
 
-	m_Meshes = m_pModel->m_Meshes;
-	m_Materials = m_pModel->m_Materials;
-
 
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -503,11 +517,9 @@ bool TutorialApp::InitScene()
 
 void TutorialApp::UninitScene()
 {
-	m_Meshes.clear();
-	m_Materials.clear();	
 
-//	delete m_pModel;  // 이거 하면 끌때 mesh 해제해주는거에서 오류생김
-//	delete m_pNode;
+	//	delete m_pModel;  // 이거 하면 끌때 mesh 해제해주는거에서 오류생김
+	//	delete m_pNode;
 
 	SAFE_RELEASE(m_pVertexShader);
 	SAFE_RELEASE(m_pPixelShader);
@@ -515,7 +527,7 @@ void TutorialApp::UninitScene()
 	SAFE_RELEASE(m_pConstantBuffer);
 	SAFE_RELEASE(m_pBoolBuffer);
 	SAFE_RELEASE(m_pTransformBuffer);
-	SAFE_RELEASE(m_pLightBuffer);		
+	SAFE_RELEASE(m_pLightBuffer);
 	SAFE_RELEASE(m_pAlphaBlendState);
 }
 

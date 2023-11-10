@@ -44,9 +44,6 @@ public:
 	ID3D11Buffer* m_pTransformBuffer = nullptr;		// 상수 버퍼.
 	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
 
-	vector<Mesh> m_Meshes;
-	vector<Material> m_Materials;
-
 	Node* m_pNode = nullptr;
 	Model* m_pModel = nullptr;
 

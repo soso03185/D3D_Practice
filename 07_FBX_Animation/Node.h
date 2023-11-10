@@ -5,9 +5,11 @@
 
 #include <string>
 
+class Animation;
 struct Model;
 struct NodeAnimation;
 struct aiNode;
+struct aiScene;
 
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
@@ -18,14 +20,14 @@ public:
 	Matrix m_Local;
 	Matrix m_World;
 	std::string m_Nname;
-	NodeAnimation* m_NodeAnimPtr;
 
+	NodeAnimation* m_pNodeAnimation;
 	Node* m_pParent;
 
 	vector<UINT> m_MeshIndices;
 	vector<Node> m_Children;	
 
 public:
-	void Update() {};	
-	void Create(Model* model , aiNode* node);
+	void Create(Model* model , aiNode* node, Animation* anim);
+	void Update(float deltaTime);
 };

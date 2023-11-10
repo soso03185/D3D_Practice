@@ -15,6 +15,12 @@
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Animation.cpp">
+      <Filter>Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeAnimation.cpp">
+      <Filter>Anim</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Material.h" />
@@ -29,6 +35,12 @@
     </ClInclude>
     <ClInclude Include="Node.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="Animation.h">
+      <Filter>Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeAnimation.h">
+      <Filter>Anim</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">
@@ -44,6 +56,9 @@
     </Filter>
     <Filter Include="etc">
       <UniqueIdentifier>{32beb2eb-980c-42ea-9ca7-852966c22a5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Anim">
+      <UniqueIdentifier>{130c50f7-78d3-422a-9bd3-38da5560c99a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
