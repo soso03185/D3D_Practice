@@ -34,24 +34,6 @@ void Node::Create(Model* model, aiNode* node, Animation* anim)
 		}
 	}
 
-	if (m_pNodeAnimation != nullptr)
-	{
-		Math::Vector3 position, scaling;
-		Math::Quaternion rotation;
-
-		// Todo ProgressTime 제대로 넣어주기 , 보간 작업
-		m_pNodeAnimation->Evaluate(0, position, rotation, scaling);
-
-		m_Local = Math::Matrix::CreateScale(scaling) *
-			Math::Matrix::CreateFromQuaternion(rotation) *
-			Math::Matrix::CreateTranslation(position);
-	}
-
-	if (m_pParent != nullptr)
-		m_World = m_Local * m_pParent->m_World;
-	else
-		m_World = m_Local;
-
 	m_Children.resize(node->mNumChildren);
 	for (UINT i = 0; i < node->mNumChildren; ++i)
 	{

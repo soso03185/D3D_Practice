@@ -15,6 +15,7 @@ public:
 public:
 	std::vector<NodeAnimation> m_NodeAnims;
 	double m_Duration;
+	double m_TicksPerSecond;
 };
 
 // Animation

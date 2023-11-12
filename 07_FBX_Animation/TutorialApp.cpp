@@ -72,6 +72,11 @@ bool TutorialApp::Initialize(UINT Width, UINT Height)
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
 	if (!InitScene())	return false;
+
+	QueryPerformanceFrequency(&m_frequency);
+	QueryPerformanceCounter(&m_previousTime);
+	QueryPerformanceCounter(&m_currentTime);
+
 	return true;
 }
 
@@ -80,6 +85,8 @@ void TutorialApp::Update()
 	__super::Update();
 
 	float t = GameTimer::m_Instance->TotalTime() / 4;
+	
+//	aiQuaternion::Interpolate();
 
 	// Right
 	XMMATRIX mScale = XMMatrixScaling(m_Scale, m_Scale, m_Scale);
@@ -116,7 +123,16 @@ void TutorialApp::Update()
 
 	m_Projection = XMMatrixPerspectiveFovLH(m_Fov / 180.0f * 3.14f, m_ClientWidth / (FLOAT)m_ClientHeight, m_Near, m_Far);
 
-	m_pModel->Update(0.00001f);
+	m_previousTime = m_currentTime;
+	QueryPerformanceCounter(&m_currentTime);
+	m_deltaTime = static_cast<float>(m_currentTime.QuadPart - m_previousTime.QuadPart) / static_cast<float>(m_frequency.QuadPart);
+
+#ifdef _DEBUG
+	if (m_deltaTime > (1.0f / 60.0f))
+		m_deltaTime = (1.0f / 60.0f);
+#endif	
+
+	m_pModel->Update(m_deltaTime * 2);
 
 }
 
@@ -156,7 +172,7 @@ void TutorialApp::ImguiRender()
 		ImGui::Checkbox("OpacityMap", &isOpacity);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::SliderFloat3("Cam_Pos", m_Cam, -500.0f, 500.0f);
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1000.0f, 1000.0f);
 		ImGui::SliderFloat3("Cube_Pos", m_Cb_Trans, -500.0f, 500.0f);
 		ImGui::SliderFloat3("Cube_Rot", m_Cb_Rot, -360.0f, 360.0f);
 		ImGui::SliderFloat("Cube_Scale", &m_Scale, 0.0f, 5.0f);
@@ -235,14 +251,12 @@ void TutorialApp::CubeRender()
 			m_pDeviceContext->OMSetBlendState(m_pAlphaBlendState, nullptr, 0xffffffff);
 		else	// 설정해제 , 다른옵션은 기본값
 			m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-
-		// 내가 추가한 코드
-		{
-			CB_Transform.mWorld = XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
-			m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
-		}
-
+		
+		// 내가 추가한 코드		
+		CB_Transform.mWorld = XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
+		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 		m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
+
 		m_pDeviceContext->IASetIndexBuffer(m_pModel->m_Meshes[i].m_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 		m_pDeviceContext->IASetVertexBuffers
 		(

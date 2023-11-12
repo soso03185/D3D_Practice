@@ -53,7 +53,7 @@ public:
 	float m_Cb_Rot[3] = { 0 };
 	float m_Cb_speed[3] = { 3 };
 
-	float m_Cam[3] = { 0, 0, -7.0f };
+	float m_Cam[3] = { 0, 200.0f, -500.0f };
 	float m_EyeArr[3] = {};
 	float m_AtArr[3] = {};
 	float m_UpArr[3] = {};
@@ -97,7 +97,12 @@ public:
 	bool m_show_demo_window = true;
 	float m_f;
 	int m_counter;
+	//
 
+	LARGE_INTEGER m_frequency;
+	LARGE_INTEGER m_previousTime;
+	LARGE_INTEGER m_currentTime;
+	float m_deltaTime = 0;
 
 	virtual bool Initialize(UINT Width, UINT Height);
 	virtual void Update();
