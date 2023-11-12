@@ -28,9 +28,6 @@ public:
 		Math::Vector3& scaling
 	);	
 
-	// 선형 보간 함수
-	Math::Vector3 LinearInterpolation(const Math::Vector3& start, const Math::Vector3& end, float factor);
-
 	// 구면 보간 함수
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);
 };

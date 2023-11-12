@@ -22,19 +22,12 @@ void NodeAnimation::Evaluate(float progressTime, Math::Vector3& position, Math::
 		frameIndex++;
 	}
 
-	float factor = (durationTime - currentKey.m_Time) / (nextKey.m_Time - currentKey.m_Time);
-	
-	// 선형 보간 적용
-	position = LinearInterpolation(currentKey.m_Position, nextKey.m_Position, factor);
-	rotation = SphericalInterpolation(currentKey.m_Rotation, nextKey.m_Rotation, factor);
-	scaling = LinearInterpolation(currentKey.m_Scaling, nextKey.m_Scaling, factor);
-}
+	float factor = (durationTime - currentKey.m_Time) / (nextKey.m_Time - currentKey.m_Time);	
 
-// 선형 보간 함수
-Math::Vector3 NodeAnimation::LinearInterpolation(const Math::Vector3& start, const Math::Vector3& end, float factor)
-{
-	return Math::Vector3::Lerp(start, end, factor);
-	// return start + factor * (end - start);
+	// 선형 보간 적용
+	position = Math::Vector3::Lerp(currentKey.m_Position, nextKey.m_Position, factor);
+	rotation = SphericalInterpolation(currentKey.m_Rotation, nextKey.m_Rotation, factor);
+	scaling = Math::Vector3::Lerp(currentKey.m_Scaling, nextKey.m_Scaling, factor);
 }
 
 // 구면 보간 함수
