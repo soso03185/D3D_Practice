@@ -462,7 +462,7 @@ bool TutorialApp::InitScene()
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
 	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_4_0", &vertexShaderBuffer));
 	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
-		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pInputLayout));
+		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pInputLayout)); 
 
 	// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
 	HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
@@ -501,7 +501,7 @@ bool TutorialApp::InitScene()
 	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
 	// 8. FBX Load	
 	m_pModel = new Model();
-	m_pModel->ReadFile(m_pDevice, "../Resource/BoxHuman.fbx");
+	m_pModel->ReadFile(m_pDevice, "../Resource/SkinningTest.fbx");
 
 
 	D3D11_SAMPLER_DESC sampDesc = {};
