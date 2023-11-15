@@ -53,6 +53,11 @@ struct CB_LightDirBuffer
 	Vector4 pad[1];
 };
 
+struct CB_MatrixPallete
+{
+	Matrix Array[128];
+};
+
 TutorialApp::TutorialApp(HINSTANCE hInstance)
 	:GameApp(hInstance)
 {

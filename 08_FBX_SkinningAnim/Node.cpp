@@ -49,7 +49,7 @@ void Node::Update(float deltaTime)
 		Math::Vector3 position, scaling;
 		Math::Quaternion rotation;
 
-		// Todo ProgressTime 제대로 넣어주기 , 보간 작업
+		// 애니메이션 플레이와 보간 작업
 		m_pNodeAnimation->Evaluate(deltaTime, position, rotation, scaling);
 
 		m_Local = Math::Matrix::CreateScale(scaling) *

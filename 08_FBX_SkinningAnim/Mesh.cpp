@@ -21,7 +21,7 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 	m_MaterialIndex = mesh->mMaterialIndex;
 	
 	// 버텍스 정보 생성
-	unique_ptr<Vertex[]> vertices(new Vertex[mesh->mNumVertices]);
+	unique_ptr<BoneWeightVertex[]> vertices(new BoneWeightVertex[mesh->mNumVertices]);
 	
 	for (UINT i = 0; i < mesh -> mNumVertices; ++i)
 	{
@@ -37,7 +37,7 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 
 	/// CreateVertexBuffer ///
 	D3D11_BUFFER_DESC vertexBD = {};
-	vertexBD.ByteWidth = sizeof(Vertex) * mesh->mNumVertices;
+	vertexBD.ByteWidth = sizeof(BoneWeightVertex) * mesh->mNumVertices;
 	vertexBD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBD.Usage = D3D11_USAGE_DEFAULT;
 	vertexBD.CPUAccessFlags = 0;
@@ -48,7 +48,7 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 
 	// 버텍스 버퍼 정보
 	m_VertexCount = mesh->mNumVertices;
-	m_VertexBufferStride = sizeof(Vertex);
+	m_VertexBufferStride = sizeof(BoneWeightVertex);
 	m_VertexBufferOffset = 0;
 
 	//=======================================================//
@@ -76,4 +76,13 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 	D3D11_SUBRESOURCE_DATA ibData = {};
 	ibData.pSysMem = indices.get();
 	HR_T(device->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
+}
+
+void Mesh::UpdateMatrixPallete(Matrix* MatrixPalletePtr)
+{
+	assert(m_BoneReferences.size() < 128);
+	for (UINT i = 0; i < m_BoneReferences.size(); ++i)
+	{
+
+	}
 }
