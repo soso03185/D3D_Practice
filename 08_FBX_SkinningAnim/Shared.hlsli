@@ -42,6 +42,11 @@ cbuffer LightDirBuffer : register(b3)
     float4 pad[1];
 }
 
+cbuffer MatrixPallete : register(b4)
+{
+    matrix MatrixPalleteArray[128];
+}
+
 //--------------------------------------------------------------------------------------
 struct VS_INPUT
 {
@@ -49,6 +54,9 @@ struct VS_INPUT
     float2 Tex : UV; // 버텍스 쉐이더의 시멘틱은 의미있는 이름로 짓는 게 좋다.
     float3 Norm : NORMAL;
     float3 TangentWorld : TANGENT;
+
+    int4 BlendIndices : BLENDINDICES;
+    float4 BlendWeights : BLENDWEIGHTS;
 };
 
 struct PS_INPUT

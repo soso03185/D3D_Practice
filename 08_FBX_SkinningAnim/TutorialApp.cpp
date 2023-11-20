@@ -90,8 +90,6 @@ void TutorialApp::Update()
 	__super::Update();
 
 	float t = GameTimer::m_Instance->TotalTime() / 4;
-	
-//	aiQuaternion::Interpolate();
 
 	// Right
 	XMMATRIX mScale = XMMatrixScaling(m_Scale, m_Scale, m_Scale);
@@ -140,13 +138,6 @@ void TutorialApp::Update()
 	m_pModel->Update(m_deltaTime);
 
 }
-
-//m_prev = gettickCount64;
-//m_cur = gettickCount64;
-//
-//m_prev = m_cur;
-//m_cur = gettickCount64;
-//deltatime = m_cur - m_prev;
 
 void TutorialApp::ImguiRender()
 {
@@ -266,6 +257,7 @@ void TutorialApp::CubeRender()
 		m_pDeviceContext->IASetVertexBuffers
 		(
 			0, 1,
+			//&m_pModel->m_Meshes[i].m_pBoneWeightVertexBuffer,
 			&m_pModel->m_Meshes[i].m_pVertexBuffer,
 			&m_pModel->m_Meshes[i].m_VertexBufferStride,
 			&m_pModel->m_Meshes[i].m_VertexBufferOffset
@@ -462,6 +454,8 @@ bool TutorialApp::InitScene()
 		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BLENDWEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
