@@ -227,9 +227,7 @@ void TutorialApp::CubeRender()
 	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
 
 	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
-	m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
-
 
 	for (size_t i = 0; i < m_pModel->m_Meshes.size(); i++)
 	{

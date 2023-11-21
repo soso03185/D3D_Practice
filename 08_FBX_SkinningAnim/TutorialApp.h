@@ -43,6 +43,7 @@ public:
 	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pTransformBuffer = nullptr;		// 상수 버퍼.
 	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
+	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
 
 	Node* m_pNode = nullptr;
 	Model* m_pModel = nullptr;
@@ -53,7 +54,7 @@ public:
 	float m_Cb_Rot[3] = { 0 };
 	float m_Cb_speed[3] = { 3 };
 
-	float m_Cam[3] = { 0, -250.0f, 350.0f };
+	float m_Cam[3] = { 0, -230.0f, 350.0f };
 	float m_EyeArr[3] = {};
 	float m_AtArr[3] = {};
 	float m_UpArr[3] = {};
@@ -109,7 +110,7 @@ public:
 	virtual void Render();
 
 	void ImguiRender();
-	void CubeRender();
+	void ModelRender();
 
 	bool InitImGUI();
 	void UninitImGUI();

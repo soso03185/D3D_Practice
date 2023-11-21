@@ -4,7 +4,7 @@
 #include "Model.h"
 #include "Node.h"
 
-#include <d3dcompiler.h>
+// #include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
 #include <directxtk\Mouse.h>
 #include <directxtk\Keyboard.h>
@@ -53,7 +53,7 @@ struct CB_LightDirBuffer
 	Vector4 pad[1];
 };
 
-struct CB_MatrixPallete
+struct CB_MatrixPalette
 {
 	Matrix Array[128];
 };
@@ -136,7 +136,6 @@ void TutorialApp::Update()
 #endif	
 
 	m_pModel->Update(m_deltaTime);
-
 }
 
 void TutorialApp::ImguiRender()
@@ -193,7 +192,7 @@ void TutorialApp::ImguiRender()
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-void TutorialApp::CubeRender()
+void TutorialApp::ModelRender()
 {
 	///  ConstantBuffer Binding  ///
 	CB_ConstantBuffer CB_Buff;
@@ -223,9 +222,7 @@ void TutorialApp::CubeRender()
 	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
 
 	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
-	m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
-
 
 	for (size_t i = 0; i < m_pModel->m_Meshes.size(); i++)
 	{
@@ -257,7 +254,6 @@ void TutorialApp::CubeRender()
 		m_pDeviceContext->IASetVertexBuffers
 		(
 			0, 1,
-			//&m_pModel->m_Meshes[i].m_pBoneWeightVertexBuffer,
 			&m_pModel->m_Meshes[i].m_pVertexBuffer,
 			&m_pModel->m_Meshes[i].m_VertexBufferStride,
 			&m_pModel->m_Meshes[i].m_VertexBufferOffset
@@ -283,6 +279,7 @@ void TutorialApp::Render()
 	m_pDeviceContext->VSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pLightBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(4, 1, &m_pMatPalette);
 
 	// pixel shader
 	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
@@ -290,11 +287,12 @@ void TutorialApp::Render()
 	m_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pLightBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(4, 1, &m_pMatPalette);
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 
-	CubeRender();
+	ModelRender();
 	ImguiRender();
 
 	// Present the information rendered to the back buffer to the front buffer (the screen)
@@ -454,14 +452,12 @@ bool TutorialApp::InitScene()
 		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BLENDWEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
 	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_4_0", &vertexShaderBuffer));
 	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
-		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pInputLayout)); 
+		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pInputLayout));
 
 	// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
 	HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
@@ -495,6 +491,9 @@ bool TutorialApp::InitScene()
 
 	bd.ByteWidth = sizeof(CB_LightDirBuffer);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pLightBuffer));
+
+	bd.ByteWidth = sizeof(CB_LightDirBuffer);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
 
 
 	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
@@ -531,7 +530,8 @@ bool TutorialApp::InitScene()
 void TutorialApp::UninitScene()
 {
 
-	//	delete m_pModel;  // 이거 하면 끌때 mesh 해제해주는거에서 오류생김
+	//  이거 하면 끌때 mesh 해제해주는거에서 오류생김
+	//	delete m_pModel;
 	//	delete m_pNode;
 
 	SAFE_RELEASE(m_pVertexShader);
@@ -542,6 +542,7 @@ void TutorialApp::UninitScene()
 	SAFE_RELEASE(m_pTransformBuffer);
 	SAFE_RELEASE(m_pLightBuffer);
 	SAFE_RELEASE(m_pAlphaBlendState);
+	SAFE_RELEASE(m_pMatPalette);
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

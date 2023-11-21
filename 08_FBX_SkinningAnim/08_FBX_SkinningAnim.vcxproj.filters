@@ -15,15 +15,14 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="TutorialApp.cpp" />
     <ClCompile Include="WinMain.cpp" />
-    <ClCompile Include="Animation.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
     <ClCompile Include="NodeAnimation.cpp">
-      <Filter>Animation</Filter>
+      <Filter>Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Anim</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
@@ -35,11 +34,14 @@
     <ClInclude Include="Resource.h">
       <Filter>etc</Filter>
     </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>Animation</Filter>
-    </ClInclude>
     <ClInclude Include="NodeAnimation.h">
-      <Filter>Animation</Filter>
+      <Filter>Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>etc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -52,23 +54,23 @@
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shader">
-      <UniqueIdentifier>{0ccf31e7-8a39-451e-9a38-2e53ee2ec861}</UniqueIdentifier>
+      <UniqueIdentifier>{d32e12d2-8462-4891-b323-6b8f3a38d62d}</UniqueIdentifier>
     </Filter>
     <Filter Include="etc">
-      <UniqueIdentifier>{a696afdc-1aba-4181-99aa-4ef3350ddc27}</UniqueIdentifier>
+      <UniqueIdentifier>{7eadbf98-3e9d-4667-8c12-d338c2eac97c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Animation">
-      <UniqueIdentifier>{8ba2f303-56c4-4aa9-b244-c7389d41db26}</UniqueIdentifier>
+    <Filter Include="Anim">
+      <UniqueIdentifier>{be1b32a3-8607-4437-b0dc-9ccc76cc2cd2}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shared.hlsli">
-      <Filter>Shader</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="01_Basic.rc">
       <Filter>etc</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

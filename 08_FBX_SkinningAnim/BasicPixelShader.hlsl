@@ -22,9 +22,11 @@ float4 main(PS_INPUT Input) : SV_Target
     float3 diffuse = saturate(dot(-normLightDir.xyz, normal));
     float3 reflection = reflect(normLightDir.xyz, normal);
     
+    
     float4 texColor = txDiffuse.Sample(samLinear, Input.Tex);
     if (UseGamma)       texColor.rgb = pow(texColor.rgb, 2.2f);   // gamma
     if (UseDiffuseMap)  diffuse *= texColor;
+    
     
     /*
      *  난반사광(diffuse)이 존재하지 않는 표면(diffuse.x < 0)에는 빛이 닿지 않으므로

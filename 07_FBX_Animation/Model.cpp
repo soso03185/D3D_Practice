@@ -27,7 +27,7 @@ bool Model::ReadFile(ID3D11Device* device, const char* filePath)
 		aiProcess_CalcTangentSpace |
 		aiProcess_ConvertToLeftHanded;
 
-	m_fbxModel = importer.ReadFile("../Resource/BoxHuman.fbx", importFlags);
+	m_fbxModel = importer.ReadFile(filePath, importFlags);
 
 	if (!m_fbxModel)
 	{

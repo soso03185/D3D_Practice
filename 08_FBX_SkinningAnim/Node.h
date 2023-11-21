@@ -19,7 +19,7 @@ class Node
 public:
 	Matrix m_Local;
 	Matrix m_World;
-	std::string m_Nname;
+	std::string m_Name;
 
 	NodeAnimation* m_pNodeAnimation;
 	Node* m_pParent;
