@@ -53,6 +53,12 @@ struct CB_LightDirBuffer
 	Vector4 pad[1];
 };
 
+// 버텍스 셰이더에 옮겨주기 위해 사용하는, 휘발성 저장 공간.
+// 메쉬가 사용하고 그 다음 메쉬가 사용하고 반복...하기때문에 
+// 휘발성 저장 공간이 하나만 있어도 됨.
+// 
+// 여기에 저장되는 것은. 메쉬를 구성하는 버텍스들이 참조하는 모든 bone들의 offset * boneWorld 값들.
+// 판단은 bone의 name이나 index로 같은지 판단해서 사용함.
 struct CB_MatrixPalette
 {
 	Matrix Array[128];
@@ -245,8 +251,12 @@ void TutorialApp::ModelRender()
 		else	// 설정해제 , 다른옵션은 기본값
 			m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 		
-		// 내가 추가한 코드		
-		CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
+		// 내가 추가한 코드 
+//		CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
+
+		CB_MatrixPalette CB_MatPalatte;
+		m_pModel->m_Meshes[i].UpdateMatrixPalette(CB_MatPalatte.Array);
+		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
 		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 		m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
 
@@ -254,7 +264,8 @@ void TutorialApp::ModelRender()
 		m_pDeviceContext->IASetVertexBuffers
 		(
 			0, 1,
-			&m_pModel->m_Meshes[i].m_pVertexBuffer,
+		//	&m_pModel->m_Meshes[i].m_pVertexBuffer,
+			&m_pModel->m_Meshes[i].m_pBWVertexBuffer,
 			&m_pModel->m_Meshes[i].m_VertexBufferStride,
 			&m_pModel->m_Meshes[i].m_VertexBufferOffset
 		);
@@ -452,10 +463,12 @@ bool TutorialApp::InitScene()
 		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_4_0", &vertexShaderBuffer));
+	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer));
 	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
 		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pInputLayout));
 
@@ -467,7 +480,7 @@ bool TutorialApp::InitScene()
 	// 4. Render() 에서 파이프라인에 바인딩할 인덱스 버퍼 생성
 	// 5. Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
 	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
-	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_4_0", &pixelShaderBuffer));
+	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer));
 	HR_T(m_pDevice->CreatePixelShader(
 		pixelShaderBuffer->GetBufferPointer(),
 		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
@@ -492,7 +505,7 @@ bool TutorialApp::InitScene()
 	bd.ByteWidth = sizeof(CB_LightDirBuffer);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pLightBuffer));
 
-	bd.ByteWidth = sizeof(CB_LightDirBuffer);
+	bd.ByteWidth = sizeof(CB_MatrixPalette);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
 
 

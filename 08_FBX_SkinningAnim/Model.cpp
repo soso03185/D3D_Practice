@@ -53,14 +53,14 @@ bool Model::ReadFile(ID3D11Device* device, const char* filePath)
 			m_Animation.Create(m_fbxModel->mAnimations[i]);
 	}
 
-	// 노드 순회 하면서 바인딩
-	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation);
-
 	// vertex , index 정보 바인딩
 	for (int i = 0; i < m_fbxModel->mNumMeshes; i++)
 	{
-		m_Meshes[i].Create(device, m_fbxModel->mMeshes[i]);
+		m_Meshes[i].CreateBoneWeightVertex(device, m_fbxModel->mMeshes[i]);
 	}
+
+	// 노드 순회 하면서 바인딩
+	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation);
 
 	return true;
 }
