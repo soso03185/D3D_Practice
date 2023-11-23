@@ -21,6 +21,9 @@ void Model::Update(float deltaTime)
 bool Model::ReadFile(ID3D11Device* device, const char* filePath)
 {
 	Assimp::Importer importer;
+
+	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, 0);
+
 	unsigned int importFlags = aiProcess_Triangulate | // 삼각형으로 변환
 		aiProcess_GenNormals |   // 노말 생성
 		aiProcess_GenUVCoords |  // UV 생성

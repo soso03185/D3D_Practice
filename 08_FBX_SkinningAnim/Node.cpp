@@ -23,12 +23,15 @@ void Node::Create(Model* model, aiNode* node, Animation* anim)
 
 		// Mesh와 Node의 WorldMatrix를 연결한다.
 		 model->m_Meshes[meshIndex].m_pNodeWorld = &m_World; 
+	}
 
-		for (auto& child : model->m_Meshes[meshIndex].m_BoneReferences)
+	for (auto& mesh : model->m_Meshes)
+	{
+		for (auto& boneRef : mesh.m_BoneReferences)
 		{
-		//	if (child.NodeName.compare(m_Name) == 0)
+			if (boneRef.NodeName.compare(m_Name) == 0)
 			{
-		//		child.NodeWorldMatrixPtr = &m_World;
+				boneRef.NodeWorldMatrixPtr = &m_World;
 			}
 		}
 	}

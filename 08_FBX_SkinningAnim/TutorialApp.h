@@ -55,7 +55,7 @@ public:
 	float m_Cb_speed[3] = { 3 };
 
 //	float m_Cam[3] = { 0, -230.0f, 350.0f };
-	float m_Cam[3] = { 0.0f, 0.0f, -150.0f };
+	float m_Cam[3] = { 0.0f, 60.0f, -200.0f };
 	float m_EyeArr[3] = {};
 	float m_AtArr[3] = {};
 	float m_UpArr[3] = {};
