@@ -19,6 +19,10 @@ Material::~Material()
 
 void Material::Create(ID3D11Device* device, aiMaterial* pMaterial)
 {
+
+//  색 바꾸는 함수
+//	aiGetMaterialColor(pMaterial, AI_MATKEY_COLOR_DIFFUSE, &aiBaseColor);
+
 	string name = pMaterial->GetName().C_Str();
 
 	wstring basePath = L"../Resource/";
