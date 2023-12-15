@@ -4,7 +4,7 @@
 #include "Model.h"
 #include "Node.h"
 
-// #include <d3dcompiler.h>
+#include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
 #include <directxtk\Mouse.h>
 #include <directxtk\Keyboard.h>
@@ -256,7 +256,6 @@ void TutorialApp::ModelRender()
 
 		CB_MatrixPalette CB_MatPalatte;
 		m_pModel->m_Meshes[i].UpdateMatrixPalette(CB_MatPalatte.Array);
-
 		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
 		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 		m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
