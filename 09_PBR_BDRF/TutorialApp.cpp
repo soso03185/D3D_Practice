@@ -6,8 +6,8 @@
 
 #include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
-#include <directxtk\Mouse.h>
-#include <directxtk\Keyboard.h>
+// #include <directxtk\Mouse.h>
+// #include <directxtk\Keyboard.h>
 
 #include <imgui.h>
 #include <imgui_impl_win32.h>

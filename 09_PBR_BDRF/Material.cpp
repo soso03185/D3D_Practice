@@ -1,6 +1,7 @@
 #include "../Common/pch.h"
 #include "../Common/Helper.h"
 #include "Material.h"
+// #include "TutorialApp.h"
 
 Material::Material()
 {
@@ -82,4 +83,18 @@ void Material::Create(ID3D11Device* device, aiMaterial* pMaterial)
 		HR_T(CreateTextureFromFile(device, finalPath.c_str(), &m_pRoughnessRV));
 	}	
 
+}
+
+MaterialTexture::MaterialTexture()
+{
+}
+
+MaterialTexture::~MaterialTexture()
+{
+}
+
+void MaterialTexture::Create(const std::wstring& filePath)
+{
+	HR_T(CreateTextureFromFile(m_pDevice, filePath.c_str(), &m_pTextureSRV));
+	m_FilePath = filePath;
 }

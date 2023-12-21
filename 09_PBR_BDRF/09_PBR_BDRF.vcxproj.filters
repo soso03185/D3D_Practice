@@ -31,6 +31,7 @@
     </ClCompile>
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="D3DRenderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TutorialApp.h" />
@@ -60,6 +61,7 @@
     </ClInclude>
     <ClInclude Include="Node.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="D3DRenderManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">

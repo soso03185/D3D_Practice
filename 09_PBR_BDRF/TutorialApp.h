@@ -45,7 +45,7 @@ public:
 	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
 
-	Node* m_pNode = nullptr;
+	//Node* m_pNode = nullptr;
 	Model* m_pModel = nullptr;
 
 	// data

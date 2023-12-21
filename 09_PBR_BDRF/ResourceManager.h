@@ -12,4 +12,5 @@ class ResourceManager
 
 	//std::map<std::string, std::weak_ptr<SkeletalMeshSceneResource>> m_SkeletalMeshSceneMap;
 
+
 };
