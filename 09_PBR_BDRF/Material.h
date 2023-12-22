@@ -30,12 +30,14 @@ public:
 
 	void Create(ID3D11Device* device, aiMaterial* pMaterial);
 
-	ID3D11ShaderResourceView* m_pDiffuseRV = nullptr;	// ≈ÿΩ∫√≥ ∏Æº“Ω∫ ∫‰.
-	ID3D11ShaderResourceView* m_pNormalRV = nullptr;	// ≥Î∏ª∏  ∏Æº“Ω∫ ∫‰.
-	ID3D11ShaderResourceView* m_pSpecularRV = nullptr;	// Ω∫∆‰≈ß∑Ø∏  ∏Æº“Ω∫ ∫‰.
-	ID3D11ShaderResourceView* m_pEmissiveRV = nullptr;	// ¿ÃπÃΩ√∫Í∏  ∏Æº“Ω∫ ∫‰.
-	ID3D11ShaderResourceView* m_pOpacityRV = nullptr;	// ≈ı∏Ì∏  ∏Æº“Ω∫ ∫‰.	
-	ID3D11ShaderResourceView* m_pMetalnessRV = nullptr;	// ∏ﬁ≈ª∏  ∏Æº“Ω∫ ∫‰.	
-	ID3D11ShaderResourceView* m_pRoughnessRV = nullptr;	// ∑Ø«¡¥œΩ∫∏  ∏Æº“Ω∫ ∫‰.	
+	std::shared_ptr<MaterialTexture> m_pDiffuseRV = nullptr;	// ≈ÿΩ∫√≥ ∏Æº“Ω∫ ∫‰.
+	std::shared_ptr<MaterialTexture> m_pNormalRV = nullptr;	// ≥Î∏ª∏  ∏Æº“Ω∫ ∫‰.
+	std::shared_ptr<MaterialTexture> m_pSpecularRV = nullptr;	// Ω∫∆‰≈ß∑Ø∏  ∏Æº“Ω∫ ∫‰.
+	std::shared_ptr<MaterialTexture> m_pEmissiveRV = nullptr;	// ¿ÃπÃΩ√∫Í∏  ∏Æº“Ω∫ ∫‰.
+	std::shared_ptr<MaterialTexture> m_pOpacityRV = nullptr;	// ≈ı∏Ì∏  ∏Æº“Ω∫ ∫‰.	
+	std::shared_ptr<MaterialTexture> m_pMetalnessRV = nullptr;	// ∏ﬁ≈ª∏  ∏Æº“Ω∫ ∫‰.	
+	std::shared_ptr<MaterialTexture> m_pRoughnessRV = nullptr;	// ∑Ø«¡¥œΩ∫∏  ∏Æº“Ω∫ ∫‰.	
+
+	Vector4 m_Color;
 };
 

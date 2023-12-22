@@ -53,9 +53,10 @@ struct BoneWeightVertex
 
 struct BoneReference
 {
-	std::string NodeName;
-	Matrix OffsetMatrix;
+	std::string NodeName; // 노드 이름
+	Matrix OffsetMatrix;  // 본기준 메시의 OffsetMatrix
 	Matrix* NodeWorldMatrixPtr;
+	int BoneIndex = -1;			 // 본 인덱스
 };
 
 struct aiMesh;

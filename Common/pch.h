@@ -13,10 +13,13 @@
 #include <vector>
 #include <DirectXMath.h>
 #include <wrl/client.h>
-//#include <directxtk/SimpleMath.h>
+#include <directxtk/SimpleMath.h>
 #include <d3d11.h>
 #include <string>
 #include <filesystem>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
+
+namespace Math = DirectX::SimpleMath;
+
 #endif //PCH_H

@@ -29,9 +29,40 @@
     <ClCompile Include="Model.cpp">
       <Filter>Model</Filter>
     </ClCompile>
-    <ClCompile Include="Node.cpp" />
-    <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="D3DRenderManager.cpp" />
+    <ClCompile Include="SkeletalMeshComponent.cpp">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMeshInstance.cpp">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMeshResource.cpp">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshComponent.cpp">
+      <Filter>Model\StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshInstance.cpp">
+      <Filter>Model\StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshResource.cpp">
+      <Filter>Model\StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DRenderManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneComponent.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="SkeletonResource.cpp" />
+    <ClCompile Include="SkeletalMeshActor.cpp">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TutorialApp.h" />
@@ -59,9 +90,40 @@
     <ClInclude Include="Model.h">
       <Filter>Model</Filter>
     </ClInclude>
-    <ClInclude Include="Node.h" />
-    <ClInclude Include="ResourceManager.h" />
-    <ClInclude Include="D3DRenderManager.h" />
+    <ClInclude Include="SkeletalMeshComponent.h">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMeshInstance.h">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMeshResource.h">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshComponent.h">
+      <Filter>Model\StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshInstance.h">
+      <Filter>Model\StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshResource.h">
+      <Filter>Model\StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Model</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DRenderManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneComponent.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="Actor.h" />
+    <ClInclude Include="SkeletonResource.h" />
+    <ClInclude Include="SkeletalMeshActor.h">
+      <Filter>Model\SkeletalMesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">
@@ -83,6 +145,15 @@
     </Filter>
     <Filter Include="Model">
       <UniqueIdentifier>{3638c1fa-f4f3-4e73-bc96-ae41e6004398}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\StaticMesh">
+      <UniqueIdentifier>{1ca5d1be-a56c-4f4f-83be-3b6d61e8c0ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\SkeletalMesh">
+      <UniqueIdentifier>{287c53b2-3b90-4eec-b9db-6a1011ef0403}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{1d970f91-295a-4584-8209-79252297315a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

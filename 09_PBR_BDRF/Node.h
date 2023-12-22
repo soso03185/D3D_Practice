@@ -30,4 +30,6 @@ public:
 public:
 	void Create(Model* model , aiNode* node, Animation* anim);
 	void Update(float deltaTime);
+
+	Node* FindNode(const std::string& name);
 };

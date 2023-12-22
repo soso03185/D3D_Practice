@@ -77,3 +77,18 @@ void Node::Update(float deltaTime)
 		child.Update(deltaTime);
 	}
 }
+
+Node* Node::FindNode(const std::string& name)
+{
+	if (m_Name == name)
+		return this;
+
+	for (auto& child : m_Children)
+	{
+		Node* found = child.FindNode(name);
+		if (found != nullptr)
+			return found;
+	}
+
+	return nullptr;
+}
