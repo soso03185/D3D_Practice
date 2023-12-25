@@ -2,6 +2,8 @@
 #include "../Common/Helper.h"
 #include "Material.h"
 // #include "TutorialApp.h"
+#include "ResourceManager.h"
+
 
 Material::Material()
 {

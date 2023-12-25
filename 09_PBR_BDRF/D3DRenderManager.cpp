@@ -356,8 +356,8 @@ void D3DRenderManager::Render()
 			pPrevMaterial = meshInstance->m_pMaterial;
 		}
 
-		m_TransformW.mWorld = meshInstance->m_pNodeWorldTransform->Transpose();
-		m_pDeviceContext->UpdateSubresource(m_pCBTransformW, 0, nullptr, &m_TransformW, 0, 0);
+		CB_Transform.mWorld = meshInstance->m_pNodeWorldTransform->Transpose();
+		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
 
 		// Draw
 		meshInstance->Render(m_pDeviceContext);

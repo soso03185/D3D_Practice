@@ -1,4 +1,6 @@
 #pragma once
+#include <cassert>
+
 class Component;
 class SceneComponent;
 class World;

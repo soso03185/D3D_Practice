@@ -29,7 +29,7 @@ void SkeletalMeshResource::Create(aiMesh* mesh, SkeletonResource* skeleton)
 	m_Vertices.resize(mesh->mNumVertices);
 	for (UINT i = 0; i < mesh->mNumVertices; ++i)
 	{
-		m_Vertices[i].Position = Vector3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+		m_Vertices[i].Position = Vector4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1);
 		m_Vertices[i].Normal = Vector3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
 		m_Vertices[i].TexCoord = Vector2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 		m_Vertices[i].Tangent = Vector3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
@@ -112,7 +112,7 @@ void SkeletalMeshResource::CreateIndexBuffer(WORD* indices, UINT indexCount)
 
 bool SkeletalMeshSceneResource::Create(std::string filePath)
 {
-	std::filesystem::path path = ToWString(string(filePath));
+	std::filesystem::path path = {};// ToWString(string(filePath));
 
 	Assimp::Importer importer;
 

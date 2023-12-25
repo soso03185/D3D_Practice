@@ -105,6 +105,20 @@ private:
 	HRESULT result;
 };
 
+
+struct MetaData
+{
+	std::string Name;
+	int Type = -1;
+	std::string metadataStr;
+	float	metadataFloat;
+	int		metadataInt;
+	float	metadataVector[3];
+
+	void SetData(const aiMetadataEntry& entry);
+};
+
+
 // Helper utility converts D3D API failures into exceptions.
 void HR_T(HRESULT hr);
 
