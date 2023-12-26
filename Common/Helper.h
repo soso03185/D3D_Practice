@@ -65,21 +65,21 @@
 template <typename T>
 void SAFE_RELEASE(T* p)
 {
-	if (p)
-	{
-		p->Release();
-		p = nullptr;
-	}
+    if (p)
+    {
+        p->Release();
+        p = nullptr;
+    }
 }
 
 template <typename T>
 void SAFE_DELETE(T* p)
 {
-	if (p)
-	{
-		delete p;
-		p = nullptr;
-	}
+    if (p)
+    {
+        delete p;
+        p = nullptr;
+    }
 }
 
 
@@ -91,33 +91,19 @@ LPCWSTR GetComErrorString(HRESULT hr);
 class com_exception : public std::exception
 {
 public:
-	com_exception(HRESULT hr) : result(hr) {}
+    com_exception(HRESULT hr) : result(hr) {}
 
-	const char* what() const noexcept override
-	{
-		static char s_str[64] = {};
-		sprintf_s(s_str, "Failure with HRESULT of %08X",
-			static_cast<unsigned int>(result));
-		return s_str;
-	}
+    const char* what() const noexcept override
+    {
+        static char s_str[64] = {};
+        sprintf_s(s_str, "Failure with HRESULT of %08X",
+            static_cast<unsigned int>(result));
+        return s_str;
+    }
 
 private:
-	HRESULT result;
+    HRESULT result;
 };
-
-
-struct MetaData
-{
-	std::string Name;
-	int Type = -1;
-	std::string metadataStr;
-	float	metadataFloat;
-	int		metadataInt;
-	float	metadataVector[3];
-
-	void SetData(const aiMetadataEntry& entry);
-};
-
 
 // Helper utility converts D3D API failures into exceptions.
 void HR_T(HRESULT hr);
@@ -129,4 +115,4 @@ HRESULT CreateTextureFromFile(ID3D11Device* d3dDevice, const wchar_t* szFileName
 //
 // With VS 11, we could load up prebuilt .cso files instead...
 //--------------------------------------------------------------------------------------
-HRESULT CompileShaderFromFile(const WCHAR* szFileName, const D3D_SHADER_MACRO* pDefines, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);

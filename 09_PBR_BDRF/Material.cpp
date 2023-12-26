@@ -2,8 +2,6 @@
 #include "../Common/Helper.h"
 #include "Material.h"
 // #include "TutorialApp.h"
-#include "ResourceManager.h"
-
 
 Material::Material()
 {
@@ -25,8 +23,8 @@ Material::~Material()
 void Material::Create(ID3D11Device* device, aiMaterial* pMaterial)
 {
 
-//  색 바꾸는 함수
-//	aiGetMaterialColor(pMaterial, AI_MATKEY_COLOR_DIFFUSE, &aiBaseColor);
+	//  색 바꾸는 함수
+	//	aiGetMaterialColor(pMaterial, AI_MATKEY_COLOR_DIFFUSE, &aiBaseColor);
 
 	string name = pMaterial->GetName().C_Str();
 
@@ -83,20 +81,6 @@ void Material::Create(ID3D11Device* device, aiMaterial* pMaterial)
 		path = ToWString(string(texturePath.C_Str()));
 		finalPath = basePath + path.filename().wstring();
 		HR_T(CreateTextureFromFile(device, finalPath.c_str(), &m_pRoughnessRV));
-	}	
+	}
 
-}
-
-MaterialTexture::MaterialTexture()
-{
-}
-
-MaterialTexture::~MaterialTexture()
-{
-}
-
-void MaterialTexture::Create(const std::wstring& filePath)
-{
-	HR_T(CreateTextureFromFile(m_pDevice, filePath.c_str(), &m_pTextureSRV));
-	m_FilePath = filePath;
 }
