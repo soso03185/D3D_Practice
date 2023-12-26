@@ -157,6 +157,7 @@
     <ClInclude Include="NodeAnimation.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="SkeletonResource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TutorialApp.h" />
   </ItemGroup>
@@ -169,6 +170,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAnimation.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="SkeletonResource.cpp" />
     <ClCompile Include="TutorialApp.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>

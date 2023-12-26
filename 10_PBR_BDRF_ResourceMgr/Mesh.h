@@ -4,6 +4,8 @@
 #include <d3d11.h>
 #include <String> 
 
+#include "Material.h"
+
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
 using namespace std;
@@ -87,4 +89,16 @@ public:
 	UINT m_VertexBufferOffset = 0;		// 버텍스 버퍼의 오프셋.
 	UINT m_IndexCount = 0;				// 인덱스 개수.
 	UINT m_MaterialIndex = 0;			// 메테리얼 인덱스.
+};
+
+class SkeletalMeshSceneResource
+{
+public:
+	SkeletalMeshSceneResource() {}
+	~SkeletalMeshSceneResource() {}
+
+	std::vector<Mesh> m_SkeletalMeshResources;
+	std::vector<Material> m_Materials;
+
+
 };
