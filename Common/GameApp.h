@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include "GameTimer.h"
+
 #define MAX_LOADSTRING 100
 
 class GameApp
@@ -25,6 +26,7 @@ public:
 	GameTimer m_Timer;
 	UINT m_ClientWidth;
 	UINT m_ClientHeight;
+
 public:
 	// 윈도우 정보 등록,생성,보이기 한다.
 	virtual bool Initialize(UINT Width, UINT Height);

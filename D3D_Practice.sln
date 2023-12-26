@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08_FBX_SkinningAnim", "08_F
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09_PBR_BDRF", "09_PBR_BDRF\09_PBR_BDRF.vcxproj", "{24C93085-CDF5-44E0-80C7-6255E9917365}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10_PBR_BDRF_ResourceMgr", "10_PBR_BDRF_ResourceMgr\10_PBR_BDRF_ResourceMgr.vcxproj", "{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -131,6 +133,14 @@ Global
 		{24C93085-CDF5-44E0-80C7-6255E9917365}.Release|x64.Build.0 = Release|x64
 		{24C93085-CDF5-44E0-80C7-6255E9917365}.Release|x86.ActiveCfg = Release|Win32
 		{24C93085-CDF5-44E0-80C7-6255E9917365}.Release|x86.Build.0 = Release|Win32
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Debug|x64.ActiveCfg = Debug|x64
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Debug|x64.Build.0 = Debug|x64
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Debug|x86.ActiveCfg = Debug|Win32
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Debug|x86.Build.0 = Debug|Win32
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Release|x64.ActiveCfg = Release|x64
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Release|x64.Build.0 = Release|x64
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Release|x86.ActiveCfg = Release|Win32
+		{7E406979-37A6-4B1F-8FF9-93DEE9BD83CC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

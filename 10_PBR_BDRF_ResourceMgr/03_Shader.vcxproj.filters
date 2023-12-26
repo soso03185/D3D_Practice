@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="BasicPixelShader.hlsl" />
+    <FxCompile Include="BasicVertexShader.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TutorialApp.cpp" />
+    <ClCompile Include="WinMain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TutorialApp.h" />
+    <ClInclude Include="framework.h">
+      <Filter>NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>NewFilter1</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>NewFilter1</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="01_Basic.ico">
+      <Filter>NewFilter1</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>NewFilter1</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="NewFilter1">
+      <UniqueIdentifier>{bae6b5db-4252-4bd1-8178-f3f4f98e8cb3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="01_Basic.rc">
+      <Filter>NewFilter1</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
