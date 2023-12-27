@@ -1,10 +1,13 @@
 #pragma once
+
 #include <directxtk\SimpleMath.h>
 #include <wrl.h>
-#include <d3d11.h>
 #include <String> 
+#include <memory>
 
 #include "Material.h"
+#include "Animation.h"
+#include "SkeletonResource.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
@@ -53,9 +56,14 @@ struct BoneWeightVertex
 	}
 };
 
+struct Face
+{
+	UINT i0, i1, i2;
+};
+
 struct BoneReference
 {
-	std::string NodeName; // 노드 이름
+	string NodeName; // 노드 이름
 	Matrix OffsetMatrix;  // 본기준 메시의 OffsetMatrix
 	Matrix* NodeWorldMatrixPtr;
 	int BoneIndex = -1;			 // 본 인덱스
@@ -70,11 +78,19 @@ public:
 	~Mesh();
 
 public:
-	void Create(ID3D11Device* device, aiMesh* mesh);
+	void Create(aiMesh* mesh, SkeletonResource* skeleton);
 	void CreateBoneWeightVertex(ID3D11Device* device, aiMesh* mesh);
 
 	void UpdateMatrixPalette(Matrix* MatrixPalettePrt);
 	void CreateBoneWeightVertexBuffer(ID3D11Device* device, BoneWeightVertex* boneWV, UINT size);
+	
+	template<typename T>
+	void CreateVertexBuffer(T* vertices, UINT vertexCount);
+	void CreateIndexBuffer(Face* faces, UINT faceCount);
+
+	std::vector<Vertex>		m_Vertices;
+	std::vector<Face>		m_Faces;
+	std::string m_Name;					// 메쉬 이름.	
 
 	ID3D11Buffer* m_pBWVertexBuffer;
 	ID3D11Buffer* m_pVertexBuffer;
@@ -97,8 +113,37 @@ public:
 	SkeletalMeshSceneResource() {}
 	~SkeletalMeshSceneResource() {}
 
-	std::vector<Mesh> m_SkeletalMeshResources;
-	std::vector<Material> m_Materials;
+	Vector3 m_AABBmin;
+	Vector3 m_AABBmax;
+	vector<Mesh> m_SkeletalMeshResources;
+	vector<Material> m_Materials;
+	SkeletonResource m_Skeleton;
 
+	bool Create(string filePath);
 
+	Material * GetMeshMaterial(UINT index);
+
+//	vector<shared_ptr<AnimationResource>> m_Animations;
+
+//	void AddAnimation(shared_ptr<AnimationResource> animation);
 };
+
+template<typename T>
+inline void Mesh::CreateVertexBuffer(T* vertices, UINT vertexCount)
+{
+	/// CreateVertexBuffer ///
+	D3D11_BUFFER_DESC vertexBD = {};
+	vertexBD.ByteWidth = sizeof(T) * vertexCount;
+	vertexBD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBD.Usage = D3D11_USAGE_DEFAULT;
+	vertexBD.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vbData = {};
+	vbData.pSysMem = vertices;
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&vertexBD, &vbData, &m_pVertexBuffer));
+
+	// 버텍스 버퍼 정보
+	m_VertexCount = vertexCount;
+	m_VertexBufferStride = sizeof(T);
+	m_VertexBufferOffset = 0;
+}

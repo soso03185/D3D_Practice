@@ -31,4 +31,3 @@ public:
 	// 구면 보간 함수
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);
 };
-

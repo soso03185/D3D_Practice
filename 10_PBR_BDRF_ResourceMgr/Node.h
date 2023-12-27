@@ -9,7 +9,7 @@ class Animation;
 struct Model;
 struct NodeAnimation;
 struct aiNode;
-struct aiScene;
+// struct aiScene;
 
 using namespace DirectX::SimpleMath;
 using namespace DirectX;

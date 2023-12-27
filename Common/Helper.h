@@ -3,6 +3,7 @@
 #include <wchar.h>
 #include <d3d11.h>
 #include <exception>
+#include <vector>
 #include <stdio.h>
 #include <cstddef>
 #include <cstdint>
@@ -10,11 +11,10 @@
 #include <fstream>
 #include <stdexcept>
 #include <system_error>
-#include <vector>
-#include <directxtk/SimpleMath.h>
 #include <stdio.h>
 #include <locale>
 #include <codecvt>
+#include <directxtk/SimpleMath.h>
 #include <directxtk\DDSTextureLoader.h>
 #include <directxtk\WICTextureLoader.h>
 
@@ -49,6 +49,17 @@
     wcscat_s(buffer, message); \
     wcscat_s(buffer, L"\n"); \
     OutputDebugStringW(buffer); \
+}
+
+#define LOG_MESSAGEA(...) \
+{ \
+    char buffer[256]; \
+    sprintf_s(buffer, 256, "[MESSAGE] %s:%d - ", __FUNCTION__, __LINE__); \
+    char message[256]; \
+    sprintf_s(message, 256, __VA_ARGS__); \
+    strcat_s(buffer, message); \
+    strcat_s(buffer, "\n"); \
+    OutputDebugStringA(buffer); \
 }
 
 #define LOG_ERRORA(...) \

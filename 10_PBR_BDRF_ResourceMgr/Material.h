@@ -12,34 +12,35 @@ using namespace DirectX::SimpleMath;
 
 struct aiMaterial;
 
-class MaterialTexture
-{
-public:
-	MaterialTexture();
-	~MaterialTexture();
 
-	std::wstring m_FilePath;
-	ComPtr<ID3D11ShaderResourceView> m_pTextureSRV = nullptr;	// ÅØ½ºÃ³ ¸®¼Ò½º ºä.
-	void Create(const std::wstring& filePath);
-};
+	class MaterialTexture
+	{
+	public:
+		MaterialTexture();
+		~MaterialTexture();
 
+		std::wstring m_FilePath;
+		ComPtr<ID3D11ShaderResourceView> m_pTextureSRV = nullptr;	// ÅØ½ºÃ³ ¸®¼Ò½º ºä.
+		void Create(const std::wstring& filePath);
+	};
 
-class Material
-{
-public:
-	Material();
-	~Material();
+	
+	class Material
+	{
+	public:
+		Material();
+		~Material();
 
-	void Create(aiMaterial* pMaterial);
+		void Create(aiMaterial* pMaterial);
 
-	Vector4 m_Color;
+		Vector4 m_Color;
 
-	std::shared_ptr<MaterialTexture> m_pDiffuseRV = nullptr;	// ÅØ½ºÃ³ ¸®¼Ò½º ºä.
-	std::shared_ptr<MaterialTexture> m_pNormalRV = nullptr;	// ³ë¸»¸Ê ¸®¼Ò½º ºä.
-	std::shared_ptr<MaterialTexture> m_pSpecularRV = nullptr;	// ½ºÆäÅ§·¯¸Ê ¸®¼Ò½º ºä.
-	std::shared_ptr<MaterialTexture> m_pEmissiveRV = nullptr;	// ÀÌ¹Ì½Ãºê¸Ê ¸®¼Ò½º ºä.
-	std::shared_ptr<MaterialTexture> m_pOpacityRV = nullptr;	// Åõ¸í¸Ê ¸®¼Ò½º ºä.	
-	std::shared_ptr<MaterialTexture> m_pMetalnessRV = nullptr;	// ¸ÞÅ»¸Ê ¸®¼Ò½º ºä.	
-	std::shared_ptr<MaterialTexture> m_pRoughnessRV = nullptr;	// ·¯ÇÁ´Ï½º¸Ê ¸®¼Ò½º ºä.	
-};
-
+		std::shared_ptr<MaterialTexture> m_pDiffuseRV = nullptr;	// ÅØ½ºÃ³ ¸®¼Ò½º ºä.
+		std::shared_ptr<MaterialTexture> m_pNormalRV = nullptr;	// ³ë¸»¸Ê ¸®¼Ò½º ºä.
+		std::shared_ptr<MaterialTexture> m_pSpecularRV = nullptr;	// ½ºÆäÅ§·¯¸Ê ¸®¼Ò½º ºä.
+		std::shared_ptr<MaterialTexture> m_pEmissiveRV = nullptr;	// ÀÌ¹Ì½Ãºê¸Ê ¸®¼Ò½º ºä.
+		std::shared_ptr<MaterialTexture> m_pOpacityRV = nullptr;	// Åõ¸í¸Ê ¸®¼Ò½º ºä.	
+		std::shared_ptr<MaterialTexture> m_pMetalnessRV = nullptr;	// ¸ÞÅ»¸Ê ¸®¼Ò½º ºä.	
+		std::shared_ptr<MaterialTexture> m_pRoughnessRV = nullptr;	// ·¯ÇÁ´Ï½º¸Ê ¸®¼Ò½º ºä.	
+	};
+	

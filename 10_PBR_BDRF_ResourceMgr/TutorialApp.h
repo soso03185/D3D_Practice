@@ -3,14 +3,13 @@
 #include <d3d11.h>
 #include <directxtk/SimpleMath.h>
 #include <wincodec.h>
-
+#include <string>
 #include "../Common/GameApp.h"
-#include "Mesh.h"
-#include "Material.h"
 #include "ResourceManager.h"
 
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
+using namespace std;
 
 struct aiNode;
 struct aiAnimation;
