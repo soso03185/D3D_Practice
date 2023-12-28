@@ -19,7 +19,7 @@ class Node
 public:
 	Matrix m_Local;
 	Matrix m_World;
-	std::string m_Nname;
+ 	std::string m_Nname;
 
 	NodeAnimation* m_pNodeAnimation;
 	Node* m_pParent;
@@ -30,4 +30,5 @@ public:
 public:
 	void Create(Model* model , aiNode* node, Animation* anim);
 	void Update(float deltaTime);
+	void SetTransform(const Vector3 &val);
 };

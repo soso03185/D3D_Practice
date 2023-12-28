@@ -84,6 +84,7 @@ bool TutorialApp::Initialize(UINT Width, UINT Height)
 {
 	__super::Initialize(Width, Height);
 
+
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
 	if (!InitScene())	return false;
@@ -91,8 +92,12 @@ bool TutorialApp::Initialize(UINT Width, UINT Height)
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_previousTime);
 	QueryPerformanceCounter(&m_currentTime);
-	
+
 	D3DRenderManager::m_pDevice = m_pDevice;
+//	D3DRenderManager::m_pDeviceContext = m_pDeviceContext;
+
+	// 8. FBX Load	
+	m_pModel = new Model();
 
 	return true;
 }
@@ -257,11 +262,11 @@ void TutorialApp::ModelRender()
 		if (m_pModel->m_Materials[mi].m_pRoughnessRV)
 			m_pDeviceContext->PSSetShaderResources(6, 1, m_pModel->m_Materials[mi].m_pRoughnessRV->m_pTextureSRV.GetAddressOf());
 
-		CB_Bool.UseDiffuseMap = m_pModel->m_Materials[mi].m_pDiffuseRV != nullptr ? isDiffuse : false;
-		CB_Bool.UseNormalMap = m_pModel->m_Materials[mi].m_pNormalRV != nullptr ? isNormalMap : false;
-		CB_Bool.UseSpecularMap = m_pModel->m_Materials[mi].m_pSpecularRV != nullptr ? isSpecularMap : false;
-		CB_Bool.UseEmissiveMap = m_pModel->m_Materials[mi].m_pEmissiveRV != nullptr ? isEmissive : false;
-		CB_Bool.UseOpacityMap = m_pModel->m_Materials[mi].m_pOpacityRV != nullptr ? isOpacity : false;
+		CB_Bool.UseDiffuseMap	= m_pModel->m_Materials[mi].m_pDiffuseRV != nullptr ? isDiffuse : false;
+		CB_Bool.UseNormalMap	= m_pModel->m_Materials[mi].m_pNormalRV != nullptr ? isNormalMap : false;
+		CB_Bool.UseSpecularMap	= m_pModel->m_Materials[mi].m_pSpecularRV != nullptr ? isSpecularMap : false;
+		CB_Bool.UseEmissiveMap	= m_pModel->m_Materials[mi].m_pEmissiveRV != nullptr ? isEmissive : false;
+		CB_Bool.UseOpacityMap	= m_pModel->m_Materials[mi].m_pOpacityRV != nullptr ? isOpacity : false;
 		CB_Bool.UseMetalnessMap = m_pModel->m_Materials[mi].m_pMetalnessRV != nullptr ? isMetalness : false;
 		CB_Bool.UseRoughnessMap = m_pModel->m_Materials[mi].m_pRoughnessRV != nullptr ? isRoughness : false;
 
@@ -284,7 +289,7 @@ void TutorialApp::ModelRender()
 		(
 			0, 1,
 			&m_pModel->m_Meshes[i].m_pVertexBuffer,
-			//	&m_pModel->m_Meshes[i].m_pBWVertexBuffer,
+			//&m_pModel->m_Meshes[i].m_pBWVertexBuffer,
 			&m_pModel->m_Meshes[i].m_VertexBufferStride,
 			&m_pModel->m_Meshes[i].m_VertexBufferOffset
 		);
@@ -530,11 +535,6 @@ bool TutorialApp::InitScene()
 
 
 	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
-	// 8. FBX Load	
-	m_pModel = new Model();
-//	m_pModel->ReadFile(m_pDevice, "../Resource/cerberus2.fbx");
-
-
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -586,7 +586,7 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	{
 	case WM_KEYDOWN:
 		if (wParam == VK_UP) {			
-			m_pModel->ReadFile(m_pDevice,"../Resource/cerberus2.fbx");
+			m_pModel->ReadFile("../Resource/zeldaPosed001.fbx");
 			//IncreaseModel();
 		}
 		else if (wParam == VK_DOWN) {

@@ -6,6 +6,7 @@
 #include <directxtk\SimpleMath.h>
 #include <d3d11.h>
 #include <memory>
+#include <string>
 
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
@@ -36,7 +37,7 @@ struct aiMaterial;
 		Vector4 m_Color;
 
 		std::shared_ptr<MaterialTexture> m_pDiffuseRV = nullptr;	// ≈ÿΩ∫√≥ ∏Æº“Ω∫ ∫‰.
-		std::shared_ptr<MaterialTexture> m_pNormalRV = nullptr;	// ≥Î∏ª∏  ∏Æº“Ω∫ ∫‰.
+		std::shared_ptr<MaterialTexture> m_pNormalRV = nullptr;	    // ≥Î∏ª∏  ∏Æº“Ω∫ ∫‰.
 		std::shared_ptr<MaterialTexture> m_pSpecularRV = nullptr;	// Ω∫∆‰≈ß∑Ø∏  ∏Æº“Ω∫ ∫‰.
 		std::shared_ptr<MaterialTexture> m_pEmissiveRV = nullptr;	// ¿ÃπÃΩ√∫Í∏  ∏Æº“Ω∫ ∫‰.
 		std::shared_ptr<MaterialTexture> m_pOpacityRV = nullptr;	// ≈ı∏Ì∏  ∏Æº“Ω∫ ∫‰.	

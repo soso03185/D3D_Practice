@@ -2,6 +2,9 @@
 #include "../Common/Helper.h"
 #include "Material.h"
 #include "D3DRenderManager.h"
+#include "ResourceManager.h"
+
+using namespace std;
 
 Material::Material()
 {

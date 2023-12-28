@@ -4,6 +4,8 @@
 #include <d3d11.h>
 #include <String> 
 
+#include "Material.h"
+
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
 using namespace std;
@@ -57,7 +59,7 @@ struct BoneReference
 	Matrix OffsetMatrix;  // 본기준 메시의 OffsetMatrix
 	Matrix* NodeWorldMatrixPtr;
 	int BoneIndex = -1;			 // 본 인덱스
-};
+}; 
 
 struct aiMesh;
 
@@ -68,18 +70,20 @@ public:
 	~Mesh();
 
 public:
-	void Create(ID3D11Device* device, aiMesh* mesh);
-	void CreateBoneWeightVertex(ID3D11Device* device, aiMesh* mesh);
+	void Create(aiMesh* mesh);
+	void CreateBoneWeightVertex(aiMesh* mesh);
+	void CreateBoneWeightVertexBuffer(BoneWeightVertex* boneWV, UINT size);
 
 	void UpdateMatrixPalette(Matrix* MatrixPalettePrt);
-	void CreateBoneWeightVertexBuffer(ID3D11Device* device, BoneWeightVertex* boneWV, UINT size);
+
+	std::vector<BoneWeightVertex>	m_BoneWeightVertices;
+	std::vector<Vertex>				m_Vertices;
 
 	ID3D11Buffer* m_pBWVertexBuffer;
 	ID3D11Buffer* m_pVertexBuffer;
 	ID3D11Buffer* m_pIndexBuffer;
 
 	vector<BoneReference> m_BoneReferences;
-	vector<BoneWeightVertex> m_BoneWeightVertices;
 	Matrix* m_pNodeWorld;
 
 	UINT m_VertexCount = 0;

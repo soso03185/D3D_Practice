@@ -18,7 +18,7 @@ void Model::Update(float deltaTime)
 	m_RootNode.Update(deltaTime);
 }
 
-bool Model::ReadFile(ID3D11Device* device, const char* filePath)
+bool Model::ReadFile(std::string filePath)
 {
 	Assimp::Importer importer;
 
@@ -31,7 +31,7 @@ bool Model::ReadFile(ID3D11Device* device, const char* filePath)
 		aiProcess_LimitBoneWeights |  // 본의 영향을 받는 정점의 최대 개수를 4개로 제한
 		aiProcess_ConvertToLeftHanded;   // 왼손 좌표계로 변환
 
-	m_fbxModel = importer.ReadFile(filePath, importFlags);
+	const aiScene* m_fbxModel = importer.ReadFile(filePath, importFlags);
 
 	if (!m_fbxModel)
 	{
@@ -59,17 +59,29 @@ bool Model::ReadFile(ID3D11Device* device, const char* filePath)
 	// vertex , index 정보 바인딩
 	for (int i = 0; i < m_fbxModel->mNumMeshes; i++)
 	{
-		m_Meshes[i].Create(device, m_fbxModel->mMeshes[i]);
-		//	m_Meshes[i].CreateBoneWeightVertex(device, m_fbxModel->mMeshes[i]);
+		m_Meshes[i].Create(m_fbxModel->mMeshes[i]);
+		// m_Meshes[i].CreateBoneWeightVertex(m_fbxModel->mMeshes[i]);
 	}
 
 	// 노드 순회 하면서 바인딩
 	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation);
 
+	importer.FreeScene();
 	return true;
 }
 
-//Material* Model::GetMaterial(UINT index)
-//{
-//	return &m_Materials[index];
-//}
+void Model::SetModelResource(std::shared_ptr<Model> val)
+{
+	assert(val);
+
+
+}
+
+Material* Model::GetMaterial(UINT index)
+{
+	assert(index < m_Meshes.size());
+	UINT mindex = m_Meshes[index].m_MaterialIndex;
+	assert(mindex < m_Materials.size());
+	return &m_Materials[mindex];
+}
+

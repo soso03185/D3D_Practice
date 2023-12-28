@@ -3,6 +3,7 @@
 #include <map>
 
 #include "Mesh.h"
+#include "D3DRenderManager.h"
 #include "..\Common\Helper.h"
 
 using namespace DirectX;
@@ -18,7 +19,7 @@ Mesh::~Mesh()
 	SAFE_RELEASE(m_pBWVertexBuffer);
 }
 
-void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
+void Mesh::Create(aiMesh* mesh)
 {
 	m_MaterialIndex = mesh->mMaterialIndex;
 
@@ -42,7 +43,7 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 
 	D3D11_SUBRESOURCE_DATA vbData = {};
 	vbData.pSysMem = vertices.get();
-	HR_T(device->CreateBuffer(&vertexBD, &vbData, &m_pVertexBuffer));
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&vertexBD, &vbData, &m_pVertexBuffer));
 
 	// 버텍스 버퍼 정보
 	m_VertexCount = mesh->mNumVertices;
@@ -72,10 +73,10 @@ void Mesh::Create(ID3D11Device* device, aiMesh* mesh)
 
 	D3D11_SUBRESOURCE_DATA ibData = {};
 	ibData.pSysMem = indices.get();
-	HR_T(device->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
 }
 
-void Mesh::CreateBoneWeightVertex(ID3D11Device* device, aiMesh* mesh)
+void Mesh::CreateBoneWeightVertex(aiMesh* mesh)
 {
 	m_MaterialIndex = mesh->mMaterialIndex;
 
@@ -127,7 +128,7 @@ void Mesh::CreateBoneWeightVertex(ID3D11Device* device, aiMesh* mesh)
 		}
 	}
 
-	CreateBoneWeightVertexBuffer(device, &m_BoneWeightVertices[0], (UINT)m_BoneWeightVertices.size());
+	CreateBoneWeightVertexBuffer(&m_BoneWeightVertices[0], (UINT)m_BoneWeightVertices.size());
 
 	//=======================================================//
 	// 인덱스 정보 생성
@@ -152,7 +153,7 @@ void Mesh::CreateBoneWeightVertex(ID3D11Device* device, aiMesh* mesh)
 
 	D3D11_SUBRESOURCE_DATA ibData = {};
 	ibData.pSysMem = indices.get();
-	HR_T(device->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
 }
 
 void Mesh::UpdateMatrixPalette(Matrix* MatrixPalettePtr)
@@ -168,7 +169,7 @@ void Mesh::UpdateMatrixPalette(Matrix* MatrixPalettePtr)
 	}
 }
 
-void Mesh::CreateBoneWeightVertexBuffer(ID3D11Device* device, BoneWeightVertex* boneWV, UINT size)
+void Mesh::CreateBoneWeightVertexBuffer(BoneWeightVertex* boneWV, UINT size)
 {
 	// Create the vertex buffer for bone weights
 	D3D11_BUFFER_DESC vertexBD = {};
@@ -179,7 +180,7 @@ void Mesh::CreateBoneWeightVertexBuffer(ID3D11Device* device, BoneWeightVertex* 
 
 	D3D11_SUBRESOURCE_DATA vbData = {};
 	vbData.pSysMem = boneWV;
-	HR_T(device->CreateBuffer(&vertexBD, &vbData, &m_pBWVertexBuffer));
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&vertexBD, &vbData, &m_pBWVertexBuffer));
 
 	// 버텍스 버퍼 정보
 	m_VertexCount = size;

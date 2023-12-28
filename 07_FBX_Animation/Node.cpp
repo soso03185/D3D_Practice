@@ -67,3 +67,8 @@ void Node::Update(float deltaTime)
 		child.Update(deltaTime);
 	}
 }
+
+void Node::SetTransform(const Vector3& val)
+{
+	m_Local *= Math::Matrix::CreateTranslation(val);
+}

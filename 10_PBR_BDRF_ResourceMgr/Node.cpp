@@ -66,7 +66,7 @@ void Node::Update(float deltaTime)
 			Math::Matrix::CreateFromQuaternion(rotation) *
 			Math::Matrix::CreateTranslation(position);
 	}
-
+	
 	if (m_pParent != nullptr)
 		m_World = m_Local * m_pParent->m_World;
 	else
