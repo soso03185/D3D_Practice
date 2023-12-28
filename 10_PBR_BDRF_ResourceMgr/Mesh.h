@@ -1,13 +1,8 @@
 #pragma once
-
 #include <directxtk\SimpleMath.h>
 #include <wrl.h>
+#include <d3d11.h>
 #include <String> 
-#include <memory>
-
-#include "Material.h"
-#include "Animation.h"
-#include "SkeletonResource.h"
 
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
@@ -28,11 +23,11 @@ struct BoneWeightVertex
 	Vector2 TexCoord;
 	Vector3 Normal;
 	Vector3 Tangent;
-	
+
 	// 참조하는 본의 인덱스의 범위는 최대 128개로 일단 처리하자. 
 	// 버텍스가 참조하는 본이 최대 4개로 제한했는데 그 본에 대한 Index
 	int BlendIndeces[4] = {};  // 영향받는 본 수는 최대 4개로 제한한다.
-	
+
 	// 버텍스들이 참조하는 본의 weight 값.
 	// 최대 4개를 참조하니까 weight 값도 4개까지 있게 됨.
 	float BlendWeights[4] = {};  // 가중치 총합은 1이 되어야 한다.
@@ -42,11 +37,11 @@ struct BoneWeightVertex
 		// 적어도 하나는 데이터가 비어있어야 한다.
 		// 4개 이상의 값이 들어갈까봐 넣어준 예외 코드.
 		assert(BlendWeights[0] == 0.0f || BlendWeights[1] == 0.0f ||
-				BlendWeights[2] == 0.0f || BlendWeights[3] == 0.0f);
+			BlendWeights[2] == 0.0f || BlendWeights[3] == 0.0f);
 
 		for (int i = 0; i < 4; i++)
 		{
-			if (BlendWeights[i] == 0.0f)  
+			if (BlendWeights[i] == 0.0f)
 			{
 				BlendIndeces[i] = boneIndex;
 				BlendWeights[i] = weight;
@@ -56,14 +51,9 @@ struct BoneWeightVertex
 	}
 };
 
-struct Face
-{
-	UINT i0, i1, i2;
-};
-
 struct BoneReference
 {
-	string NodeName; // 노드 이름
+	std::string NodeName; // 노드 이름
 	Matrix OffsetMatrix;  // 본기준 메시의 OffsetMatrix
 	Matrix* NodeWorldMatrixPtr;
 	int BoneIndex = -1;			 // 본 인덱스
@@ -78,26 +68,18 @@ public:
 	~Mesh();
 
 public:
-	void Create(aiMesh* mesh, SkeletonResource* skeleton);
+	void Create(ID3D11Device* device, aiMesh* mesh);
 	void CreateBoneWeightVertex(ID3D11Device* device, aiMesh* mesh);
 
 	void UpdateMatrixPalette(Matrix* MatrixPalettePrt);
 	void CreateBoneWeightVertexBuffer(ID3D11Device* device, BoneWeightVertex* boneWV, UINT size);
-	
-	template<typename T>
-	void CreateVertexBuffer(T* vertices, UINT vertexCount);
-	void CreateIndexBuffer(Face* faces, UINT faceCount);
-
-	std::vector<Vertex>		m_Vertices;
-	std::vector<Face>		m_Faces;
-	std::string m_Name;					// 메쉬 이름.	
 
 	ID3D11Buffer* m_pBWVertexBuffer;
 	ID3D11Buffer* m_pVertexBuffer;
 	ID3D11Buffer* m_pIndexBuffer;
-	
+
 	vector<BoneReference> m_BoneReferences;
-    vector<BoneWeightVertex> m_BoneWeightVertices; 
+	vector<BoneWeightVertex> m_BoneWeightVertices;
 	Matrix* m_pNodeWorld;
 
 	UINT m_VertexCount = 0;
@@ -106,44 +88,3 @@ public:
 	UINT m_IndexCount = 0;				// 인덱스 개수.
 	UINT m_MaterialIndex = 0;			// 메테리얼 인덱스.
 };
-
-class SkeletalMeshSceneResource
-{
-public:
-	SkeletalMeshSceneResource() {}
-	~SkeletalMeshSceneResource() {}
-
-	Vector3 m_AABBmin;
-	Vector3 m_AABBmax;
-	vector<Mesh> m_SkeletalMeshResources;
-	vector<Material> m_Materials;
-	SkeletonResource m_Skeleton;
-
-	bool Create(string filePath);
-
-	Material * GetMeshMaterial(UINT index);
-
-//	vector<shared_ptr<AnimationResource>> m_Animations;
-
-//	void AddAnimation(shared_ptr<AnimationResource> animation);
-};
-
-template<typename T>
-inline void Mesh::CreateVertexBuffer(T* vertices, UINT vertexCount)
-{
-	/// CreateVertexBuffer ///
-	D3D11_BUFFER_DESC vertexBD = {};
-	vertexBD.ByteWidth = sizeof(T) * vertexCount;
-	vertexBD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBD.Usage = D3D11_USAGE_DEFAULT;
-	vertexBD.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA vbData = {};
-	vbData.pSysMem = vertices;
-	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&vertexBD, &vbData, &m_pVertexBuffer));
-
-	// 버텍스 버퍼 정보
-	m_VertexCount = vertexCount;
-	m_VertexBufferStride = sizeof(T);
-	m_VertexBufferOffset = 0;
-}

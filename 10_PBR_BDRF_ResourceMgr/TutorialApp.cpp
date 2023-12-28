@@ -586,7 +586,7 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	{
 	case WM_KEYDOWN:
 		if (wParam == VK_UP) {			
-			m_pModel->ReadFile(m_pDevice, "../Resource/cerberus2.fbx");
+			m_pModel->ReadFile(m_pDevice,"../Resource/cerberus2.fbx");
 			//IncreaseModel();
 		}
 		else if (wParam == VK_DOWN) {

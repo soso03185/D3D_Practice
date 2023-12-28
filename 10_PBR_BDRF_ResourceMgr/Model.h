@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Mesh.h"
-#include "Material.h"
+//#include "Mesh.h"
+//#include "Material.h"
 #include "Node.h"
 #include "Animation.h"
 
+class Mesh;
+class Material;
 struct aiScene;
 
 class Model
@@ -29,6 +31,6 @@ public:
 public:
 	void Update(float deltaTime);
 	bool ReadFile(ID3D11Device* device, const char* filePath);
-//	Material* GetMaterial(UINT index);
+	//	Material* GetMaterial(UINT index);
 };
 
