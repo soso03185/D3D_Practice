@@ -22,51 +22,6 @@
 #include <assimp\postprocess.h>
 #include <assimp/scene.h>
 
-struct CB_ConstantBuffer
-{
-	float mSpecularPower;
-	float mAmbient;
-	float gpadding[2];
-};
-
-struct CB_BoolBuffer
-{
-	int UseNormalMap;
-	int UseSpecularMap;
-	int UseGamma;
-	int UseDiffuseMap;
-
-	int UseEmissiveMap;
-	int UseOpacityMap;
-	int UseMetalnessMap;
-	int UseRoughnessMap;
-};
-
-struct CB_TransformBuffer
-{
-	Matrix mWorld;
-	Matrix mView;
-	Matrix mProjection;
-};
-
-struct CB_LightDirBuffer
-{
-	Vector4 vLightDir;
-	Vector4 vLightColor;
-	Vector4 mWorldCameraPosition;
-	Vector4 pad[1];
-};
-
-// 버텍스 셰이더에 옮겨주기 위해 사용하는, 휘발성 저장 공간.
-// 메쉬가 사용하고 그 다음 메쉬가 사용하고 반복...하기때문에 
-// 휘발성 저장 공간이 하나만 있어도 됨.
-// 
-// 여기에 저장되는 것은. 메쉬를 구성하는 버텍스들이 참조하는 모든 bone들의 offset * boneWorld 값들.
-// 판단은 bone의 name이나 index로 같은지 판단해서 사용함.
-struct CB_MatrixPalette
-{
-	Matrix Array[128];
-};
 
 TutorialApp::TutorialApp(HINSTANCE hInstance)
 	:GameApp(hInstance)
@@ -84,17 +39,18 @@ bool TutorialApp::Initialize(UINT Width, UINT Height)
 {
 	__super::Initialize(Width, Height);
 
+	D3DRenderManager a;
+	D3DRenderManager::Instance->Initialize(Width,Height,m_hWnd);
+	m_pDevice = D3DRenderManager::Instance->m_pDevice;
+	m_pDeviceContext = D3DRenderManager::Instance->m_pDeviceContext;
 
 	if (!InitD3D())		return false;
-	if (!InitImGUI())	return false;
+//	if (!InitImGUI())	return false;
 	if (!InitScene())	return false;
 
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_previousTime);
 	QueryPerformanceCounter(&m_currentTime);
-
-	D3DRenderManager::m_pDevice = m_pDevice;
-//	D3DRenderManager::m_pDeviceContext = m_pDeviceContext;
 
 	// 8. FBX Load	
 	m_pModel = new Model();

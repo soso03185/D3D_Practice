@@ -21,9 +21,6 @@ public:
 public:
 	void Update(float deltaTime);
 	bool ReadFile(std::string filePath);
-	Material* GetMaterial(UINT index);
-
-	void SetModelResource(std::shared_ptr<Model> val);
-
+	Material* GetMeshMaterial(UINT index);
 };
 

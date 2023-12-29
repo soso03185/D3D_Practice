@@ -19,17 +19,11 @@ Material::~Material()
 
 void Material::Create(aiMaterial* pMaterial)
 {
-
-	//  색 바꾸는 함수
-	//	aiGetMaterialColor(pMaterial, AI_MATKEY_COLOR_DIFFUSE, &aiBaseColor);
-
-	string name = pMaterial->GetName().C_Str();
-
-	wstring basePath = L"../Resource/";
-	wstring finalPath;
 	aiString texturePath;
-
+	wstring basePath = L"../Resource/";
 	std::filesystem::path path;
+	wstring finalPath;
+	string name = pMaterial->GetName().C_Str();
 
 	if (AI_SUCCESS == pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath))
 	{

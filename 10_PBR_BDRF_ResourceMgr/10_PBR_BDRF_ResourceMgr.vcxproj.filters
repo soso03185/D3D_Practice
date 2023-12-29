@@ -35,6 +35,7 @@
       <Filter>Manager</Filter>
     </ClCompile>
     <ClCompile Include="StaticMeshInstance.cpp" />
+    <ClCompile Include="StaticMeshComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -68,6 +69,7 @@
       <Filter>Manager</Filter>
     </ClInclude>
     <ClInclude Include="StaticMeshInstance.h" />
+    <ClInclude Include="StaticMeshComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">

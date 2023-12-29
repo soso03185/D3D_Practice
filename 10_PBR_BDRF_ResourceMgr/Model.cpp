@@ -70,14 +70,7 @@ bool Model::ReadFile(std::string filePath)
 	return true;
 }
 
-void Model::SetModelResource(std::shared_ptr<Model> val)
-{
-	assert(val);
-
-
-}
-
-Material* Model::GetMaterial(UINT index)
+Material* Model::GetMeshMaterial(UINT index)
 {
 	assert(index < m_Meshes.size());
 	UINT mindex = m_Meshes[index].m_MaterialIndex;
