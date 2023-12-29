@@ -1,8 +1,10 @@
 
+#include "..\Common\Helper.h"
 #include "D3DRenderManager.h"
 #include "Material.h"
+#include "Model.h"
+
 #include <d3d11.h>
-#include "..\Common\Helper.h"
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
@@ -65,7 +67,7 @@ void D3DRenderManager::ApplyMaterial(Material* pMaterial)
 	m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
 }
 
-bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND& hWnd)
+bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 {
 	m_ClientWidth = Width;
 	m_ClientHeight = Height;
@@ -74,6 +76,14 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND& hWnd)
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
 	if (!InitScene())	return false;
+
+	QueryPerformanceFrequency(&m_frequency);
+	QueryPerformanceCounter(&m_previousTime);
+	QueryPerformanceCounter(&m_currentTime);
+
+	// 8. FBX Load	
+	m_pModel = new Model();
+	m_pModel->ReadFile("../Resource/zeldaPosed001.fbx");
 
 	return true;
 }
@@ -278,7 +288,238 @@ bool D3DRenderManager::InitScene()
 	m_View = XMMatrixLookAtLH(m_Eye, m_At, m_Up);
 
 	// Initialize the projection matrix  	// fov
-	m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_ClientWidth / (FLOAT)m_ClientHeight, 0.01f, 100.0f);
+	m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_ClientWidth / (FLOAT)m_ClientHeight, 0.1f, 1000.0f);
 
 	return true;
+}
+
+
+void D3DRenderManager::Update()
+{
+	// Right
+	XMMATRIX mScale = XMMatrixScaling(m_Scale, m_Scale, m_Scale);
+	XMMATRIX mSpinX = XMMatrixRotationX(m_Cb_speed[0]);
+	XMMATRIX mSpinY = XMMatrixRotationY(m_Cb_speed[0]);
+	XMMATRIX mSpinZ = XMMatrixRotationZ(m_Cb_speed[0]);
+	XMMATRIX mTranslate = XMMatrixTranslation(m_Cb_Trans[0], m_Cb_Trans[1], m_Cb_Trans[2]);
+
+	if (isAutoRotateRoll == false)
+	{
+		float radian = XMConvertToRadians(m_Cb_Rot[2]);
+		mSpinZ = XMMatrixRotationZ(radian);
+	}
+
+	if (isAutoRotatePitch == false)
+	{
+		float radian = XMConvertToRadians(m_Cb_Rot[0]);
+		mSpinX = XMMatrixRotationX(radian);
+	}
+
+	if (isAutoRotateYaw == false)
+	{
+		float radian = XMConvertToRadians(m_Cb_Rot[1]);
+		mSpinY = XMMatrixRotationY(radian);
+	}
+
+	m_World = mScale * mSpinZ * mSpinX * mSpinY * mTranslate;
+
+	// Cam Transform
+	m_Eye = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
+	m_At = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	m_Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	m_View = XMMatrixLookToLH(m_Eye, m_At, m_Up);
+
+	m_Projection = XMMatrixPerspectiveFovLH(m_Fov / 180.0f * 3.14f, m_ClientWidth / (FLOAT)m_ClientHeight, m_Near, m_Far);
+
+	m_previousTime = m_currentTime;
+	QueryPerformanceCounter(&m_currentTime);
+	m_deltaTime = static_cast<float>(m_currentTime.QuadPart - m_previousTime.QuadPart) / static_cast<float>(m_frequency.QuadPart);
+
+#ifdef _DEBUG
+	if (m_deltaTime > (1.0f / 60.0f))
+		m_deltaTime = (1.0f / 60.0f);
+#endif	
+
+	m_pModel->Update(m_deltaTime);
+}
+
+
+void D3DRenderManager::Render()
+{
+	// Draw계열 함수를 호출하기전에 렌더링 파이프라인에 필수 스테이지 설정을 해야한다	
+	float color[4] = { 0.0f, 0.5f, 0.5f, 1.0f };
+	m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);
+	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_pDeviceContext->IASetInputLayout(m_pInputLayout);
+
+	// vertex shader
+	m_pDeviceContext->VSSetShader(m_pVertexShader, nullptr, 0);
+	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(1, 1, &m_pBoolBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pLightBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(4, 1, &m_pMatPalette);
+
+	// pixel shader
+	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
+	m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pBoolBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pLightBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(4, 1, &m_pMatPalette);
+
+	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
+	m_pDeviceContext->RSSetViewports(1, &viewport);
+
+	if (m_pModel != nullptr)
+	{
+		ModelRender();
+		ImguiRender();
+	}
+
+	// Present the information rendered to the back buffer to the front buffer (the screen)
+	m_pSwapChain->Present(0, 0);
+}
+
+void D3DRenderManager::ModelRender()
+{
+	///  ConstantBuffer Binding  ///
+	CB_ConstantBuffer CB_Buff;
+	CB_Buff.mAmbient = m_Ambient;
+	CB_Buff.mSpecularPower = m_SpecularPower;
+
+	CB_BoolBuffer CB_Bool;
+	CB_Bool.UseGamma = isGamma;
+
+	CB_TransformBuffer CB_Transform;
+	CB_Transform.mWorld = XMMatrixTranspose(m_World);
+	CB_Transform.mView = XMMatrixTranspose(m_View);
+	CB_Transform.mProjection = XMMatrixTranspose(m_Projection);
+
+	CB_LightDirBuffer CB_Light;
+	CB_Light.vLightColor.x = m_vLightColor[0];
+	CB_Light.vLightColor.y = m_vLightColor[1];
+	CB_Light.vLightColor.z = m_vLightColor[2];
+	CB_Light.vLightColor.w = 1.0f;
+
+	CB_Light.vLightDir.x = m_vLightDir[0];
+	CB_Light.vLightDir.y = m_vLightDir[1];
+	CB_Light.vLightDir.z = m_vLightDir[2];
+	CB_Light.vLightDir.w = 1.0f;
+
+	CB_Light.vLightDir.Normalize();
+	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
+
+	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
+	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
+
+	for (size_t i = 0; i < m_pModel->m_Meshes.size(); i++)
+	{
+		size_t mi = m_pModel->m_Meshes[i].m_MaterialIndex;
+
+		if (m_pModel->m_Materials[mi].m_pDiffuseRV)
+			m_pDeviceContext->PSSetShaderResources(0, 1, m_pModel->m_Materials[mi].m_pDiffuseRV->m_pTextureSRV.GetAddressOf());
+		if (m_pModel->m_Materials[mi].m_pNormalRV)
+			m_pDeviceContext->PSSetShaderResources(1, 1, m_pModel->m_Materials[mi].m_pNormalRV->m_pTextureSRV.GetAddressOf());
+		if (m_pModel->m_Materials[mi].m_pSpecularRV)
+			m_pDeviceContext->PSSetShaderResources(2, 1, m_pModel->m_Materials[mi].m_pSpecularRV->m_pTextureSRV.GetAddressOf());
+		if (m_pModel->m_Materials[mi].m_pEmissiveRV)
+			m_pDeviceContext->PSSetShaderResources(3, 1, m_pModel->m_Materials[mi].m_pEmissiveRV->m_pTextureSRV.GetAddressOf());
+		if (m_pModel->m_Materials[mi].m_pOpacityRV)
+			m_pDeviceContext->PSSetShaderResources(4, 1, m_pModel->m_Materials[mi].m_pOpacityRV->m_pTextureSRV.GetAddressOf());
+		if (m_pModel->m_Materials[mi].m_pMetalnessRV)
+			m_pDeviceContext->PSSetShaderResources(5, 1, m_pModel->m_Materials[mi].m_pMetalnessRV->m_pTextureSRV.GetAddressOf());
+		if (m_pModel->m_Materials[mi].m_pRoughnessRV)
+			m_pDeviceContext->PSSetShaderResources(6, 1, m_pModel->m_Materials[mi].m_pRoughnessRV->m_pTextureSRV.GetAddressOf());
+
+		CB_Bool.UseDiffuseMap = m_pModel->m_Materials[mi].m_pDiffuseRV != nullptr ? isDiffuse : false;
+		CB_Bool.UseNormalMap = m_pModel->m_Materials[mi].m_pNormalRV != nullptr ? isNormalMap : false;
+		CB_Bool.UseSpecularMap = m_pModel->m_Materials[mi].m_pSpecularRV != nullptr ? isSpecularMap : false;
+		CB_Bool.UseEmissiveMap = m_pModel->m_Materials[mi].m_pEmissiveRV != nullptr ? isEmissive : false;
+		CB_Bool.UseOpacityMap = m_pModel->m_Materials[mi].m_pOpacityRV != nullptr ? isOpacity : false;
+		CB_Bool.UseMetalnessMap = m_pModel->m_Materials[mi].m_pMetalnessRV != nullptr ? isMetalness : false;
+		CB_Bool.UseRoughnessMap = m_pModel->m_Materials[mi].m_pRoughnessRV != nullptr ? isRoughness : false;
+
+		if (CB_Bool.UseOpacityMap)	// 알파블렌드 상태설정 , 다른옵션은 기본값 
+			m_pDeviceContext->OMSetBlendState(m_pAlphaBlendState, nullptr, 0xffffffff);
+		else	// 설정해제 , 다른옵션은 기본값
+			m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
+		// 내가 추가한 코드 
+		CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
+
+		CB_MatrixPalette CB_MatPalatte;
+		m_pModel->m_Meshes[i].UpdateMatrixPalette(CB_MatPalatte.Array);
+		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
+		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
+		m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
+
+		m_pDeviceContext->IASetIndexBuffer(m_pModel->m_Meshes[i].m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		m_pDeviceContext->IASetVertexBuffers
+		(
+			0, 1,
+			&m_pModel->m_Meshes[i].m_pVertexBuffer,
+			//&m_pModel->m_Meshes[i].m_pBWVertexBuffer,
+			&m_pModel->m_Meshes[i].m_VertexBufferStride,
+			&m_pModel->m_Meshes[i].m_VertexBufferOffset
+		);
+
+		m_pDeviceContext->DrawIndexed(m_pModel->m_Meshes[i].m_IndexCount, 0, 0);
+	}
+
+}
+
+void D3DRenderManager::ImguiRender()
+{
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	// Start the Dear ImGui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	m_pDeviceContext->RSSetViewports(1, &viewport);
+
+	{
+		ImGui::Begin("Editor");
+
+		ImGui::Checkbox("AutoRot_Pitch", &isAutoRotatePitch);
+		ImGui::Checkbox("AutoRot_Yaw", &isAutoRotateYaw);
+		ImGui::Checkbox("AutoRot_Roll", &isAutoRotateRoll);
+
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::Checkbox("NormalMap", &isNormalMap);
+		ImGui::Checkbox("SpecularMap", &isSpecularMap);
+		ImGui::Checkbox("Gamma_Correction", &isGamma);
+		ImGui::Checkbox("DiffuseMap", &isDiffuse);
+		ImGui::Checkbox("EmissiveMap", &isEmissive);
+		ImGui::Checkbox("OpacityMap", &isOpacity);
+		ImGui::Checkbox("MetalnessMap", &isMetalness);
+		ImGui::Checkbox("RoughnessMap", &isRoughness);
+
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -400.0f, 400.0f);
+		ImGui::SliderFloat3("Cube_Pos", m_Cb_Trans, -500.0f, 500.0f);
+		ImGui::SliderFloat3("Cube_Rot", m_Cb_Rot, -360.0f, 360.0f);
+		ImGui::SliderFloat("Cube_Scale", &m_Scale, 0.0f, 5.0f);
+
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::SliderFloat("Far", &m_Far, 1.0f, 10000.0f);
+		ImGui::SliderFloat("Near", &m_Near, 0.01f, 10.0f);
+		ImGui::SliderFloat("Fov", &m_Fov, -20.0f, 180.0f);
+
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::SliderFloat3("Light_RGB", m_vLightColor, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Light_XYZ", m_vLightDir, -1.0f, 1.0f);
+
+		ImGui::End();
+	}
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 }

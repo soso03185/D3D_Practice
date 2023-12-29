@@ -5,6 +5,7 @@
 #include <wincodec.h>
 #include <string>
 #include "../Common/GameApp.h"
+#include "D3DRenderManager.h"
 #include "ResourceManager.h"
 
 using namespace DirectX::SimpleMath;
@@ -24,7 +25,8 @@ public:
 	TutorialApp(HINSTANCE hInstance);
 	~TutorialApp();
 
-	ResourceManager ResMgr; // 초기화용 선언만.
+	ResourceManager ResMgr;  
+	D3DRenderManager m_Renderer; 
 
 	// 렌더링 파이프라인을 구성하는 필수 객체의 인터페이스 (  뎊스 스텐실 뷰도 있지만 아직 사용하지 않는다.)
 	ID3D11Device* m_pDevice = nullptr;						// 디바이스	
@@ -39,7 +41,6 @@ public:
 	ID3D11VertexShader* m_pVertexShader = nullptr;	// 정점 셰이더.
 	ID3D11PixelShader* m_pPixelShader = nullptr;	// 픽셀 셰이더.	
 	ID3D11InputLayout* m_pInputLayout = nullptr;	// 입력 레이아웃.
-
 
 	ID3D11Buffer* m_pConstantBuffer = nullptr;		// 상수 버퍼.
 	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.
@@ -113,16 +114,8 @@ public:
 	virtual void Update();
 	virtual void Render();
 
-	void ImguiRender();
-	void ModelRender();
-
-	bool InitImGUI();
 	void UninitImGUI();
-
-	bool InitD3D();
 	void UninitD3D();
-
-	bool InitScene();		// 쉐이더,버텍스,인덱스
 	void UninitScene();
 
 	virtual LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
