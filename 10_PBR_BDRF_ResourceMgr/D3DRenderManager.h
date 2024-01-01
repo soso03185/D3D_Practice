@@ -72,16 +72,19 @@ public:
 	bool InitD3D();
 	bool InitImGUI();
 	bool InitScene();
+	void Uninitialize();
 
 	//  Loop   //
 	void Update();
 	void Render();
-	void ModelRender();
 	void ImguiRender();
+
+	void RenderStaticMeshInstance();
 
 	//  Utility  //
 	void ApplyMaterial(Material* pMaterial);
-
+	void AddMeshInstance(StaticMeshComponent* pModel);
+	void ConstantBuffUpdate();
 
 public:
 	// Public Data //
@@ -161,9 +164,6 @@ public:
 	bool isMetalness = true;
 	bool isRoughness = true;
 
-
-	//Node* m_pNode = nullptr;
-	Model* m_pModel = nullptr;
 
 	std::list<StaticMeshInstance*> m_StaticMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다. 
 	std::list<StaticMeshComponent*> m_StaticMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.

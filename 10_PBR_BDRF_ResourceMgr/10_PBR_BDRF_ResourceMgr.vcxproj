@@ -160,6 +160,7 @@
     <ClInclude Include="StaticMeshComponent.h" />
     <ClInclude Include="StaticMeshInstance.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="TutorialApp.h" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +174,7 @@
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="StaticMeshComponent.cpp" />
     <ClCompile Include="StaticMeshInstance.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="TutorialApp.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>

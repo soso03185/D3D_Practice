@@ -1,13 +1,13 @@
 
 #include "..\Common\Helper.h"
 #include "D3DRenderManager.h"
+#include "StaticMeshComponent.h"
 #include "Material.h"
 #include "Model.h"
 
 #include <d3d11.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
-
 
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
 ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
@@ -20,7 +20,7 @@ D3DRenderManager::D3DRenderManager()
 
 D3DRenderManager::~D3DRenderManager()
 {
-//	Uninitialize();
+	Uninitialize();
 }
 
 void D3DRenderManager::ApplyMaterial(Material* pMaterial)
@@ -48,8 +48,7 @@ void D3DRenderManager::ApplyMaterial(Material* pMaterial)
 
 
 	CB_BoolBuffer CB_Bool;
-//	CB_Bool.UseGamma = isGamma;
-
+	CB_Bool.UseGamma = isGamma;
 	CB_Bool.UseDiffuseMap = pMaterial->m_pDiffuseRV != nullptr ? true : false;
 	CB_Bool.UseNormalMap = pMaterial->m_pNormalRV != nullptr ? true : false;
 	CB_Bool.UseSpecularMap = pMaterial->m_pSpecularRV != nullptr ? true : false;
@@ -63,8 +62,43 @@ void D3DRenderManager::ApplyMaterial(Material* pMaterial)
 	else
 		m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);	// 설정해제 , 다른옵션은 기본값
 
-	// TODO Buffer 초기화 아직 안함.
 	m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
+}
+
+void D3DRenderManager::AddMeshInstance(StaticMeshComponent* pModel)
+{
+	for (size_t i = 0; i < pModel->m_MeshInstances.size(); i++)
+	{
+		m_StaticMeshInstance.push_back(&pModel->m_MeshInstances[i]);
+	}
+}
+
+void D3DRenderManager::ConstantBuffUpdate()
+{
+	///  ConstantBuffer Binding  ///
+	CB_ConstantBuffer CB_Buff;
+	CB_Buff.mAmbient = m_Ambient;
+	CB_Buff.mSpecularPower = m_SpecularPower;
+
+	CB_BoolBuffer CB_Bool;
+	CB_Bool.UseGamma = isGamma;
+
+	CB_LightDirBuffer CB_Light;
+	CB_Light.vLightColor.x = m_vLightColor[0];
+	CB_Light.vLightColor.y = m_vLightColor[1];
+	CB_Light.vLightColor.z = m_vLightColor[2];
+	CB_Light.vLightColor.w = 1.0f;
+
+	CB_Light.vLightDir.x = m_vLightDir[0];
+	CB_Light.vLightDir.y = m_vLightDir[1];
+	CB_Light.vLightDir.z = m_vLightDir[2];
+	CB_Light.vLightDir.w = 1.0f;
+
+	CB_Light.vLightDir.Normalize();
+	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
+
+	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
+	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
 }
 
 bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
@@ -82,8 +116,14 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	QueryPerformanceCounter(&m_currentTime);
 
 	// 8. FBX Load	
-	m_pModel = new Model();
-	m_pModel->ReadFile("../Resource/zeldaPosed001.fbx");
+	StaticMeshComponent* newModel = new StaticMeshComponent();
+	newModel->SetFilePath("../Resource/zeldaPosed001.fbx");
+	//newModel->SetLocalPosition(Vector3(1.0f, 1.0f, 1.0f));
+	newModel->OnBeginPlay();
+
+	StaticMeshComponent* newModel2 = new StaticMeshComponent();
+	newModel2->SetFilePath("../Resource/cerberus2.fbx");
+	newModel2->OnBeginPlay();
 
 	return true;
 }
@@ -293,6 +333,29 @@ bool D3DRenderManager::InitScene()
 	return true;
 }
 
+void D3DRenderManager::Uninitialize()
+{ 
+	SAFE_RELEASE(m_pVertexShader);
+	SAFE_RELEASE(m_pPixelShader);
+	SAFE_RELEASE(m_pInputLayout);
+	SAFE_RELEASE(m_pConstantBuffer);
+	SAFE_RELEASE(m_pBoolBuffer);
+	SAFE_RELEASE(m_pTransformBuffer);
+	SAFE_RELEASE(m_pLightBuffer);
+	SAFE_RELEASE(m_pAlphaBlendState);
+	SAFE_RELEASE(m_pMatPalette);
+
+	// Cleanup DirectX
+	SAFE_RELEASE(m_pDevice);
+	SAFE_RELEASE(m_pDeviceContext);
+	SAFE_RELEASE(m_pSwapChain);
+	SAFE_RELEASE(m_pRenderTargetView);
+
+	// Cleanup Imgui
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+}
 
 void D3DRenderManager::Update()
 {
@@ -340,7 +403,15 @@ void D3DRenderManager::Update()
 		m_deltaTime = (1.0f / 60.0f);
 #endif	
 
-	m_pModel->Update(m_deltaTime);
+
+	for (auto& StaticMeshComponent : m_StaticMeshComponents)
+	{
+		// 하나의 메시 컴포넌트에 여러개의 메시 Instance 가 있을수있음.
+		AddMeshInstance(StaticMeshComponent); 
+
+		StaticMeshComponent->Update(m_deltaTime);
+	}
+	
 }
 
 
@@ -352,10 +423,10 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_pDeviceContext->IASetInputLayout(m_pInputLayout);
+//	m_pDeviceContext->IASetInputLayout(m_pInputLayout);
 
 	// vertex shader
-	m_pDeviceContext->VSSetShader(m_pVertexShader, nullptr, 0);
+//	m_pDeviceContext->VSSetShader(m_pVertexShader, nullptr, 0);
 	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformBuffer);
@@ -373,102 +444,10 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 
-	if (m_pModel != nullptr)
-	{
-		ModelRender();
-		ImguiRender();
-	}
+	RenderStaticMeshInstance();
 
-	// Present the information rendered to the back buffer to the front buffer (the screen)
+	ImguiRender();
 	m_pSwapChain->Present(0, 0);
-}
-
-void D3DRenderManager::ModelRender()
-{
-	///  ConstantBuffer Binding  ///
-	CB_ConstantBuffer CB_Buff;
-	CB_Buff.mAmbient = m_Ambient;
-	CB_Buff.mSpecularPower = m_SpecularPower;
-
-	CB_BoolBuffer CB_Bool;
-	CB_Bool.UseGamma = isGamma;
-
-	CB_TransformBuffer CB_Transform;
-	CB_Transform.mWorld = XMMatrixTranspose(m_World);
-	CB_Transform.mView = XMMatrixTranspose(m_View);
-	CB_Transform.mProjection = XMMatrixTranspose(m_Projection);
-
-	CB_LightDirBuffer CB_Light;
-	CB_Light.vLightColor.x = m_vLightColor[0];
-	CB_Light.vLightColor.y = m_vLightColor[1];
-	CB_Light.vLightColor.z = m_vLightColor[2];
-	CB_Light.vLightColor.w = 1.0f;
-
-	CB_Light.vLightDir.x = m_vLightDir[0];
-	CB_Light.vLightDir.y = m_vLightDir[1];
-	CB_Light.vLightDir.z = m_vLightDir[2];
-	CB_Light.vLightDir.w = 1.0f;
-
-	CB_Light.vLightDir.Normalize();
-	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
-
-	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
-	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
-
-	for (size_t i = 0; i < m_pModel->m_Meshes.size(); i++)
-	{
-		size_t mi = m_pModel->m_Meshes[i].m_MaterialIndex;
-
-		if (m_pModel->m_Materials[mi].m_pDiffuseRV)
-			m_pDeviceContext->PSSetShaderResources(0, 1, m_pModel->m_Materials[mi].m_pDiffuseRV->m_pTextureSRV.GetAddressOf());
-		if (m_pModel->m_Materials[mi].m_pNormalRV)
-			m_pDeviceContext->PSSetShaderResources(1, 1, m_pModel->m_Materials[mi].m_pNormalRV->m_pTextureSRV.GetAddressOf());
-		if (m_pModel->m_Materials[mi].m_pSpecularRV)
-			m_pDeviceContext->PSSetShaderResources(2, 1, m_pModel->m_Materials[mi].m_pSpecularRV->m_pTextureSRV.GetAddressOf());
-		if (m_pModel->m_Materials[mi].m_pEmissiveRV)
-			m_pDeviceContext->PSSetShaderResources(3, 1, m_pModel->m_Materials[mi].m_pEmissiveRV->m_pTextureSRV.GetAddressOf());
-		if (m_pModel->m_Materials[mi].m_pOpacityRV)
-			m_pDeviceContext->PSSetShaderResources(4, 1, m_pModel->m_Materials[mi].m_pOpacityRV->m_pTextureSRV.GetAddressOf());
-		if (m_pModel->m_Materials[mi].m_pMetalnessRV)
-			m_pDeviceContext->PSSetShaderResources(5, 1, m_pModel->m_Materials[mi].m_pMetalnessRV->m_pTextureSRV.GetAddressOf());
-		if (m_pModel->m_Materials[mi].m_pRoughnessRV)
-			m_pDeviceContext->PSSetShaderResources(6, 1, m_pModel->m_Materials[mi].m_pRoughnessRV->m_pTextureSRV.GetAddressOf());
-
-		CB_Bool.UseDiffuseMap = m_pModel->m_Materials[mi].m_pDiffuseRV != nullptr ? isDiffuse : false;
-		CB_Bool.UseNormalMap = m_pModel->m_Materials[mi].m_pNormalRV != nullptr ? isNormalMap : false;
-		CB_Bool.UseSpecularMap = m_pModel->m_Materials[mi].m_pSpecularRV != nullptr ? isSpecularMap : false;
-		CB_Bool.UseEmissiveMap = m_pModel->m_Materials[mi].m_pEmissiveRV != nullptr ? isEmissive : false;
-		CB_Bool.UseOpacityMap = m_pModel->m_Materials[mi].m_pOpacityRV != nullptr ? isOpacity : false;
-		CB_Bool.UseMetalnessMap = m_pModel->m_Materials[mi].m_pMetalnessRV != nullptr ? isMetalness : false;
-		CB_Bool.UseRoughnessMap = m_pModel->m_Materials[mi].m_pRoughnessRV != nullptr ? isRoughness : false;
-
-		if (CB_Bool.UseOpacityMap)	// 알파블렌드 상태설정 , 다른옵션은 기본값 
-			m_pDeviceContext->OMSetBlendState(m_pAlphaBlendState, nullptr, 0xffffffff);
-		else	// 설정해제 , 다른옵션은 기본값
-			m_pDeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-
-		// 내가 추가한 코드 
-		CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(*(m_pModel->m_Meshes[i].m_pNodeWorld));
-
-		CB_MatrixPalette CB_MatPalatte;
-		m_pModel->m_Meshes[i].UpdateMatrixPalette(CB_MatPalatte.Array);
-		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
-		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
-		m_pDeviceContext->UpdateSubresource(m_pBoolBuffer, 0, nullptr, &CB_Bool, 0, 0);
-
-		m_pDeviceContext->IASetIndexBuffer(m_pModel->m_Meshes[i].m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		m_pDeviceContext->IASetVertexBuffers
-		(
-			0, 1,
-			&m_pModel->m_Meshes[i].m_pVertexBuffer,
-			//&m_pModel->m_Meshes[i].m_pBWVertexBuffer,
-			&m_pModel->m_Meshes[i].m_VertexBufferStride,
-			&m_pModel->m_Meshes[i].m_VertexBufferOffset
-		);
-
-		m_pDeviceContext->DrawIndexed(m_pModel->m_Meshes[i].m_IndexCount, 0, 0);
-	}
-
 }
 
 void D3DRenderManager::ImguiRender()
@@ -522,4 +501,43 @@ void D3DRenderManager::ImguiRender()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+}
+
+void D3DRenderManager::RenderStaticMeshInstance()
+{
+	m_pDeviceContext->IASetInputLayout(m_pInputLayout);
+	m_pDeviceContext->VSSetShader(m_pVertexShader, nullptr, 0);
+
+	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)
+		{
+			return lhs->m_pMaterial < rhs->m_pMaterial;
+		});
+
+	Material* pPrevMaterial = nullptr;
+	for (const auto& meshInstance : m_StaticMeshInstance)
+	{
+		if (pPrevMaterial != meshInstance->m_pMaterial)
+		{
+			ApplyMaterial(meshInstance->m_pMaterial);	// 머터리얼 적용
+			pPrevMaterial = meshInstance->m_pMaterial;
+		}
+
+		ConstantBuffUpdate();
+
+		//? Static Mesh
+		CB_TransformBuffer CB_Transform;
+		CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(meshInstance->m_pNodeWorldTransform->Transpose());
+		CB_Transform.mView = XMMatrixTranspose(m_View);
+		CB_Transform.mProjection = XMMatrixTranspose(m_Projection);
+		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
+
+		//? Skeletal Mesh
+		//  행렬팔레트 업데이트						
+		// meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
+		// m_cbMatrixPallete.SetData(m_pDeviceContext, m_MatrixPalette);
+
+		// Draw
+		meshInstance->Render(m_pDeviceContext);
+	}
+	m_StaticMeshInstance.clear();
 }

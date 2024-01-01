@@ -36,6 +36,7 @@
     </ClCompile>
     <ClCompile Include="StaticMeshInstance.cpp" />
     <ClCompile Include="StaticMeshComponent.cpp" />
+    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -70,6 +71,7 @@
     </ClInclude>
     <ClInclude Include="StaticMeshInstance.h" />
     <ClInclude Include="StaticMeshComponent.h" />
+    <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">
