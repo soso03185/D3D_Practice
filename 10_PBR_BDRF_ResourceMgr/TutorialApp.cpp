@@ -52,7 +52,8 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	switch (message)
 	{
 	case WM_KEYDOWN:
-		if (wParam == VK_UP) {		
+		if (wParam == VK_UP) {
+			D3DRenderManager::Instance->IncreaseModel();
 			//IncreaseModel();
 		}
 		else if (wParam == VK_DOWN) {

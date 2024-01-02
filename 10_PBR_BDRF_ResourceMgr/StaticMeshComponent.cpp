@@ -48,11 +48,6 @@ void StaticMeshComponent::SetSceneResource(std::shared_ptr<Model> val)
 //	m_BoundingBox.Extents = Math::Vector3(m_SceneResource->m_AABBmax - m_SceneResource->m_AABBmin);	// Calculate extent
 }
 
-void StaticMeshComponent::SetFilePath(std::string filePath)
-{
-	m_SceneFilePath = filePath;
-}
-
 Material* StaticMeshComponent::GetMaterial(UINT index)
 {
 	assert(index < m_SceneResource->m_Materials.size());

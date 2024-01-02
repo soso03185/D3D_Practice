@@ -23,6 +23,7 @@ D3DRenderManager::~D3DRenderManager()
 	Uninitialize();
 }
 
+
 void D3DRenderManager::ApplyMaterial(Material* pMaterial)
 {
 	if (pMaterial->m_pDiffuseRV)
@@ -115,22 +116,25 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	QueryPerformanceCounter(&m_previousTime);
 	QueryPerformanceCounter(&m_currentTime);
 
-	// 8. FBX Load	
-	StaticMeshComponent* newModel = new StaticMeshComponent();
-	newModel->SetFilePath("../Resource/zeldaPosed001.fbx");
-	//newModel->SetLocalPosition(Vector3(1.0f, 1.0f, 1.0f));
-	newModel->OnBeginPlay();
-
-	StaticMeshComponent* newModel2 = new StaticMeshComponent();
-	newModel2->SetFilePath("../Resource/cerberus2.fbx");
-	newModel2->OnBeginPlay();
-
 	return true;
 }
 
+void D3DRenderManager::IncreaseModel()
+{
+	// 8. FBX Load	
+	StaticMeshComponent* newModel = new StaticMeshComponent();
+	newModel->ReadSceneResourceFromFBX("../Resource/zeldaPosed001.fbx");
+
+	int range = 500;
+	float posx = (float)(rand() % range) - range * 0.5f;
+	float posy = (float)(rand() % range) - range * 0.5f;
+	float posz = (float)(rand() % range) - range * 0.5f;
+	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
+}
+
+
 bool D3DRenderManager::InitD3D()
 {
-
 	// °á°ú°ª.
 	HRESULT hr = 0;
 
@@ -526,7 +530,8 @@ void D3DRenderManager::RenderStaticMeshInstance()
 
 		//? Static Mesh
 		CB_TransformBuffer CB_Transform;
-		CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(meshInstance->m_pNodeWorldTransform->Transpose());
+		CB_Transform.mWorld = XMMatrixTranspose(m_World);
+		CB_Transform.mWorld *= meshInstance->m_pNodeWorldTransform->Transpose();
 		CB_Transform.mView = XMMatrixTranspose(m_View);
 		CB_Transform.mProjection = XMMatrixTranspose(m_Projection);
 		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);

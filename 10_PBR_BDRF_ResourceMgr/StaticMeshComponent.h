@@ -25,7 +25,6 @@ public:
 
 	bool ReadSceneResourceFromFBX(std::string filePath);
 	void SetSceneResource(std::shared_ptr<Model> val);
-	void SetFilePath(std::string filePath);
 
 	Material* GetMaterial(UINT index);
 

@@ -78,10 +78,10 @@ public:
 	void Update();
 	void Render();
 	void ImguiRender();
-
 	void RenderStaticMeshInstance();
 
 	//  Utility  //
+	void IncreaseModel();
 	void ApplyMaterial(Material* pMaterial);
 	void AddMeshInstance(StaticMeshComponent* pModel);
 	void ConstantBuffUpdate();

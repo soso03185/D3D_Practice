@@ -32,9 +32,6 @@
     <ClCompile Include="Node.cpp">
       <Filter>Model</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceManager.cpp">
-      <Filter>Manager</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TutorialApp.h" />
@@ -65,9 +62,6 @@
     <ClInclude Include="Node.h">
       <Filter>Model</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceManager.h">
-      <Filter>Manager</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">
@@ -89,9 +83,6 @@
     </Filter>
     <Filter Include="Model">
       <UniqueIdentifier>{3638c1fa-f4f3-4e73-bc96-ae41e6004398}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Manager">
-      <UniqueIdentifier>{1d970f91-295a-4584-8209-79252297315a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
