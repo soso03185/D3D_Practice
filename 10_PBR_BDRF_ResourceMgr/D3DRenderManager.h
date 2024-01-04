@@ -2,6 +2,7 @@
 #include <d3d11.h>
 #include <list>
 #include <directxtk/SimpleMath.h>
+#include <string>
 
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
@@ -54,6 +55,8 @@ struct CB_MatrixPalette
 
 
 
+class SkeletalMeshInstance;
+class SkeletalMeshComponent;
 class StaticMeshComponent;
 class StaticMeshInstance;
 class Material;
@@ -79,11 +82,14 @@ public:
 	void Render();
 	void ImguiRender();
 	void RenderStaticMeshInstance();
+	void RenderSkeletalMeshInstance();
 
 	//  Utility  //
-	void IncreaseModel();
+	void IncreaseModel(std::string pilePath);
+	void DecreaseModel();
 	void ApplyMaterial(Material* pMaterial);
 	void AddMeshInstance(StaticMeshComponent* pModel);
+	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
 
 public:
@@ -167,5 +173,9 @@ public:
 
 	std::list<StaticMeshInstance*> m_StaticMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다. 
 	std::list<StaticMeshComponent*> m_StaticMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
+	
+	
+	std::list<SkeletalMeshInstance*> m_SkeletalMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다.
+	std::list<SkeletalMeshComponent*> m_SkeletalMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
 
 };

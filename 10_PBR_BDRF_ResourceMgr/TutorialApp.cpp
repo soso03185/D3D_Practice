@@ -7,7 +7,7 @@
 
 #include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
-#include <imgui_impl_dx11.h>
+#include <imgui_impl_dx11.h> 
 // #include <directxtk\Mouse.h>
 // #include <directxtk\Keyboard.h>
 
@@ -37,7 +37,7 @@ void TutorialApp::Update()
 	__super::Update();
 
 	float t = GameTimer::m_Instance->TotalTime() / 4;
-	m_Renderer.Update();
+	m_Renderer.Update(   );
 }
 
 void TutorialApp::Render()
@@ -53,10 +53,11 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	{
 	case WM_KEYDOWN:
 		if (wParam == VK_UP) {
-			D3DRenderManager::Instance->IncreaseModel();
+			D3DRenderManager::Instance->IncreaseModel("../Resource/zeldaPosed001.fbx");
 			//IncreaseModel();
 		}
 		else if (wParam == VK_DOWN) {
+			D3DRenderManager::Instance->DecreaseModel();
 			//DecreaseModel();
 		}
 		break;

@@ -7,6 +7,8 @@
 
 struct aiScene;
 
+
+// 그냥 mesh 랑 material , anim  만들어서 갖고 있는 애임.
 class Model
 {
 public:

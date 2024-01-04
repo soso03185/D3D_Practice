@@ -1,4 +1,5 @@
 
+#include "..\Common\GameTimer.h"
 #include "../Common/Helper.h"
 #include "ResourceManager.h"
 #include "Material.h"
@@ -6,7 +7,6 @@
 #include "Model.h"
 
 #include <filesystem>
-#include "..\Common\GameTimer.h"
 
 ResourceManager* ResourceManager::Instance = nullptr;
 

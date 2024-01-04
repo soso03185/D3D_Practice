@@ -34,9 +34,19 @@
     <ClCompile Include="ResourceManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="StaticMeshInstance.cpp" />
-    <ClCompile Include="StaticMeshComponent.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="SkeletalMeshInstance.cpp">
+      <Filter>SkeletalMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshComponent.cpp">
+      <Filter>StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshInstance.cpp">
+      <Filter>StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMeshComponent.cpp">
+      <Filter>SkeletalMesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -69,9 +79,19 @@
     <ClInclude Include="ResourceManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="StaticMeshInstance.h" />
-    <ClInclude Include="StaticMeshComponent.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="SkeletalMeshInstance.h">
+      <Filter>SkeletalMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshComponent.h">
+      <Filter>StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshInstance.h">
+      <Filter>StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMeshComponent.h">
+      <Filter>SkeletalMesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">
@@ -93,6 +113,12 @@
     </Filter>
     <Filter Include="Manager">
       <UniqueIdentifier>{a0e146da-d317-46d4-b8c1-2cbd6bfa455c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SkeletalMesh">
+      <UniqueIdentifier>{c993b2fd-705a-475e-a2cd-8526fef39d93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticMesh">
+      <UniqueIdentifier>{86583628-7a9e-48de-81e4-d1c8dcf29af8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

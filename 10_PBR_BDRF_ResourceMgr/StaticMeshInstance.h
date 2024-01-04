@@ -7,7 +7,7 @@ class Mesh;
 class Material;
 
 // 최종적으로 그려지는 클래스.
-class StaticMeshInstance
+class StaticMeshInstance 
 {
 public:
 

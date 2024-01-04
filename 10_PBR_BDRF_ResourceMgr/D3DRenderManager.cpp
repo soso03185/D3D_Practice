@@ -1,7 +1,8 @@
 
 #include "..\Common\Helper.h"
-#include "D3DRenderManager.h"
 #include "StaticMeshComponent.h"
+#include "SkeletalMeshComponent.h"
+#include "D3DRenderManager.h"
 #include "Material.h"
 #include "Model.h"
 
@@ -74,6 +75,14 @@ void D3DRenderManager::AddMeshInstance(StaticMeshComponent* pModel)
 	}
 }
 
+void D3DRenderManager::AddMeshInstance(SkeletalMeshComponent* pModel)
+{
+	for (size_t i = 0; i < pModel->m_MeshInstances.size(); i++)
+	{
+		m_SkeletalMeshInstance.push_back(&pModel->m_MeshInstances[i]);
+	}
+}
+
 void D3DRenderManager::ConstantBuffUpdate()
 {
 	///  ConstantBuffer Binding  ///
@@ -119,17 +128,23 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	return true;
 }
 
-void D3DRenderManager::IncreaseModel()
+void D3DRenderManager::IncreaseModel(std::string pilePath)
 {
 	// 8. FBX Load	
 	StaticMeshComponent* newModel = new StaticMeshComponent();
-	newModel->ReadSceneResourceFromFBX("../Resource/zeldaPosed001.fbx");
+	newModel->ReadSceneResourceFromFBX(pilePath);
 
 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
+}
+
+void D3DRenderManager::DecreaseModel()
+{
+
+
 }
 
 
@@ -412,10 +427,16 @@ void D3DRenderManager::Update()
 	{
 		// 하나의 메시 컴포넌트에 여러개의 메시 Instance 가 있을수있음.
 		AddMeshInstance(StaticMeshComponent); 
-
 		StaticMeshComponent->Update(m_deltaTime);
 	}
 	
+	for (auto& SkeletalMeshComponent : m_SkeletalMeshComponents)
+	{
+		// 하나의 메시 컴포넌트에 여러개의 메시 Instance 가 있을수있음.
+		AddMeshInstance(SkeletalMeshComponent);
+		SkeletalMeshComponent->Update(m_deltaTime);
+	}
+
 }
 
 
@@ -535,14 +556,41 @@ void D3DRenderManager::RenderStaticMeshInstance()
 		CB_Transform.mView = XMMatrixTranspose(m_View);
 		CB_Transform.mProjection = XMMatrixTranspose(m_Projection);
 		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
-
-		//? Skeletal Mesh
-		//  행렬팔레트 업데이트						
-		// meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
-		// m_cbMatrixPallete.SetData(m_pDeviceContext, m_MatrixPalette);
-
+ 
 		// Draw
 		meshInstance->Render(m_pDeviceContext);
 	}
 	m_StaticMeshInstance.clear();
+}
+
+void D3DRenderManager::RenderSkeletalMeshInstance()
+{
+	m_pDeviceContext->IASetInputLayout(m_pInputLayout);
+	m_pDeviceContext->VSSetShader(m_pVertexShader, nullptr, 0);
+
+	m_SkeletalMeshInstance.sort([](const SkeletalMeshInstance* lhs, const SkeletalMeshInstance* rhs)
+		{
+			return lhs->m_pMaterial < rhs->m_pMaterial;
+		});
+
+	Material* pPrevMaterial = nullptr;
+	for (const auto& meshInstance : m_SkeletalMeshInstance)
+	{
+		if (pPrevMaterial != meshInstance->m_pMaterial)
+		{
+			ApplyMaterial(meshInstance->m_pMaterial);	// 머터리얼 적용
+			pPrevMaterial = meshInstance->m_pMaterial;
+		}
+
+		ConstantBuffUpdate();
+
+		//? Skeletal Mesh
+		//  행렬팔레트 업데이트						
+//		meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
+//		m_cbMatrixPallete.SetData(m_pDeviceContext, m_MatrixPalette);
+
+		// Draw
+		meshInstance->Render(m_pDeviceContext);
+	}
+	m_SkeletalMeshInstance.clear();
 }
