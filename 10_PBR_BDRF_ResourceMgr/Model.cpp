@@ -61,7 +61,7 @@ bool Model::ReadFile(std::string filePath)
 	for (int i = 0; i < m_fbxModel->mNumMeshes; i++)
 	{
 		m_Meshes[i].Create(m_fbxModel->mMeshes[i]);
-		// m_Meshes[i].CreateBoneWeightVertex(m_fbxModel->mMeshes[i]);
+//		m_Meshes[i].CreateBoneWeightVertex(m_fbxModel->mMeshes[i]);
 	}
 
 	// 노드 순회 하면서 바인딩

@@ -11,11 +11,14 @@ PS_INPUT main(VS_INPUT Input)
 	    
     // 최대 4개까지의 본을 참조함. x y z w (이름은 중요하지 않음)
     float4x4 matWorld;
-//    matWorld =  mul(Input.BlendWeights.x, MatrixPaletteArray[Input.BlendIndices.x]);
-//    matWorld += mul(Input.BlendWeights.y, MatrixPaletteArray[Input.BlendIndices.y]);
-//    matWorld += mul(Input.BlendWeights.z, MatrixPaletteArray[Input.BlendIndices.z]);
-//    matWorld += mul(Input.BlendWeights.w, MatrixPaletteArray[Input.BlendIndices.w]);        
+#ifdef VERTEX_SKINNING 
+    matWorld =  mul(Input.BlendWeights.x, MatrixPaletteArray[Input.BlendIndices.x]);
+    matWorld += mul(Input.BlendWeights.y, MatrixPaletteArray[Input.BlendIndices.y]);
+    matWorld += mul(Input.BlendWeights.z, MatrixPaletteArray[Input.BlendIndices.z]);
+    matWorld += mul(Input.BlendWeights.w, MatrixPaletteArray[Input.BlendIndices.w]);        
+#else
     matWorld = World;
+#endif
     
 	// 정점 월드 변환
     output.Pos = mul(Input.Pos, matWorld);

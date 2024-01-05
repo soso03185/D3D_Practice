@@ -53,8 +53,6 @@ struct CB_MatrixPalette
 	Matrix Array[128];
 };
 
-
-
 class SkeletalMeshInstance;
 class SkeletalMeshComponent;
 class StaticMeshComponent;
@@ -73,9 +71,14 @@ public:
 	//  Need  //
 	bool Initialize(UINT Width, UINT Height, HWND hWnd);
 	bool InitD3D();
+	void InitScene();
 	bool InitImGUI();
-	bool InitScene();
+
+
 	void Uninitialize();
+	void CreateStaticMesh_VS_IL();
+	void CreateSkeletalMesh_VS_IL();
+	void CreatePs();
 
 	//  Loop   //
 	void Update();
@@ -114,10 +117,13 @@ public:
 
 
 	// 렌더링 파이프라인에 적용하는  객체와 정보
-	ID3D11VertexShader* m_pVertexShader = nullptr;	// 정점 셰이더.
-	ID3D11PixelShader* m_pPixelShader = nullptr;	// 픽셀 셰이더.	
-	ID3D11InputLayout* m_pInputLayout = nullptr;	// 입력 레이아웃.
+	ID3D11VertexShader* m_pStaticVertexShader = nullptr;	// 정점 셰이더.
+	ID3D11VertexShader* m_pSkeletalVertexShader = nullptr;	// 정점 셰이더.
 
+	ID3D11InputLayout*  m_pStaticInputLayout = nullptr;	// 입력 레이아웃.
+	ID3D11InputLayout*  m_pSkeletalInputLayout = nullptr;	// 입력 레이아웃.
+
+	ID3D11PixelShader* m_pPixelShader = nullptr;	// 픽셀 셰이더.	
 
 	ID3D11Buffer* m_pConstantBuffer = nullptr;		// 상수 버퍼.
 	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.

@@ -19,4 +19,3 @@ public:
 	std::vector<SkeletalMeshInstance> m_MeshInstances;
 	std::list<SkeletalMeshComponent*>::iterator m_iterator;
 };
-

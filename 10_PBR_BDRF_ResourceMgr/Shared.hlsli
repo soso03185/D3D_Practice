@@ -60,9 +60,11 @@ struct VS_INPUT
     float3 Norm : NORMAL;
     float3 TangentWorld : TANGENT;
     
-    // Skinning
+#ifdef VERTEX_SKINNING 
     int4 BlendIndices : BLENDINDICES;
     float4 BlendWeights : BLENDWEIGHT;
+#endif
+ 
 };
 
 struct PS_INPUT

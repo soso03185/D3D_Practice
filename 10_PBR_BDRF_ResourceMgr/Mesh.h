@@ -73,8 +73,10 @@ public:
 	void Create(aiMesh* mesh);
 	void CreateBoneWeightVertex(aiMesh* mesh);
 	void CreateBoneWeightVertexBuffer(BoneWeightVertex* boneWV, UINT size);
-
-	void UpdateMatrixPalette(Matrix* MatrixPalettePrt);
+	
+	template<typename T>
+	void CreateVertexBuffer(T* vertices, UINT vertexCount);
+ 	void UpdateMatrixPalette(Matrix* MatrixPalettePrt);
 
 	std::vector<BoneWeightVertex>	m_BoneWeightVertices;
 	std::vector<Vertex>				m_Vertices;
@@ -92,3 +94,22 @@ public:
 	UINT m_IndexCount = 0;				// 인덱스 개수.
 	UINT m_MaterialIndex = 0;			// 메테리얼 인덱스.
 };
+
+template<typename T>
+inline void Mesh::CreateVertexBuffer(T* vertices, UINT vertexCount)
+{
+	D3D11_BUFFER_DESC bd = {};
+	bd.ByteWidth = sizeof(T) * vertexCount;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA vbData = {};
+	vbData.pSysMem = vertices;
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&bd, &vbData, &m_pVertexBuffer));
+
+	// 버텍스 버퍼 정보
+	m_VertexCount = vertexCount;
+	m_VertexBufferStride = sizeof(T);
+	m_VertexBufferOffset = 0;
+}
