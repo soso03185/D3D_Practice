@@ -21,7 +21,6 @@ public:
 	~ModelResource();
 
 	Node m_RootNode;
-	vector<Node> m_Nodes;
 	vector<Mesh> m_Meshes;
 	vector<Material> m_Materials;
 	Animation m_Animation;

@@ -67,7 +67,7 @@ bool ModelResource::ReadFile(std::string filePath, ModelType modelType)
 	}
 
 	// 노드 순회 하면서 바인딩
-	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation, &m_Nodes);
+	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation);
 
 	importer.FreeScene();
 	return true;
