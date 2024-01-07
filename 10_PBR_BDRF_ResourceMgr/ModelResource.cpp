@@ -1,25 +1,25 @@
-#include "Model.h"
+#include "ModelResource.h"
 #include <assimp\Importer.hpp>
 #include <assimp\postprocess.h>
 #include <assimp/scene.h>
 
-Model::Model()
+ModelResource::ModelResource()
 {
 }
 
-Model::~Model()
+ModelResource::~ModelResource()
 {
 	m_Meshes.clear();
 	m_Materials.clear();
 }
 
 // 그냥 띄우기만 하는 거에서 Static Mesh Model 에는 사용되지 않음 
-void Model::Update(float deltaTime)
+void ModelResource::Update(float deltaTime)
 {
 	m_RootNode.Update(deltaTime);
 }
 
-bool Model::ReadFile(std::string filePath)
+bool ModelResource::ReadFile(std::string filePath, ModelType modelType)
 {
 	Assimp::Importer importer;
 
@@ -60,18 +60,20 @@ bool Model::ReadFile(std::string filePath)
 	// vertex , index 정보 바인딩
 	for (int i = 0; i < m_fbxModel->mNumMeshes; i++)
 	{
-		m_Meshes[i].Create(m_fbxModel->mMeshes[i]);
-//		m_Meshes[i].CreateBoneWeightVertex(m_fbxModel->mMeshes[i]);
+		if (modelType == ModelType::STATIC)
+			m_Meshes[i].Create(m_fbxModel->mMeshes[i]);
+		else if (modelType == ModelType::SKELETAL)
+			m_Meshes[i].CreateBoneWeight(m_fbxModel->mMeshes[i]);
 	}
 
 	// 노드 순회 하면서 바인딩
-	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation);
+	m_RootNode.Create(this, m_fbxModel->mRootNode, &m_Animation, &m_Nodes);
 
 	importer.FreeScene();
 	return true;
 }
 
-Material* Model::GetMeshMaterial(UINT index)
+Material* ModelResource::GetMeshMaterial(UINT index)
 {
 	assert(index < m_Meshes.size());
 	UINT mindex = m_Meshes[index].m_MaterialIndex;

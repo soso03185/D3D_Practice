@@ -9,7 +9,7 @@
 #include "Transform.h"
 
 class Material;
-class Model;
+class ModelResource;
 
 class StaticMeshComponent : public Transform
 {
@@ -18,13 +18,13 @@ public:
 	~StaticMeshComponent();
 
 	std::string m_SceneFilePath; // BeginPlay에서 로딩
-	std::shared_ptr<Model>  m_SceneResource;
+	std::shared_ptr<ModelResource>  m_ModelResource;
 	std::vector<StaticMeshInstance> m_MeshInstances;
 
 	std::list<StaticMeshComponent*>::iterator m_iterator;
 
 	bool ReadSceneResourceFromFBX(std::string filePath);
-	void SetSceneResource(std::shared_ptr<Model> val);
+	void SetSceneResource(std::shared_ptr<ModelResource> val);
 
 	Material* GetMaterial(UINT index);
 

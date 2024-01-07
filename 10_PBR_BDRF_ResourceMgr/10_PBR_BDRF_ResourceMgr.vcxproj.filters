@@ -22,7 +22,7 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Model</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
+    <ClCompile Include="ModelResource.cpp">
       <Filter>Model</Filter>
     </ClCompile>
     <ClCompile Include="Node.cpp">
@@ -61,7 +61,7 @@
     <ClInclude Include="Mesh.h">
       <Filter>Model</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
+    <ClInclude Include="ModelResource.h">
       <Filter>Model</Filter>
     </ClInclude>
     <ClInclude Include="Node.h">

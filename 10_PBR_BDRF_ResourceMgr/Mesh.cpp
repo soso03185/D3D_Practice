@@ -24,33 +24,18 @@ void Mesh::Create(aiMesh* mesh)
 	m_MaterialIndex = mesh->mMaterialIndex;
 
 	// 버텍스 정보 생성
-	unique_ptr<Vertex[]> vertices(new Vertex[mesh->mNumVertices]);
+	m_Vertices.resize(mesh->mNumVertices);
 
 	for (UINT i = 0; i < mesh->mNumVertices; ++i)
 	{
-		vertices[i].Position = Vector4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
-		vertices[i].TexCoord = Vector2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-		vertices[i].Normal = Vector3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-		vertices[i].Tangent = Vector3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+		m_Vertices[i].Position = Vector4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
+		m_Vertices[i].TexCoord = Vector2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+		m_Vertices[i].Normal = Vector3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+		m_Vertices[i].Tangent = Vector3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
 	}
+	
+	CreateVertexBuffer<Vertex>(&m_Vertices[0], (UINT)m_Vertices.size(), &m_pVertexBuffer);
 
-	/// CreateVertexBuffer ///
-	D3D11_BUFFER_DESC vertexBD = {};
-	vertexBD.ByteWidth = sizeof(Vertex) * mesh->mNumVertices;
-	vertexBD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBD.Usage = D3D11_USAGE_DEFAULT;
-	vertexBD.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA vbData = {};
-	vbData.pSysMem = vertices.get();
-	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&vertexBD, &vbData, &m_pVertexBuffer));
-
-	// 버텍스 버퍼 정보
-	m_VertexCount = mesh->mNumVertices;
-	m_VertexBufferStride = sizeof(Vertex);
-	m_VertexBufferOffset = 0;
-
-	//=======================================================//
 	// 인덱스 정보 생성
 	unique_ptr<UINT[]> indices(new UINT[mesh->mNumFaces * 3]);
 
@@ -61,22 +46,10 @@ void Mesh::Create(aiMesh* mesh)
 		indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
 	}
 
-	/// CreateIndexBuffer  ///
-	// 인덱스 개수 저장.
-	m_IndexCount = mesh->mNumFaces * 3;
-
-	D3D11_BUFFER_DESC indexBD = {};
-	indexBD.ByteWidth = sizeof(UINT) * mesh->mNumFaces * 3;
-	indexBD.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBD.Usage = D3D11_USAGE_DEFAULT;
-	indexBD.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA ibData = {};
-	ibData.pSysMem = indices.get();
-	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
+	CreateIndexBuffer(indices.get(), mesh->mNumFaces * 3);
 }
 
-void Mesh::CreateBoneWeightVertex(aiMesh* mesh)
+void Mesh::CreateBoneWeight(aiMesh* mesh)
 {
 	m_MaterialIndex = mesh->mMaterialIndex;
 
@@ -127,8 +100,7 @@ void Mesh::CreateBoneWeightVertex(aiMesh* mesh)
 			m_BoneWeightVertices[vertexID].AddBoneData(boneIndex, weight);
 		}
 	}
-
-	CreateBoneWeightVertexBuffer(&m_BoneWeightVertices[0], (UINT)m_BoneWeightVertices.size());
+	CreateVertexBuffer<BoneWeightVertex>(&m_BoneWeightVertices[0], (UINT)m_BoneWeightVertices.size(), &m_pBWVertexBuffer);
 
 	//=======================================================//
 	// 인덱스 정보 생성
@@ -141,18 +113,23 @@ void Mesh::CreateBoneWeightVertex(aiMesh* mesh)
 		indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
 	}
 
+	CreateIndexBuffer(indices.get(), mesh->mNumFaces * 3);
+}
+
+void Mesh::CreateIndexBuffer(UINT* vertices, UINT vertexCount)
+{
 	/// CreateIndexBuffer  ///
 	// 인덱스 개수 저장.
-	m_IndexCount = mesh->mNumFaces * 3;
+	m_IndexCount = vertexCount;
 
 	D3D11_BUFFER_DESC indexBD = {};
-	indexBD.ByteWidth = sizeof(UINT) * mesh->mNumFaces * 3;
+	indexBD.ByteWidth = sizeof(UINT) * vertexCount;
 	indexBD.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBD.Usage = D3D11_USAGE_DEFAULT;
 	indexBD.CPUAccessFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA ibData = {};
-	ibData.pSysMem = indices.get();
+	ibData.pSysMem = vertices;
 	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&indexBD, &ibData, &m_pIndexBuffer));
 }
 
@@ -167,23 +144,4 @@ void Mesh::UpdateMatrixPalette(Matrix* MatrixPalettePtr)
 		// HLSL 상수버퍼에 업데이트할 때, 바로 복사할 수 있도록 전치해서 저장.
 		MatrixPalettePtr[i] = (m_BoneReferences[i].OffsetMatrix * BoneNodeWorldMatrix).Transpose();
 	}
-}
-
-void Mesh::CreateBoneWeightVertexBuffer(BoneWeightVertex* boneWV, UINT size)
-{
-	// Create the vertex buffer for bone weights
-	D3D11_BUFFER_DESC vertexBD = {};
-	vertexBD.ByteWidth = sizeof(BoneWeightVertex) * size;
-	vertexBD.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBD.Usage = D3D11_USAGE_DEFAULT;
-	vertexBD.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA vbData = {};
-	vbData.pSysMem = boneWV;
-	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&vertexBD, &vbData, &m_pBWVertexBuffer));
-
-	// 버텍스 버퍼 정보
-	m_VertexCount = size;
-	m_VertexBufferStride = sizeof(BoneWeightVertex);
-	m_VertexBufferOffset = 0;
 }

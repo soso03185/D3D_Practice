@@ -4,7 +4,7 @@
 #include "SkeletalMeshComponent.h"
 #include "D3DRenderManager.h"
 #include "Material.h"
-#include "Model.h"
+#include "ModelResource.h"
 
 #include <d3d11.h>
 #include <imgui_impl_dx11.h>
@@ -127,10 +127,23 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	return true;
 }
 
-void D3DRenderManager::IncreaseModel(std::string pilePath)
+void D3DRenderManager::IncreaseStaticModel(std::string pilePath)
 {
 	// 8. FBX Load	
 	StaticMeshComponent* newModel = new StaticMeshComponent();
+	newModel->ReadSceneResourceFromFBX(pilePath);
+
+	int range = 500;
+	float posx = (float)(rand() % range) - range * 0.5f;
+	float posy = (float)(rand() % range) - range * 0.5f;
+	float posz = (float)(rand() % range) - range * 0.5f;
+	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
+}
+
+void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
+{
+	// 8. FBX Load	
+	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
 
 	int range = 500;
@@ -145,7 +158,6 @@ void D3DRenderManager::DecreaseModel()
 
 
 }
-
 
 bool D3DRenderManager::InitD3D()
 {
@@ -262,6 +274,8 @@ bool D3DRenderManager::InitD3D()
 
 	bd.ByteWidth = sizeof(CB_MatrixPalette);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
+
+	//m_cbMatrixPallete.Create(m_pDevice);
 
 	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
 	D3D11_SAMPLER_DESC sampDesc = {};
@@ -500,6 +514,8 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pLightBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(4, 1, &m_pMatPalette);
+	/*auto buffer = m_cbMatrixPallete.GetBuffer();
+	m_pDeviceContext->VSSetConstantBuffers(4, 1, &buffer);*/
 
 	// pixel shader
 	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
@@ -507,7 +523,6 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pLightBuffer);
-	m_pDeviceContext->PSSetConstantBuffers(4, 1, &m_pMatPalette);
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -628,10 +643,14 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 
 		ConstantBuffUpdate();
 
+		CB_MatrixPalette CB_MatPalatte;
+		meshInstance->m_pMeshResource->UpdateMatrixPalette(CB_MatPalatte.Array);
+		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
+
 		//? Skeletal Mesh
 		//  행렬팔레트 업데이트						
-//		meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
-//		m_cbMatrixPallete.SetData(m_pDeviceContext, m_MatrixPalette);
+		// meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
+		// m_cbMatrixPallete.SetData(m_pDeviceContext, m_MatrixPalette);
 
 		// Draw
 		meshInstance->Render(m_pDeviceContext);

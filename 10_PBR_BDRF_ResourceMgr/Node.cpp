@@ -1,5 +1,5 @@
 #include "Node.h"
-#include "Model.h"
+#include "ModelResource.h"
 #include "Animation.h"
 #include "TutorialApp.h"
 #include "../Common/Helper.h"
@@ -10,11 +10,12 @@
 
 namespace Math = DirectX::SimpleMath;
 
-void Node::Create(Model* model, aiNode* node, Animation* anim)
+void Node::Create(ModelResource* model, aiNode* node, Animation* anim, vector<Node>* myNodeVec)
 {
 	m_Local = Math::Matrix(&node->mTransformation.a1).Transpose();
 	m_Name = node->mName.C_Str();
-	
+	myNodeVec->push_back(*this);
+
 	m_MeshIndices.resize(node->mNumMeshes);
 	for (UINT i = 0; i < node->mNumMeshes; ++i)
 	{
@@ -49,7 +50,7 @@ void Node::Create(Model* model, aiNode* node, Animation* anim)
 	for (UINT i = 0; i < node->mNumChildren; ++i)
 	{
 		m_Children[i].m_pParent = this;
-		m_Children[i].Create(model, node->mChildren[i], anim);
+		m_Children[i].Create(model, node->mChildren[i], anim, myNodeVec);
 	}
 }
 

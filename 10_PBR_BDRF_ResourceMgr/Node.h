@@ -6,10 +6,10 @@
 #include <string>
 
 class Animation;
-struct Model;
+struct ModelResource;
 struct NodeAnimation;
 struct aiNode;
- 
+
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
 namespace Math = DirectX::SimpleMath;
@@ -21,14 +21,14 @@ public:
 	Matrix m_World;
 	std::string m_Name;
 
-	NodeAnimation* m_pNodeAnimation;
-	Node* m_pParent;
+	NodeAnimation* m_pNodeAnimation = nullptr;
+	Node* m_pParent = nullptr;
 
 	vector<UINT> m_MeshIndices;
 	vector<Node> m_Children;	
 
 public:
-	void Create(Model* model , aiNode* node, Animation* anim);
+	void Create(ModelResource* model , aiNode* node, Animation* anim, vector<Node>* myNode);
 	void Update(float deltaTime);
 
 	Node* FindNode(const std::string& name);

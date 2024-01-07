@@ -1,11 +1,13 @@
 #pragma once
 #include <d3d11.h>
 #include <list>
+#include <DirectXtk/BufferHelpers.h>
 #include <directxtk/SimpleMath.h>
 #include <string>
 
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
+namespace Math = DirectX::SimpleMath;
 
 struct CB_ConstantBuffer
 {
@@ -58,7 +60,6 @@ class SkeletalMeshComponent;
 class StaticMeshComponent;
 class StaticMeshInstance;
 class Material;
-class Model;
 
 class D3DRenderManager
 {
@@ -88,7 +89,8 @@ public:
 	void RenderSkeletalMeshInstance();
 
 	//  Utility  //
-	void IncreaseModel(std::string pilePath);
+	void IncreaseStaticModel(std::string pilePath);
+	void IncreaseSkeletalModel(std::string pilePath);
 	void DecreaseModel();
 	void ApplyMaterial(Material* pMaterial);
 	void AddMeshInstance(StaticMeshComponent* pModel);
@@ -130,6 +132,13 @@ public:
 	ID3D11Buffer* m_pTransformBuffer = nullptr;		// 상수 버퍼.
 	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
+	
+	
+		
+	//ConstantBuffer<CB_MatrixPalette> m_cbMatrixPallete; // DirectXTK의 상수버퍼 클래스 활용
+	//CB_MatrixPalette m_MatrixPalette;
+
+
 
 	XMVECTOR m_Eye;
 	XMVECTOR m_At;

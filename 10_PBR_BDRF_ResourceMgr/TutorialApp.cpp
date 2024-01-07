@@ -3,7 +3,7 @@
 #include "../Common/GameApp.h"
 #include "D3DRenderManager.h"
 #include "ResourceManager.h"
-#include "Model.h"
+#include "ModelResource.h"
 
 #include <d3dcompiler.h>
 #include <directxtk/WICTextureLoader.h>
@@ -53,7 +53,8 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	{
 	case WM_KEYDOWN:
 		if (wParam == VK_UP) {
-			D3DRenderManager::Instance->IncreaseModel("../Resource/zeldaPosed001.fbx");
+			D3DRenderManager::Instance->IncreaseStaticModel("../Resource/zeldaPosed001.fbx");
+			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/SkinningTest.fbx");
 			//IncreaseModel();
 		}
 		else if (wParam == VK_DOWN) {

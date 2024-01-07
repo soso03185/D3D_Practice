@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include <String> 
 
+#include "../Common/Helper.h"
 #include "Material.h"
 
 using namespace Microsoft::WRL;
@@ -71,11 +72,12 @@ public:
 
 public:
 	void Create(aiMesh* mesh);
-	void CreateBoneWeightVertex(aiMesh* mesh);
-	void CreateBoneWeightVertexBuffer(BoneWeightVertex* boneWV, UINT size);
-	
+	void CreateBoneWeight(aiMesh* mesh);
+	void CreateIndexBuffer(UINT* vertices, UINT vertexCount);
+
 	template<typename T>
-	void CreateVertexBuffer(T* vertices, UINT vertexCount);
+	void CreateVertexBuffer(T* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer);
+
  	void UpdateMatrixPalette(Matrix* MatrixPalettePrt);
 
 	std::vector<BoneWeightVertex>	m_BoneWeightVertices;
@@ -96,7 +98,7 @@ public:
 };
 
 template<typename T>
-inline void Mesh::CreateVertexBuffer(T* vertices, UINT vertexCount)
+inline void Mesh::CreateVertexBuffer(T* vertices, UINT vertexCount, ID3D11Buffer** vertexBuffer)
 {
 	D3D11_BUFFER_DESC bd = {};
 	bd.ByteWidth = sizeof(T) * vertexCount;
@@ -106,7 +108,7 @@ inline void Mesh::CreateVertexBuffer(T* vertices, UINT vertexCount)
 
 	D3D11_SUBRESOURCE_DATA vbData = {};
 	vbData.pSysMem = vertices;
-	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&bd, &vbData, &m_pVertexBuffer));
+	HR_T(D3DRenderManager::m_pDevice->CreateBuffer(&bd, &vbData, vertexBuffer));
 
 	// 버텍스 버퍼 정보
 	m_VertexCount = vertexCount;

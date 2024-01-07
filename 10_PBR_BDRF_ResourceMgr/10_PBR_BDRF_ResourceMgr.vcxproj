@@ -152,7 +152,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelResource.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeAnimation.h" />
     <ClInclude Include="Resource.h" />
@@ -170,7 +170,7 @@
     <ClCompile Include="D3DRenderManager.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelResource.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeAnimation.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
