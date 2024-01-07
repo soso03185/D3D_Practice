@@ -10,11 +10,11 @@
 
 namespace Math = DirectX::SimpleMath;
 
-void Node::Create(ModelResource* model, aiNode* node, Animation* anim, vector<Node>* myNodeVec)
+void Node::Create(ModelResource* model, aiNode* node, Animation* anim)
 {
 	m_Local = Math::Matrix(&node->mTransformation.a1).Transpose();
 	m_Name = node->mName.C_Str();
-	myNodeVec->push_back(*this);
+	// myNodeVec->push_back(*this);
 
 	m_MeshIndices.resize(node->mNumMeshes);
 	for (UINT i = 0; i < node->mNumMeshes; ++i)
@@ -50,7 +50,7 @@ void Node::Create(ModelResource* model, aiNode* node, Animation* anim, vector<No
 	for (UINT i = 0; i < node->mNumChildren; ++i)
 	{
 		m_Children[i].m_pParent = this;
-		m_Children[i].Create(model, node->mChildren[i], anim, myNodeVec);
+		m_Children[i].Create(model, node->mChildren[i], anim);
 	}
 }
 

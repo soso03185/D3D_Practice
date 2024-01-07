@@ -43,7 +43,8 @@ void SkeletalMeshComponent::SetSceneResource(std::shared_ptr<ModelResource> val)
 	{
 		m_MeshInstances[i].Create(&m_ModelResource->m_Meshes[i], // mesh resource		
 			m_ModelResource->GetMeshMaterial(i), //material resource 
-			); //ToDo 루트 노트 채웍...		
+			); 
+
 	}
 
 	//	m_BoundingBox.Center = Math::Vector3(m_ModelResource->m_AABBmin + m_ModelResource->m_AABBmax) * 0.5f;	// Calculate extent

@@ -28,7 +28,7 @@ public:
 	vector<Node> m_Children;	
 
 public:
-	void Create(ModelResource* model , aiNode* node, Animation* anim, vector<Node>* myNode);
+	void Create(ModelResource* model , aiNode* node, Animation* anim);
 	void Update(float deltaTime);
 
 	Node* FindNode(const std::string& name);
