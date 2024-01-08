@@ -21,8 +21,7 @@ public:
 	std::vector<Math::Matrix*>		m_BoneReferences;	// 본에 해당되는 노드MATRIX의 포인터를 저장한다.
 
 public:
-	void Create(Mesh* pMeshResource, Material* pMaterial, Node* pRootNode);
+	void Create(Mesh* pMeshResource, Node* pRootNode, Material* pMaterial);
 	virtual void Render(ID3D11DeviceContext* deviceContext);
-	void UpdateMatrixPallete(CB_MatrixPalette* pMatrixPallete);
 };
 

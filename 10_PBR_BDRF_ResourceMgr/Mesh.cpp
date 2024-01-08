@@ -53,7 +53,7 @@ void Mesh::CreateBoneWeight(aiMesh* mesh)
 {
 	m_MaterialIndex = mesh->mMaterialIndex;
 
-	// 버텍스 정보 생성	
+	// 버텍스 정보 생성
 	m_BoneWeightVertices.resize(mesh->mNumVertices);
 
 	for (UINT i = 0; i < mesh->mNumVertices; ++i)

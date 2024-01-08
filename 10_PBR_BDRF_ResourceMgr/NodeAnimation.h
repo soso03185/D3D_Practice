@@ -31,3 +31,15 @@ public:
 	// 구면 보간 함수
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);
 };
+
+// 모든 노드의 각 시간에서의 Transform
+struct AnimationResource
+{
+	string FilePath;
+	string Name;
+	float Duration = 0.0f;	// 전체 길이
+	vector<NodeAnimation> NodeAnimations;
+
+	void Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation);
+	void Create(const std::string strFBXFilePath);
+};

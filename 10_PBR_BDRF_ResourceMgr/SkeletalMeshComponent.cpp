@@ -18,7 +18,7 @@ SkeletalMeshComponent::~SkeletalMeshComponent()
 void SkeletalMeshComponent::Update(float DeltaTime)
 {
 	__super::Update(DeltaTime);
-	m_ModelResource->Update(DeltaTime);
+	m_ModelResource->m_RootNode.Update(DeltaTime);
 }
 
 bool SkeletalMeshComponent::ReadSceneResourceFromFBX(std::string filePath)
@@ -41,10 +41,11 @@ void SkeletalMeshComponent::SetSceneResource(std::shared_ptr<ModelResource> val)
 	m_MeshInstances.resize(m_ModelResource->m_Meshes.size());
 	for (UINT i = 0; i < m_ModelResource->m_Meshes.size(); i++)
 	{
-		m_MeshInstances[i].Create(&m_ModelResource->m_Meshes[i], // mesh resource		
-			m_ModelResource->GetMeshMaterial(i), //material resource 
+		m_MeshInstances[i].Create(
+			&m_ModelResource->m_Meshes[i], // mesh resource
+			&m_ModelResource->m_RootNode,
+ 			m_ModelResource->GetMeshMaterial(i)
 			); 
-
 	}
 
 	//	m_BoundingBox.Center = Math::Vector3(m_ModelResource->m_AABBmin + m_ModelResource->m_AABBmax) * 0.5f;	// Calculate extent

@@ -37,7 +37,7 @@ void TutorialApp::Update()
 	__super::Update();
 
 	float t = GameTimer::m_Instance->TotalTime() / 4;
-	m_Renderer.Update(   );
+	m_Renderer.Update();
 }
 
 void TutorialApp::Render()

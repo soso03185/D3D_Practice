@@ -16,7 +16,6 @@ ModelResource::~ModelResource()
 // 그냥 띄우기만 하는 거에서 Static Mesh Model 에는 사용되지 않음 
 void ModelResource::Update(float deltaTime)
 {
-	m_RootNode.Update(deltaTime);
 }
 
 bool ModelResource::ReadFile(std::string filePath, ModelType modelType)

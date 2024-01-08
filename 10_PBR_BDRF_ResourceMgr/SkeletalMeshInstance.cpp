@@ -12,21 +12,7 @@ SkeletalMeshInstance::~SkeletalMeshInstance()
 
 }
 
-void SkeletalMeshInstance::UpdateMatrixPallete(CB_MatrixPalette* pMatrixPallete)
-{
-	assert(m_BoneReferences.size() == m_pMeshResource->m_BoneReferences.size());
-	size_t meshBoneCount = m_pMeshResource->m_BoneReferences.size();	// 메쉬와 연결된 본개수
-	for (size_t i = 0; i < meshBoneCount; ++i)
-	{
-		Math::Matrix& BoneNodeWorldMatrix = *m_BoneReferences[i];
-		// HLSL 상수버퍼에 업데이트할때 바로 복사할수있도록 전치해서 저장한다.
-
-		BoneReference& br = m_pMeshResource->m_BoneReferences[i];
-		pMatrixPallete->Array[br.BoneIndex] = (br.OffsetMatrix * BoneNodeWorldMatrix).Transpose();
-	}
-}
-
-void SkeletalMeshInstance::Create(Mesh* pMeshResource, Material* pMaterial, Node* pRootNode)
+void SkeletalMeshInstance::Create(Mesh* pMeshResource, Node* pRootNode, Material* pMaterial)
 {
 	m_pMeshResource = pMeshResource;
 	m_pMaterial = pMaterial;

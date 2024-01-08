@@ -381,7 +381,7 @@ void D3DRenderManager::CreateStaticMesh_VS_IL()
 	};
 
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", defines, "main", "vs_5_0", &vertexShaderBuffer));
+	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer, defines));
 	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
 		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pStaticInputLayout));
 
@@ -415,7 +415,7 @@ void D3DRenderManager::CreateSkeletalMesh_VS_IL()
 
 	// 4. Render() 에서 파이프라인에 바인딩할 인덱스 버퍼 생성
 	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", defines, "main", "vs_5_0", &vertexShaderBuffer));
+	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer, defines));
 	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
 		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pSkeletalInputLayout));
 
@@ -429,8 +429,8 @@ void D3DRenderManager::CreatePs()
 {
 	// 5. Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
 	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
-//	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", nullptr, "main", "ps_5_0", &pixelShaderBuffer));
-	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", nullptr, "main", "ps_5_0", &pixelShaderBuffer));
+//	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
+	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
 	HR_T(m_pDevice->CreatePixelShader(
 		pixelShaderBuffer->GetBufferPointer(),
 		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
@@ -643,10 +643,14 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 
 		ConstantBuffUpdate();
 
+		//CB_TransformBuffer CB_Transform;
+		//CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(*meshInstance->m_pMeshResource->m_pNodeWorld);
+
+		//? Skeletal Mesh
 		CB_MatrixPalette CB_MatPalatte;
 		meshInstance->m_pMeshResource->UpdateMatrixPalette(CB_MatPalatte.Array);
 		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
-
+		 
 		//? Skeletal Mesh
 		//  행렬팔레트 업데이트						
 		// meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
