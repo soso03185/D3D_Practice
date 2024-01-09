@@ -43,3 +43,11 @@ Math::Quaternion NodeAnimation::SphericalInterpolation(const Math::Quaternion& s
 
 	return result;
 }
+
+void AnimationResource::Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation)
+{
+}
+
+void AnimationResource::Create(const std::string strFBXFilePath)
+{
+}

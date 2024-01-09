@@ -47,6 +47,7 @@
     <ClCompile Include="SkeletalMeshComponent.cpp">
       <Filter>SkeletalMesh</Filter>
     </ClCompile>
+    <ClCompile Include="SkeletonResource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -92,6 +93,7 @@
     <ClInclude Include="SkeletalMeshComponent.h">
       <Filter>SkeletalMesh</Filter>
     </ClInclude>
+    <ClInclude Include="SkeletonResource.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">

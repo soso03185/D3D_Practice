@@ -16,11 +16,9 @@ void Node::Create(ModelResource* model, aiNode* node, Animation* anim)
 	m_Name = node->mName.C_Str();
 	// myNodeVec->push_back(*this);
 
-	m_MeshIndices.resize(node->mNumMeshes);
 	for (UINT i = 0; i < node->mNumMeshes; ++i)
 	{
 		UINT meshIndex = node->mMeshes[i];
-		m_MeshIndices[i] = meshIndex;
 
 		// Mesh와 Node의 WorldMatrix를 연결한다.
 		 model->m_Meshes[meshIndex].m_pNodeWorld = &m_World; 

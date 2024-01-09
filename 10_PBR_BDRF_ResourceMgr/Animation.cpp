@@ -1,7 +1,9 @@
 #include "Animation.h"
-#include <assimp\anim.h>
 #include "Node.h"
+
+#include <assimp\anim.h>
 #include <algorithm>
+
 namespace Math = DirectX::SimpleMath;
 
 void Animation::Create(aiAnimation* aiAnim)

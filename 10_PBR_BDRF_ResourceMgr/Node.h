@@ -21,11 +21,10 @@ public:
 	Matrix m_World;
 	std::string m_Name;
 
+	vector<Node> m_Children;	
 	NodeAnimation* m_pNodeAnimation = nullptr;
 	Node* m_pParent = nullptr;
 
-	vector<UINT> m_MeshIndices;
-	vector<Node> m_Children;	
 
 public:
 	void Create(ModelResource* model , aiNode* node, Animation* anim);
