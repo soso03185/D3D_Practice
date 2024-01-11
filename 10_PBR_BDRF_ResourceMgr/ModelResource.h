@@ -1,9 +1,9 @@
 #pragma once
 
+#include "NodeAnimation.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Node.h"
-#include "Animation.h"
 
 struct aiScene;
 

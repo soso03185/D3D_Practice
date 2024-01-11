@@ -1,6 +1,6 @@
 #include "Node.h"
 #include "ModelResource.h"
-#include "Animation.h"
+#include "NodeAnimation.h"
 #include "TutorialApp.h"
 #include "../Common/Helper.h"
 

@@ -6,8 +6,8 @@
 #include <string>
 
 class Animation;
+class NodeAnimation;
 struct ModelResource;
-struct NodeAnimation;
 struct aiNode;
 
 using namespace DirectX::SimpleMath;

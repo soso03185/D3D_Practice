@@ -13,6 +13,11 @@
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
 ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
 
+// ModelResource -> 모뎰의 실질적인 데이터 덩어리
+// MeshInstance  -> 렌더를 하기 위한 각 메쉬의 정보들
+// MeshComponent -> 데이터를 들고 있는 껍데기
+
+
 D3DRenderManager::D3DRenderManager()
 {
 	assert(Instance == nullptr);
@@ -650,11 +655,6 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 		CB_MatrixPalette CB_MatPalatte;
 		meshInstance->m_pMeshResource->UpdateMatrixPalette(CB_MatPalatte.Array);
 		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
-		 
-		//? Skeletal Mesh
-		//  행렬팔레트 업데이트						
-		// meshInstance->UpdateMatrixPallete(&m_MatrixPalette);
-		// m_cbMatrixPallete.SetData(m_pDeviceContext, m_MatrixPalette);
 
 		// Draw
 		meshInstance->Render(m_pDeviceContext);

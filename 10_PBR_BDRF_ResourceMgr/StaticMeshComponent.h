@@ -32,4 +32,3 @@ public:
 	virtual void OnBeginPlay();
 	virtual void OnEndPlay();
 };
-

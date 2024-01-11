@@ -6,7 +6,7 @@
 
 class MaterialTexture;
 class SkeletalMeshSceneResource;
-class AnimationResource;
+class Animation;
 
 class ResourceManager
 {
@@ -19,11 +19,11 @@ public:
 	std::map<std::wstring, std::weak_ptr<MaterialTexture>> m_MaterialTextureMap;
 	std::map<std::string, std::weak_ptr<ModelResource>> m_StaticModelMap;
 	std::map<std::string, std::weak_ptr<ModelResource>> m_SkeletalModelMap;
-	std::map<std::string, std::weak_ptr<AnimationResource>> m_AnimationMap;	// Animation
+	std::map<std::string, std::weak_ptr<Animation>> m_AnimationMap;	// Animation
 
 
 	std::shared_ptr<MaterialTexture> CreateMaterialTexture(std::wstring filePath);
 	std::shared_ptr<ModelResource> CreateModelResource(std::string filePath, ModelType modelType);
-	std::shared_ptr<AnimationResource> CreateAnimationResource(std::string filePath);
+	std::shared_ptr<Animation> CreateAnimationResource(std::string filePath);
 
 };

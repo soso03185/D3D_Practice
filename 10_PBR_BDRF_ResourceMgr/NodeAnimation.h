@@ -33,14 +33,35 @@ public:
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);
 };
 
-// 모든 노드의 각 시간에서의 Transform
-struct AnimationResource
+class Animation
 {
+public:
+	Animation() {};
+	~Animation() {};
+
+	void Create(aiAnimation* aiAnim);
+	void Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation) {};
+	void Create(const std::string strFBXFilePath) {};
+
+public:
+	std::vector<NodeAnimation> m_NodeAnims = {};
 	std::string FilePath;
 	std::string Name;
-	float Duration = 0.0f;	// 전체 길이
-	std::vector<NodeAnimation> NodeAnimations;
 
-	void Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation);
-	void Create(const std::string strFBXFilePath);
+	double m_Duration = 0;
+	double m_TicksPerSecond = 0;
 };
+
+// Animation
+// 하나의 애니메이션 클립 
+// 
+// NodeAnimation
+// 애니메이션 클립 내에서 모델의 특정 뼈에 대한 애니메이션
+// 
+// AnimationKey
+// 애니메이션 클립 내에서 뼈의 변환 정보를 저장하고 관리
+//
+// mChannels 
+// 모델의 뼈에 대한 애니메이션 동작 정보
+//
+//
