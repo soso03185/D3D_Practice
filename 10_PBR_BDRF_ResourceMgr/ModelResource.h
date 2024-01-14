@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Node.h"
+#include "SkeletonResource.h"
 
 struct aiScene;
 
@@ -23,10 +24,11 @@ public:
 	Node m_RootNode;
 	vector<Mesh> m_Meshes;
 	vector<Material> m_Materials;
+	SkeletonResource m_Skeleton;
+
 	Animation m_Animation;
 
 public:
-	void Update(float deltaTime);
 	bool ReadFile(std::string filePath, ModelType modelType);
 	Material* GetMeshMaterial(UINT index);
 };

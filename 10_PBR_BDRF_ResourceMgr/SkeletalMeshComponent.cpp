@@ -1,7 +1,7 @@
+#include "ResourceManager.h"
+#include "D3DRenderManager.h"
 #include "SkeletalMeshComponent.h"
 #include "SkeletalMeshInstance.h"
-#include "D3DRenderManager.h"
-#include "ResourceManager.h"
 #include "ModelResource.h"
 
 SkeletalMeshComponent::SkeletalMeshComponent()
@@ -23,7 +23,7 @@ void SkeletalMeshComponent::Update(float DeltaTime)
 
 bool SkeletalMeshComponent::ReadSceneResourceFromFBX(std::string filePath)
 {
-	// FBX 파일 읽기
+	 //FBX 파일 읽기
 	std::shared_ptr<ModelResource> sceneResource = ResourceManager::Instance->CreateModelResource(filePath, ModelType::SKELETAL);
 	if (sceneResource == nullptr)
 	{
@@ -43,7 +43,8 @@ void SkeletalMeshComponent::SetSceneResource(std::shared_ptr<ModelResource> val)
 	{
 		m_MeshInstances[i].Create(
 			&m_ModelResource->m_Meshes[i], // mesh resource
-			&m_ModelResource->m_RootNode,
+			//&m_ModelResource->m_RootNode,
+			&m_RootNode,
  			m_ModelResource->GetMeshMaterial(i)
 			); 
 	}

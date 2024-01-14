@@ -14,7 +14,6 @@ void Node::Create(ModelResource* model, aiNode* node, Animation* anim)
 {
 	m_Local = Math::Matrix(&node->mTransformation.a1).Transpose();
 	m_Name = node->mName.C_Str();
-	// myNodeVec->push_back(*this);
 
 	for (UINT i = 0; i < node->mNumMeshes; ++i)
 	{

@@ -5,7 +5,6 @@
 #include "ModelResource.h"
 
 class MaterialTexture;
-class SkeletalMeshSceneResource;
 class Animation;
 
 class ResourceManager
