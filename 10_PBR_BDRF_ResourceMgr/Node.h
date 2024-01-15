@@ -2,6 +2,7 @@
 #include "../Common/Helper.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "Transform.h"
 
 #include <string>
 
@@ -14,21 +15,18 @@ using namespace DirectX::SimpleMath;
 using namespace DirectX;
 namespace Math = DirectX::SimpleMath;
 
-class Node
+class Node : public Transform
 {
 public:
-	Matrix m_Local;
-	Matrix m_World;
-	std::string m_Name;
-
 	vector<Node> m_Children;	
 	NodeAnimation* m_pNodeAnimation = nullptr;
-	Node* m_pParent = nullptr;
-
+	float* m_pAnimationTime = nullptr;	// 현재 노드가 애니메이션에서 어느 시간에 있는지
 
 public:
 	void Create(ModelResource* model , aiNode* node, Animation* anim);
 	void Update(float deltaTime);
+	void SetParent(Transform* pParent) { m_pParent = pParent; };
 
 	Node* FindNode(const std::string& name);
+	Node& CreateChild();
 };

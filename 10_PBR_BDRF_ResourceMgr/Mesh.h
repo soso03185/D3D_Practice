@@ -11,6 +11,8 @@ using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
 using namespace std;
 
+class SkeletonResource;
+
 struct Vertex
 {
 	Vector4 Position;    // 정점 위치 정보
@@ -72,7 +74,7 @@ public:
 
 public:
 	void Create(aiMesh* mesh);
-	void CreateBoneWeight(aiMesh* mesh);
+	void CreateBoneWeight(aiMesh* mesh, SkeletonResource* skeleton);
 	void CreateIndexBuffer(UINT* vertices, UINT vertexCount);
 
 	template<typename T>

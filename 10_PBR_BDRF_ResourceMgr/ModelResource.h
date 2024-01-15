@@ -26,7 +26,7 @@ public:
 	vector<Material> m_Materials;
 	SkeletonResource m_Skeleton;
 
-	Animation m_Animation;
+	std::vector<std::shared_ptr<Animation>> m_Animations;
 
 public:
 	bool ReadFile(std::string filePath, ModelType modelType);

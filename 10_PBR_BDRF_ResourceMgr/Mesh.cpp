@@ -2,9 +2,10 @@
 #include <assimp\mesh.h>
 #include <map>
 
-#include "Mesh.h"
 #include "D3DRenderManager.h"
 #include "..\Common\Helper.h"
+#include "Mesh.h"
+#include "SkeletonResource.h"
 
 using namespace DirectX;
 
@@ -49,7 +50,7 @@ void Mesh::Create(aiMesh* mesh)
 	CreateIndexBuffer(indices.get(), mesh->mNumFaces * 3);
 }
 
-void Mesh::CreateBoneWeight(aiMesh* mesh)
+void Mesh::CreateBoneWeight(aiMesh* mesh, SkeletonResource* skeleton)
 {
 	m_MaterialIndex = mesh->mMaterialIndex;
 
@@ -73,30 +74,23 @@ void Mesh::CreateBoneWeight(aiMesh* mesh)
 
 	for (UINT i = 0; i < meshBoneCount; ++i)
 	{
-		aiBone* bone = mesh->mBones[i];
-		std::string boneName = bone->mName.C_Str();
+		aiBone* pAiBone = mesh->mBones[i];
 
-		UINT boneIndex = 0;
+		// 스켈레톤에서 본정보를 찾는다.
+		UINT boneIndex = skeleton->GetBoneIndexByBoneName(pAiBone->mName.C_Str());
+		assert(boneIndex != -1);
+		BoneInfo* pBone = skeleton->GetBone(boneIndex);
+		assert(pBone != nullptr);
 
-		// 매핑이 아직 안돼있다면,
-		if (BoneMapping.find(boneName) == BoneMapping.end())
-		{
-			// Map bone name to bone Index
-			boneIndex = boneIndexCounter;
-			boneIndexCounter++;
-
-			m_BoneReferences[boneIndex].NodeName = boneName;
-			m_BoneReferences[boneIndex].OffsetMatrix = Matrix(&bone->mOffsetMatrix.a1).Transpose();
-			BoneMapping[boneName] = boneIndex;
-		}
-		else
-			boneIndex = BoneMapping[boneName];
+		m_BoneReferences[i].NodeName = pAiBone->mName.C_Str();
+		m_BoneReferences[i].BoneIndex = boneIndex;
+		m_BoneReferences[i].OffsetMatrix = Math::Matrix(&pAiBone->mOffsetMatrix.a1).Transpose();
 
 		// 본과 연결된 버텍스들을 처리
-		for (UINT j = 0; j < bone->mNumWeights; ++j)
+		for (UINT j = 0; j < pAiBone->mNumWeights; ++j)
 		{
-			UINT vertexID = bone->mWeights[j].mVertexId;
-			float weight = bone->mWeights[j].mWeight;
+			UINT vertexID = pAiBone->mWeights[j].mVertexId;
+			float weight = pAiBone->mWeights[j].mWeight;
 			m_BoneWeightVertices[vertexID].AddBoneData(boneIndex, weight);
 		}
 	}

@@ -31,6 +31,8 @@ public:
 
 	// 구면 보간 함수
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);
+
+	void Create(aiNodeAnim* nodeAnimation, double tickPerSecond);
 };
 
 class Animation
@@ -40,11 +42,11 @@ public:
 	~Animation() {};
 
 	void Create(aiAnimation* aiAnim);
-	void Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation) {};
-	void Create(const std::string strFBXFilePath) {};
+	void Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation);
+	void Create(const std::string strFBXFilePath);
 
 public:
-	std::vector<NodeAnimation> m_NodeAnims = {};
+	std::vector<NodeAnimation> m_NodeAnims;
 	std::string FilePath;
 	std::string Name;
 

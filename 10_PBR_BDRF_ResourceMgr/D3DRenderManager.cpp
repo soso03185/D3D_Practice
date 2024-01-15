@@ -150,12 +150,15 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	// 8. FBX Load	
 	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
+	newModel->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
 
 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
+
+	newModel->PlayAnimation(0);
 }
 
 void D3DRenderManager::DecreaseModel()
@@ -648,14 +651,11 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 
 		ConstantBuffUpdate();
 
-		//CB_TransformBuffer CB_Transform;
-		//CB_Transform.mWorld = XMMatrixTranspose(m_World) * XMMatrixTranspose(*meshInstance->m_pMeshResource->m_pNodeWorld);
-
 		//? Skeletal Mesh
 		CB_MatrixPalette CB_MatPalatte;
-		meshInstance->m_pMeshResource->UpdateMatrixPalette(CB_MatPalatte.Array);
+		meshInstance->UpdateMatrixPallete(CB_MatPalatte.Array);
 		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
-
+		 
 		// Draw
 		meshInstance->Render(m_pDeviceContext);
 	}

@@ -46,25 +46,28 @@ bool ModelResource::ReadFile(std::string filePath, ModelType modelType)
 		m_Materials[i].Create(fbxModel->mMaterials[i]);
 	}
 
-	// 각 애니메이션 벡터에 애니메이션 클립 생성하고 그 안에서 정보들 바인딩
-	// ToDo 어떤 애니메이션을 플레이 하는지 비교해야함.
-	for (int i = 0; i < fbxModel->mNumAnimations; i++)
-	{
-		if (fbxModel->mAnimations[i] != nullptr)
-			m_Animation.Create(fbxModel->mAnimations[i]);
-	}
-
 	// vertex , index 정보 바인딩
 	for (int i = 0; i < fbxModel->mNumMeshes; i++)
 	{
 		if (modelType == ModelType::STATIC)
 			m_Meshes[i].Create(fbxModel->mMeshes[i]);
 		else if (modelType == ModelType::SKELETAL)
-			m_Meshes[i].CreateBoneWeight(fbxModel->mMeshes[i]);
+			m_Meshes[i].CreateBoneWeight(fbxModel->mMeshes[i], &m_Skeleton);
 	}
 
-	// 노드 순회 하면서 바인딩
-	m_RootNode.Create(this, fbxModel->mRootNode, &m_Animation);
+	// SceneResource의 기본 애니메이션 추가한다.
+	assert(fbxModel->mNumAnimations < 2); // 애니메이션은 없거나 1개여야한다. 
+	// 노드의 애니메이션을 하나로 합치는 방법은 FBX export에서 NLA스트립,모든 액션 옵션을 끕니다.
+	if (fbxModel->HasAnimations())
+	{
+		const aiAnimation* pAiAnimation = fbxModel->mAnimations[0];
+		// 채널수는 aiAnimation 안에서 애니메이션 정보를  표현하는 aiNode의 개수이다.
+		assert(pAiAnimation->mNumChannels > 1); // 애니메이션이 있다면 aiNode 는 하나 이상 있어야한다.
+
+		shared_ptr<Animation> anim = make_shared<Animation>();
+		anim->Create(filePath, pAiAnimation);
+		m_Animations.push_back(anim);
+	}
 
 	importer.FreeScene();
 	return true;

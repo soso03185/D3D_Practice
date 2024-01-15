@@ -1,6 +1,7 @@
 #pragma once
 #include "../Common/Helper.h"
 
+using namespace DirectX::SimpleMath;
 namespace Math = DirectX::SimpleMath;
 
 class Mesh;
@@ -22,6 +23,7 @@ public:
 
 public:
 	void Create(Mesh* pMeshResource, Node* pRootNode, Material* pMaterial);
+	void UpdateMatrixPallete(Math::Matrix* MatrixPalettePtr);
 	virtual void Render(ID3D11DeviceContext* deviceContext);
 };
 

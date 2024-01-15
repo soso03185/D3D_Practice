@@ -63,7 +63,7 @@ void Node::Update(float deltaTime)
 		m_Local = Math::Matrix::CreateScale(scaling) *
 			Math::Matrix::CreateFromQuaternion(rotation) *
 			Math::Matrix::CreateTranslation(position);
-	}
+	}	
 
 	if (m_pParent != nullptr)
 		m_World = m_Local * m_pParent->m_World;
@@ -90,3 +90,9 @@ Node* Node::FindNode(const std::string& name)
 
 	return nullptr;
 }
+
+Node& Node::CreateChild()
+{
+	return m_Children.emplace_back();
+}
+
