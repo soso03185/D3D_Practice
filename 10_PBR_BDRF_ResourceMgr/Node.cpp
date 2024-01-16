@@ -58,7 +58,7 @@ void Node::Update(float deltaTime)
 		Math::Vector3 position, scaling;
 		Math::Quaternion rotation;
 
-		m_pNodeAnimation->Evaluate(deltaTime, position, rotation, scaling);
+		m_pNodeAnimation->Evaluate(*m_pAnimationTime, position, rotation, scaling);
 
 		m_Local = Math::Matrix::CreateScale(scaling) *
 			Math::Matrix::CreateFromQuaternion(rotation) *

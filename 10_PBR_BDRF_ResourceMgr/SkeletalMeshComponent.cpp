@@ -21,8 +21,8 @@ void SkeletalMeshComponent::Update(float DeltaTime)
 
 	if (!m_ModelResource->m_Animations.empty())
 	{
-		m_AnimationProressTime += DeltaTime;
-		m_AnimationProressTime = (float)fmod(m_AnimationProressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
+		m_AnimationProgressTime += DeltaTime;
+		m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
 
 	}
 
@@ -57,14 +57,6 @@ void SkeletalMeshComponent::SetSceneResource(std::shared_ptr<ModelResource> val)
 		m_MeshInstances[i].Create(meshResource, &m_RootNode, material); 
 	}
 	UpdateBoneAnimationReference(0);	// 각 노드의 애니메이션 정보참조 연결	
-	//for (UINT i = 0; i < m_ModelResource->m_Meshes.size(); i++)
-	//{
-	//m_MeshInstances[i].Create(
-	//	&m_ModelResource->m_Meshes[i], // mesh resource
-	//	&m_ModelResource->m_RootNode,
-	//	m_ModelResource->GetMeshMaterial(i)
-	//);
-	//}
 	
 	//	m_BoundingBox.Center = Math::Vector3(m_ModelResource->m_AABBmin + m_ModelResource->m_AABBmax) * 0.5f;	// Calculate extent
 	//	m_BoundingBox.Extents = Math::Vector3(m_ModelResource->m_AABBmax - m_ModelResource->m_AABBmin);	// Calculate extent
@@ -87,7 +79,7 @@ void SkeletalMeshComponent::PlayAnimation(UINT index)
 {
 	assert(index < m_ModelResource->m_Animations.size());
 	m_AnimationIndex = index;
-	m_AnimationProressTime = 0.0f;
+	m_AnimationProgressTime = 0.0f;
 	UpdateBoneAnimationReference(index);
 }
 
@@ -115,7 +107,7 @@ void SkeletalMeshComponent::CreateHierachy(SkeletonResource* skeleton)
 		ChildBone.m_Local = pBoneInfo->RelativeTransform;
 		ChildBone.m_Children.reserve(pBoneInfo->NumChildren);
 		ChildBone.m_pParent = pParentBone;
-		ChildBone.m_pAnimationTime = &m_AnimationProressTime;
+		ChildBone.m_pAnimationTime = &m_AnimationProgressTime;
 	}
 }
 

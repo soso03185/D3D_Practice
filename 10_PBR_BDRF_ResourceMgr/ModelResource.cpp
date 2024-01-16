@@ -34,19 +34,19 @@ bool ModelResource::ReadFile(std::string filePath, ModelType modelType)
 		return false;
 	}
 
+
 	if (modelType == ModelType::SKELETAL)
 		m_Skeleton.Create(fbxModel);
 
-	m_Meshes.resize(fbxModel->mNumMeshes);
-	m_Materials.resize(fbxModel->mNumMaterials);
-
 	// fbx에 적용된 맵(텍스쳐) 들을 가져오는 과정.
+	m_Materials.resize(fbxModel->mNumMaterials);
 	for (int i = 0; i < fbxModel->mNumMaterials; i++)
 	{
 		m_Materials[i].Create(fbxModel->mMaterials[i]);
 	}
 
 	// vertex , index 정보 바인딩
+	m_Meshes.resize(fbxModel->mNumMeshes);
 	for (int i = 0; i < fbxModel->mNumMeshes; i++)
 	{
 		if (modelType == ModelType::STATIC)
@@ -54,6 +54,7 @@ bool ModelResource::ReadFile(std::string filePath, ModelType modelType)
 		else if (modelType == ModelType::SKELETAL)
 			m_Meshes[i].CreateBoneWeight(fbxModel->mMeshes[i], &m_Skeleton);
 	}
+
 
 	// SceneResource의 기본 애니메이션 추가한다.
 	assert(fbxModel->mNumAnimations < 2); // 애니메이션은 없거나 1개여야한다. 

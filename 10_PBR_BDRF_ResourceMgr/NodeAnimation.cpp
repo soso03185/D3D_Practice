@@ -10,7 +10,7 @@
 void NodeAnimation::Evaluate(float progressTime, Math::Vector3& position, Math::Quaternion& rotation, Math::Vector3& scaling)
 {
 	assert(m_AnimationKey.size() > 0);
-	durationTime += progressTime;
+	durationTime = progressTime;
 
 	if (m_AnimationKey.size() == 1)
 	{
@@ -19,28 +19,35 @@ void NodeAnimation::Evaluate(float progressTime, Math::Vector3& position, Math::
 		scaling = m_AnimationKey[0].m_Scaling;
 	}
 	else
-	{
-		if (frameIndex + 1 >= m_AnimationKey.size())
+	{	
+		size_t i = 0;
+		for (i = 0; i < m_AnimationKey.size(); i++)
 		{
-			frameIndex = 0;
-			durationTime = 0;
+			if (m_AnimationKey[i].m_Time > progressTime)
+			{
+				break;
+			}
 		}
 
-		// 현재와 다음 키프레임
-		const AnimationKey& currentKey = m_AnimationKey[frameIndex];
-		const AnimationKey& nextKey = m_AnimationKey[frameIndex + 1];
-
-		if (durationTime > nextKey.m_Time)
+		if (i == 0)
 		{
-			frameIndex++;
+			position = m_AnimationKey[i].m_Position;
+			rotation = m_AnimationKey[i].m_Rotation;
+			scaling = m_AnimationKey[i].m_Scaling;
 		}
-
-		float factor = (durationTime - currentKey.m_Time) / (nextKey.m_Time - currentKey.m_Time);
-
-		// 선형 보간 적용
-		position = Math::Vector3::Lerp(currentKey.m_Position, nextKey.m_Position, factor);
-		rotation = SphericalInterpolation(currentKey.m_Rotation, nextKey.m_Rotation, factor);
-		scaling = Math::Vector3::Lerp(currentKey.m_Scaling, nextKey.m_Scaling, factor);
+		else if (i == m_AnimationKey.size())
+		{
+			position = m_AnimationKey[i - 1].m_Position;
+			rotation = m_AnimationKey[i - 1].m_Rotation;
+			scaling = m_AnimationKey[i - 1].m_Scaling;
+		}
+		else
+		{
+			float t = (progressTime - m_AnimationKey[i - 1].m_Time) / (m_AnimationKey[i].m_Time - m_AnimationKey[i - 1].m_Time);
+			position = Math::Vector3::Lerp(m_AnimationKey[i - 1].m_Position, m_AnimationKey[i].m_Position, t);
+			rotation = Math::Quaternion::Slerp(m_AnimationKey[i - 1].m_Rotation, m_AnimationKey[i].m_Rotation, t);
+			scaling = Math::Vector3::Lerp(m_AnimationKey[i - 1].m_Scaling, m_AnimationKey[i].m_Scaling, t);
+		}
 	}
 }
 
@@ -64,6 +71,8 @@ void NodeAnimation::Create(aiNodeAnim* nodeAnimation, double tickPerSecond)
 	assert(nodeAnimation->mNumPositionKeys == nodeAnimation->mNumRotationKeys);
 	assert(nodeAnimation->mNumRotationKeys == nodeAnimation->mNumScalingKeys);
 
+	/// 이 공간은 하나의 독립된 애니메이션 ///	
+
 	m_NodeName = nodeAnimation->mNodeName.C_Str();
 	//LOG_MESSAGEA(NodeName.c_str());
 	size_t numkeys = nodeAnimation->mNumPositionKeys;
@@ -83,56 +92,11 @@ void NodeAnimation::Create(aiNodeAnim* nodeAnimation, double tickPerSecond)
 		m_AnimationKey[i].m_Rotation = { rot.mValue.x,rot.mValue.y,rot.mValue.z, rot.mValue.w };
 		m_AnimationKey[i].m_Scaling = { scl.mValue.x,scl.mValue.y,scl.mValue.z };
 	}
-}
 
-//void Animation::Create(aiAnimation* aiAnim)
-//{
-//	/// 이 공간은 하나의 독립된 애니메이션 ///	
-//
-//	m_Duration = aiAnim->mDuration;
-//	m_TicksPerSecond = aiAnim->mTicksPerSecond;
-//
-//	m_NodeAnims.resize(aiAnim->mNumChannels);
-//
-//	for (int i = 0; i < aiAnim->mNumChannels; i++)
-//	{
-//		m_NodeAnims[i].m_NodeName = aiAnim->mChannels[i]->mNodeName.C_Str();
-//
-//		// Position , Rotation , Scale
-//		for (int j = 0; j < aiAnim->mChannels[i]->mNumPositionKeys; j++)
-//		{
-//			AnimationKey animKey;
-//
-//			Math::Vector3 position = Math::Vector3(
-//				aiAnim->mChannels[i]->mPositionKeys[j].mValue.x,
-//				aiAnim->mChannels[i]->mPositionKeys[j].mValue.y,
-//				aiAnim->mChannels[i]->mPositionKeys[j].mValue.z
-//			);
-//			Math::Quaternion rotation = Math::Quaternion(
-//				aiAnim->mChannels[i]->mRotationKeys[j].mValue.x,
-//				aiAnim->mChannels[i]->mRotationKeys[j].mValue.y,
-//				aiAnim->mChannels[i]->mRotationKeys[j].mValue.z,
-//				aiAnim->mChannels[i]->mRotationKeys[j].mValue.w
-//			);
-//			Math::Vector3 scaling = Math::Vector3(
-//				aiAnim->mChannels[i]->mScalingKeys[j].mValue.x,
-//				aiAnim->mChannels[i]->mScalingKeys[j].mValue.y,
-//				aiAnim->mChannels[i]->mScalingKeys[j].mValue.z
-//			);
-//
-//			//			aiNodeAnim 의 변수 중에..
-//			//			aiAnimBehaviour mPreState;     // 키프레임 직전 상태 동작
-//			//			aiAnimBehaviour mPostState;    // 키프레임 직후 상태 동작
-//
-//			animKey.m_Time = aiAnim->mChannels[i]->mPositionKeys[j].mTime / aiAnim->mTicksPerSecond;
-//			animKey.m_Rotation = rotation;
-//			animKey.m_Position = position;
-//			animKey.m_Scaling = scaling;
-//
-//			m_NodeAnims[i].m_AnimationKey.push_back(animKey);
-//		}
-//	}
-//}
+	//			aiNodeAnim 의 변수 중에..
+	//			aiAnimBehaviour mPreState;     // 키프레임 직전 상태 동작
+	//			aiAnimBehaviour mPostState;    // 키프레임 직후 상태 동작
+}
 
 // ModelResource와 아래의 Create()로부터 호출
 void Animation::Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation)
@@ -146,8 +110,6 @@ void Animation::Create(const std::string strFBXFilePath, const aiAnimation* pAiA
 	{
 		aiNodeAnim* pAiNodeAnim = pAiAnimation->mChannels[iChannel];
 		NodeAnimation& refNodeAnim = m_NodeAnims[iChannel];
-		
-		//ToDo 아직 함수 안만들었음.
 		refNodeAnim.Create(pAiNodeAnim, pAiAnimation->mTicksPerSecond);
 	}
 }

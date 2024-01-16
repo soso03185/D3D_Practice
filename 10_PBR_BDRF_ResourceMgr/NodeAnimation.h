@@ -41,7 +41,6 @@ public:
 	Animation() {};
 	~Animation() {};
 
-	void Create(aiAnimation* aiAnim);
 	void Create(const std::string strFBXFilePath, const aiAnimation* pAiAnimation);
 	void Create(const std::string strFBXFilePath);
 

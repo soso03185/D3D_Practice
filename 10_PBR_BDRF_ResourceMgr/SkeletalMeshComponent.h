@@ -19,7 +19,7 @@ public:
 public:
 	Node m_RootNode;
 	UINT  m_AnimationIndex = 0;
-	float m_AnimationProressTime = 0.0f;
+	float m_AnimationProgressTime = 0.0f;
 
 	std::shared_ptr<ModelResource>  m_ModelResource;
 	std::vector<SkeletalMeshInstance> m_MeshInstances;
