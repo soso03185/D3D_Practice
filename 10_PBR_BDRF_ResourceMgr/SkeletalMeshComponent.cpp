@@ -23,7 +23,6 @@ void SkeletalMeshComponent::Update(float DeltaTime)
 	{
 		m_AnimationProgressTime += DeltaTime;
 		m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
-
 	}
 
 	m_RootNode.Update(DeltaTime);

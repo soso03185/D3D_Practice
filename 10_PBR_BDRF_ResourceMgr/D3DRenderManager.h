@@ -4,7 +4,9 @@
 #include <DirectXtk/BufferHelpers.h>
 #include <directxtk/SimpleMath.h>
 #include <string>
+#include <dxgi1_4.h>
 
+using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
 using namespace DirectX;
 namespace Math = DirectX::SimpleMath;
@@ -29,9 +31,12 @@ struct CB_BoolBuffer
 	int UseRoughnessMap;
 };
 
-struct CB_TransformBuffer
+struct CB_TransformW
 {
 	Matrix mWorld;
+};
+struct CB_TransformVP
+{
 	Matrix mView;
 	Matrix mProjection;
 };
@@ -77,9 +82,7 @@ public:
 
 
 	void Uninitialize();
-	void CreateStaticMesh_VS_IL();
-	void CreateSkeletalMesh_VS_IL();
-	void CreatePs();
+	void CreateVS_IL();
 
 	//  Loop   //
 	void Update();
@@ -97,6 +100,9 @@ public:
 	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
 
+	void GetVideoMemoryInfo(std::string& out);
+	void GetSystemMemoryInfo(std::string& out);
+
 public:
 	// Public Data //
 	UINT m_ClientWidth;
@@ -107,6 +113,20 @@ public:
 	static ID3D11Device* m_pDevice;					 // 디바이스
 	ID3D11DeviceContext* m_pDeviceContext = nullptr; // 즉시 디바이스 컨텍스트
 
+	ComPtr<IDXGIFactory4> m_pDXGIFactory;		// DXGI팩토리
+	ComPtr<IDXGIAdapter3> m_pDXGIAdapter;		// 비디오카드 정보에 접근 가능한 인터페이스
+
+
+	///   CB Data   ///
+	ID3D11Buffer* m_pConstantBuffer = nullptr;		// 상수 버퍼.
+	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.
+	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
+	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
+	ID3D11Buffer* m_pTransformW_Buffer = nullptr;		// 상수 버퍼.
+	ID3D11Buffer* m_pTransformVP_Buffer = nullptr;		// 상수 버퍼.
+	
+	CB_TransformW m_TransformW;
+	CB_TransformVP m_TransformVP;
 
 
 	//  Data  //
@@ -117,29 +137,14 @@ public:
 	ID3D11SamplerState* m_pSamplerLinear = nullptr;		// 텍스처 샘플러
 	ID3D11BlendState* m_pAlphaBlendState = nullptr;		// 블렌드 상태 변경 (반투명처리를위한 블렌드상태)
 
-
 	// 렌더링 파이프라인에 적용하는  객체와 정보
 	ID3D11VertexShader* m_pStaticVertexShader = nullptr;	// 정점 셰이더.
 	ID3D11VertexShader* m_pSkeletalVertexShader = nullptr;	// 정점 셰이더.
 
-	ID3D11InputLayout*  m_pStaticInputLayout = nullptr;	// 입력 레이아웃.
-	ID3D11InputLayout*  m_pSkeletalInputLayout = nullptr;	// 입력 레이아웃.
-
+	ID3D11InputLayout* m_pStaticInputLayout = nullptr;	// 입력 레이아웃.
+	ID3D11InputLayout* m_pSkeletalInputLayout = nullptr;	// 입력 레이아웃.
 	ID3D11PixelShader* m_pPixelShader = nullptr;	// 픽셀 셰이더.	
-
-	ID3D11Buffer* m_pConstantBuffer = nullptr;		// 상수 버퍼.
-	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.
-	ID3D11Buffer* m_pTransformBuffer = nullptr;		// 상수 버퍼.
-	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
-	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
-	
-	
 		
-	//ConstantBuffer<CB_MatrixPalette> m_cbMatrixPallete; // DirectXTK의 상수버퍼 클래스 활용
-	//CB_MatrixPalette m_MatrixPalette;
-
-
-
 	XMVECTOR m_Eye;
 	XMVECTOR m_At;
 	XMVECTOR m_Up;
@@ -156,7 +161,7 @@ public:
 	LARGE_INTEGER m_currentTime;
 	float m_deltaTime = 0;
 
-	float m_Cam[3] = { 0.0f, -340.0f, 400.0f };
+	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
 	float m_Fov = 100.0f;
 	float m_Near = 0.01f;
 	float m_Far = 10000.0f;

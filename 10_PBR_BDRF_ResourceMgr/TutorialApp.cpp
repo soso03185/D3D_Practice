@@ -12,8 +12,8 @@
 // #include <directxtk\Keyboard.h>
 
 #pragma comment (lib, "d3d11.lib")
-#pragma comment (lib,"d3dcompiler.lib")
-
+#pragma comment (lib, "d3dcompiler.lib")
+#pragma comment (lib, "DXGI.lib")  // for  CreateDXGIFactory1 ÇÔ¼ö
 
 TutorialApp::TutorialApp(HINSTANCE hInstance)
 	:GameApp(hInstance)
@@ -55,11 +55,11 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		if (wParam == VK_UP) {
 			D3DRenderManager::Instance->IncreaseStaticModel("../Resource/zeldaPosed001.fbx");
 			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/SkinningTest.fbx");
-			//IncreaseModel();
+			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/Zombie_Run.fbx");
 		}
 		else if (wParam == VK_DOWN) {
+
 			D3DRenderManager::Instance->DecreaseModel();
-			//DecreaseModel();
 		}
 		break;
 	}

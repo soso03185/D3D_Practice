@@ -9,6 +9,7 @@
 #include <d3d11.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
+#include <Psapi.h>
 
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
 ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
@@ -27,6 +28,23 @@ D3DRenderManager::D3DRenderManager()
 D3DRenderManager::~D3DRenderManager()
 {
 	Uninitialize();
+}
+
+void  D3DRenderManager::GetVideoMemoryInfo(std::string& out)
+{
+	DXGI_QUERY_VIDEO_MEMORY_INFO videoMemoryInfo;
+	m_pDXGIAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &videoMemoryInfo);
+
+	out = std::to_string(videoMemoryInfo.CurrentUsage / 1024 / 1024) + " MB" + " / " + std::to_string(videoMemoryInfo.Budget / 1024 / 1024) + " MB";
+}
+
+void D3DRenderManager::GetSystemMemoryInfo(std::string& out)
+{
+	HANDLE hProcess = GetCurrentProcess();
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+	pmc.cb = sizeof(PROCESS_MEMORY_COUNTERS_EX);
+	GetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	out = std::to_string((pmc.PagefileUsage) / 1024 / 1024) + " MB";
 }
 
 
@@ -112,6 +130,10 @@ void D3DRenderManager::ConstantBuffUpdate()
 	CB_Light.vLightDir.Normalize();
 	CB_Light.mWorldCameraPosition = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
 
+	m_TransformVP.mView = XMMatrixTranspose(m_View);
+	m_TransformVP.mProjection = XMMatrixTranspose(m_Projection);
+
+	m_pDeviceContext->UpdateSubresource(m_pTransformVP_Buffer, 0, nullptr, &m_TransformVP, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
 }
@@ -157,20 +179,26 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
-
 	newModel->PlayAnimation(0);
 }
 
 void D3DRenderManager::DecreaseModel()
 {
+	if (D3DRenderManager::Instance->m_SkeletalMeshComponents.size() > 0)
+		D3DRenderManager::Instance->m_SkeletalMeshComponents.pop_back();
 
-
+	if (D3DRenderManager::Instance->m_StaticMeshComponents.size() > 0)
+		D3DRenderManager::Instance->m_StaticMeshComponents.pop_back();
 }
 
 bool D3DRenderManager::InitD3D()
 {
 	// 결과값.
 	HRESULT hr = 0;
+
+	// Create DXGI factory
+	HR_T(CreateDXGIFactory1(__uuidof(IDXGIFactory4), (void**)m_pDXGIFactory.GetAddressOf()));
+	HR_T(m_pDXGIFactory->EnumAdapters(0, reinterpret_cast<IDXGIAdapter**>(m_pDXGIAdapter.GetAddressOf())));
 
 	// 스왑체인 속성 설정 구조체 생성.
 	DXGI_SWAP_CHAIN_DESC swapDesc = {};
@@ -274,8 +302,11 @@ bool D3DRenderManager::InitD3D()
 	bd.ByteWidth = sizeof(CB_BoolBuffer);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pBoolBuffer));
 
-	bd.ByteWidth = sizeof(CB_TransformBuffer);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformBuffer));
+	bd.ByteWidth = sizeof(CB_TransformW);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformW_Buffer));
+
+	bd.ByteWidth = sizeof(CB_TransformVP);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformVP_Buffer));
 
 	bd.ByteWidth = sizeof(CB_LightDirBuffer);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pLightBuffer));
@@ -297,11 +328,16 @@ bool D3DRenderManager::InitD3D()
 	HR_T(m_pDevice->CreateSamplerState(&sampDesc, &m_pSamplerLinear));
 
 	// * Render() 에서 파이프라인에 바인딩할 버텍스 셰이더 생성
-	CreateStaticMesh_VS_IL();
-	CreateSkeletalMesh_VS_IL();
+	CreateVS_IL();
 
 	// * Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
-	CreatePs();
+ 	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+	//HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
+	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
+	HR_T(m_pDevice->CreatePixelShader(
+		pixelShaderBuffer->GetBufferPointer(),
+		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
+	SAFE_RELEASE(pixelShaderBuffer);
 
 	// 데이터 초기화
 	InitScene();
@@ -351,7 +387,8 @@ void D3DRenderManager::Uninitialize()
 
 	SAFE_RELEASE(m_pConstantBuffer);
 	SAFE_RELEASE(m_pBoolBuffer);
-	SAFE_RELEASE(m_pTransformBuffer);
+	SAFE_RELEASE(m_pTransformW_Buffer);
+	SAFE_RELEASE(m_pTransformVP_Buffer);
 	SAFE_RELEASE(m_pLightBuffer);
 	SAFE_RELEASE(m_pAlphaBlendState);
 	SAFE_RELEASE(m_pMatPalette);
@@ -368,81 +405,58 @@ void D3DRenderManager::Uninitialize()
 	ImGui::DestroyContext();
 }
 
-void D3DRenderManager::CreateStaticMesh_VS_IL()
+void D3DRenderManager::CreateVS_IL()
 {
 	HRESULT hr = 0; // 결과값.
-
-	D3D_SHADER_MACRO defines[] =
 	{
-		{"",""}, // 매크로 이름과 값을 설정
-		{nullptr, nullptr}    // 배열의 끝을 나타내기 위해 nullptr로 끝낸다.
-	};
+		D3D_SHADER_MACRO defines[] =
+		{
+			{"VERTEX_SKINNING",""}, // 매크로 이름과 값을 설정
+			{nullptr, nullptr}    // 배열의 끝을 나타내기 위해 nullptr로 끝낸다.
+		};
 
-	// 1. Render() 에서 파이프라인에 바인딩할 버텍스 버퍼및 버퍼 정보 준비	
-	// 2. Render() 에서 파이프라인에 바인딩할 InputLayout 생성 	
-	D3D11_INPUT_ELEMENT_DESC layout[] =
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		// 4. Render() 에서 파이프라인에 바인딩할 인덱스 버퍼 생성
+		ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
+		HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer, defines));
+		HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
+			vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pSkeletalInputLayout));
+
+		// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
+		HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
+			vertexShaderBuffer->GetBufferSize(), NULL, &m_pSkeletalVertexShader));
+		SAFE_RELEASE(vertexShaderBuffer);
+	}
+
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
 
-	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer, defines));
-	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
-		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pStaticInputLayout));
+		ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
+		HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer, nullptr));
+		HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
+			vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pStaticInputLayout));
 
-	// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
-	HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
-		vertexShaderBuffer->GetBufferSize(), NULL, &m_pStaticVertexShader));
-	SAFE_RELEASE(vertexShaderBuffer);
-}
+		// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
+		HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
+			vertexShaderBuffer->GetBufferSize(), NULL, &m_pStaticVertexShader));
+		SAFE_RELEASE(vertexShaderBuffer);
+	}
 
-void D3DRenderManager::CreateSkeletalMesh_VS_IL()
-{
-	HRESULT hr = 0; // 결과값.
-
-	D3D_SHADER_MACRO defines[] =
-	{
-		{"VERTEX_SKINNING",""}, // 매크로 이름과 값을 설정
-		{nullptr, nullptr}    // 배열의 끝을 나타내기 위해 nullptr로 끝낸다.
-	};
-
-	// 1. Render() 에서 파이프라인에 바인딩할 버텍스 버퍼및 버퍼 정보 준비	
-	// 2. Render() 에서 파이프라인에 바인딩할 InputLayout 생성 	
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	// 4. Render() 에서 파이프라인에 바인딩할 인덱스 버퍼 생성
-	ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_5_0", &vertexShaderBuffer, defines));
-	HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
-		vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pSkeletalInputLayout));
-
-	// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
-	HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
-		vertexShaderBuffer->GetBufferSize(), NULL, &m_pSkeletalVertexShader));
-	SAFE_RELEASE(vertexShaderBuffer);
-}
-
-void D3DRenderManager::CreatePs()
-{
-	// 5. Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
-	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
-//	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
-	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
-	HR_T(m_pDevice->CreatePixelShader(
-		pixelShaderBuffer->GetBufferPointer(),
-		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
-	SAFE_RELEASE(pixelShaderBuffer);
 }
 
 void D3DRenderManager::Update()
@@ -491,6 +505,7 @@ void D3DRenderManager::Update()
 		m_deltaTime = (1.0f / 60.0f);
 #endif	
 
+	ConstantBuffUpdate();
 
 	for (auto& StaticMeshComponent : m_StaticMeshComponents)
 	{
@@ -519,22 +534,21 @@ void D3DRenderManager::Render()
 	// vertex shader
 	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(1, 1, &m_pBoolBuffer);
-	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformBuffer);
-	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pLightBuffer);
-	m_pDeviceContext->VSSetConstantBuffers(4, 1, &m_pMatPalette);
-	/*auto buffer = m_cbMatrixPallete.GetBuffer();
-	m_pDeviceContext->VSSetConstantBuffers(4, 1, &buffer);*/
-
+	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformW_Buffer);
+	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pTransformVP_Buffer);
+	m_pDeviceContext->VSSetConstantBuffers(4, 1, &m_pLightBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(5, 1, &m_pMatPalette);
+	
 	// pixel shader
-	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
 	m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pConstantBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pBoolBuffer);
-	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformBuffer);
-	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pLightBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformW_Buffer);
+	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pTransformVP_Buffer);
+	m_pDeviceContext->PSSetConstantBuffers(4, 1, &m_pLightBuffer);
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
-
+	
 	RenderStaticMeshInstance();
 	RenderSkeletalMeshInstance();
 
@@ -553,14 +567,18 @@ void D3DRenderManager::ImguiRender()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	m_pDeviceContext->RSSetViewports(1, &viewport);
-
 	{
 		ImGui::Begin("Editor");
 
-		ImGui::Checkbox("AutoRot_Pitch", &isAutoRotatePitch);
-		ImGui::Checkbox("AutoRot_Yaw", &isAutoRotateYaw);
-		ImGui::Checkbox("AutoRot_Roll", &isAutoRotateRoll);
+		std::string str;
+		GetVideoMemoryInfo(str);
+		ImGui::Text("VideoMemory: %s", str.c_str());
+		GetSystemMemoryInfo(str);
+		ImGui::Text("SystemMemory: %s", str.c_str());
+
+		//ImGui::Checkbox("AutoRot_Pitch", &isAutoRotatePitch);
+		//ImGui::Checkbox("AutoRot_Yaw", &isAutoRotateYaw);
+		//ImGui::Checkbox("AutoRot_Roll", &isAutoRotateRoll);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::Checkbox("NormalMap", &isNormalMap);
@@ -573,7 +591,7 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Checkbox("RoughnessMap", &isRoughness);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::SliderFloat3("Cam_Pos", m_Cam, -400.0f, 400.0f);
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1000.0f, 1000.0f);
 		ImGui::SliderFloat3("Cube_Pos", m_Cb_Trans, -500.0f, 500.0f);
 		ImGui::SliderFloat3("Cube_Rot", m_Cb_Rot, -360.0f, 360.0f);
 		ImGui::SliderFloat("Cube_Scale", &m_Scale, 0.0f, 5.0f);
@@ -599,6 +617,7 @@ void D3DRenderManager::RenderStaticMeshInstance()
 {
 	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
 	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
+	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
 
 	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)
 		{
@@ -606,6 +625,7 @@ void D3DRenderManager::RenderStaticMeshInstance()
 		});
 
 	Material* pPrevMaterial = nullptr;
+
 	for (const auto& meshInstance : m_StaticMeshInstance)
 	{
 		if (pPrevMaterial != meshInstance->m_pMaterial)
@@ -614,16 +634,10 @@ void D3DRenderManager::RenderStaticMeshInstance()
 			pPrevMaterial = meshInstance->m_pMaterial;
 		}
 
-		ConstantBuffUpdate();
-
 		//? Static Mesh
-		CB_TransformBuffer CB_Transform;
-		CB_Transform.mWorld = XMMatrixTranspose(m_World);
-		CB_Transform.mWorld *= meshInstance->m_pNodeWorldTransform->Transpose();
-		CB_Transform.mView = XMMatrixTranspose(m_View);
-		CB_Transform.mProjection = XMMatrixTranspose(m_Projection);
-		m_pDeviceContext->UpdateSubresource(m_pTransformBuffer, 0, nullptr, &CB_Transform, 0, 0);
- 
+		m_TransformW.mWorld = meshInstance->m_pNodeWorldTransform->Transpose();
+		m_pDeviceContext->UpdateSubresource(m_pTransformW_Buffer, 0, nullptr, &m_TransformW, 0, 0);
+
 		// Draw
 		meshInstance->Render(m_pDeviceContext);
 	}
@@ -634,6 +648,7 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 {
 	m_pDeviceContext->IASetInputLayout(m_pSkeletalInputLayout);
 	m_pDeviceContext->VSSetShader(m_pSkeletalVertexShader, nullptr, 0);
+	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
 
 	m_SkeletalMeshInstance.sort([](const SkeletalMeshInstance* lhs, const SkeletalMeshInstance* rhs)
 		{
@@ -649,13 +664,11 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 			pPrevMaterial = meshInstance->m_pMaterial;
 		}
 
-		ConstantBuffUpdate();
-
 		//? Skeletal Mesh
 		CB_MatrixPalette CB_MatPalatte;
 		meshInstance->UpdateMatrixPallete(CB_MatPalatte.Array);
 		m_pDeviceContext->UpdateSubresource(m_pMatPalette, 0, nullptr, &CB_MatPalatte, 0, 0);
-		 
+
 		// Draw
 		meshInstance->Render(m_pDeviceContext);
 	}

@@ -36,8 +36,8 @@ void SkeletalMeshInstance::UpdateMatrixPallete(Math::Matrix* MatrixPalettePtr)
 	for (size_t i = 0; i < meshBoneCount; ++i)
 	{
 		Math::Matrix& BoneNodeWorldMatrix = *m_BoneReferences[i];
-		// HLSL 상수버퍼에 업데이트할때 바로 복사할수있도록 전치해서 저장한다.
 
+		// HLSL 상수버퍼에 업데이트할때 바로 복사할수있도록 전치해서 저장한다.
 		BoneReference& br = m_pMeshResource->m_BoneReferences[i];
 		MatrixPalettePtr[br.BoneIndex] = (br.OffsetMatrix * BoneNodeWorldMatrix).Transpose();
 	}

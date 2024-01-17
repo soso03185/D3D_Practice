@@ -12,20 +12,19 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NodeAnimation.cpp" />
     <ClCompile Include="TutorialApp.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="Material.cpp">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClCompile>
     <ClCompile Include="ModelResource.cpp">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClCompile>
     <ClCompile Include="Node.cpp">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClCompile>
     <ClCompile Include="D3DRenderManager.cpp">
       <Filter>Manager</Filter>
@@ -46,25 +45,29 @@
     <ClCompile Include="SkeletalMeshComponent.cpp">
       <Filter>SkeletalMesh</Filter>
     </ClCompile>
-    <ClCompile Include="SkeletonResource.cpp" />
+    <ClCompile Include="SkeletonResource.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeAnimation.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NodeAnimation.h" />
     <ClInclude Include="TutorialApp.h" />
     <ClInclude Include="targetver.h">
       <Filter>etc</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClInclude>
     <ClInclude Include="ModelResource.h">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClInclude>
     <ClInclude Include="Node.h">
-      <Filter>Model</Filter>
+      <Filter>Model_Resources</Filter>
     </ClInclude>
     <ClInclude Include="framework.h">
       <Filter>etc</Filter>
@@ -91,7 +94,12 @@
     <ClInclude Include="SkeletalMeshComponent.h">
       <Filter>SkeletalMesh</Filter>
     </ClInclude>
-    <ClInclude Include="SkeletonResource.h" />
+    <ClInclude Include="SkeletonResource.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeAnimation.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">
@@ -108,9 +116,6 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{0c88bb8c-f324-4756-b559-d4055f9b185a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Model">
-      <UniqueIdentifier>{63cd959a-a3fc-45da-8eff-55203e9d7546}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Manager">
       <UniqueIdentifier>{a0e146da-d317-46d4-b8c1-2cbd6bfa455c}</UniqueIdentifier>
     </Filter>
@@ -119,6 +124,9 @@
     </Filter>
     <Filter Include="StaticMesh">
       <UniqueIdentifier>{86583628-7a9e-48de-81e4-d1c8dcf29af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model_Resources">
+      <UniqueIdentifier>{63cd959a-a3fc-45da-8eff-55203e9d7546}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

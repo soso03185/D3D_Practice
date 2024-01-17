@@ -32,14 +32,18 @@ cbuffer BoolBuffer : register(b1)
     int UseRoughnessMap;   // 16
 }
 
-cbuffer TransformBuffer : register(b2)
+cbuffer TransformW : register(b2)
 {
     matrix World;
+}
+
+cbuffer TransformVP : register(b3)
+{
     matrix View;
     matrix Projection;
 }
 
-cbuffer LightDirBuffer : register(b3)
+cbuffer LightDirBuffer : register(b4)
 {
     float4 vLightDir;
     float4 vLightColor;
@@ -47,7 +51,7 @@ cbuffer LightDirBuffer : register(b3)
     float4 pad[1];
 }
 
-cbuffer MatrixPalette : register(b4)
+cbuffer MatrixPalette : register(b5)
 {
     matrix MatrixPaletteArray[128];
 }
