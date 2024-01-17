@@ -18,7 +18,6 @@ ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
 // MeshInstance  -> 렌더를 하기 위한 각 메쉬의 정보들
 // MeshComponent -> 데이터를 들고 있는 껍데기
 
-
 D3DRenderManager::D3DRenderManager()
 {
 	assert(Instance == nullptr);
@@ -51,13 +50,13 @@ void D3DRenderManager::GetSystemMemoryInfo(std::string& out)
 void D3DRenderManager::ApplyMaterial(Material* pMaterial)
 {
 	ID3D11ShaderResourceView* pNullSRV[7] = {
-	pMaterial->m_pDiffuseRV != nullptr ? pMaterial->m_pDiffuseRV->m_pTextureSRV.Get() : nullptr,
-	pMaterial->m_pNormalRV != nullptr ? pMaterial->m_pNormalRV->m_pTextureSRV.Get() : nullptr,
-	pMaterial->m_pSpecularRV != nullptr ? pMaterial->m_pSpecularRV->m_pTextureSRV.Get() : nullptr,
-	pMaterial->m_pEmissiveRV != nullptr ? pMaterial->m_pEmissiveRV->m_pTextureSRV.Get() : nullptr,
-	pMaterial->m_pOpacityRV != nullptr ? pMaterial->m_pOpacityRV->m_pTextureSRV.Get() : nullptr,
-	pMaterial->m_pMetalnessRV != nullptr ? pMaterial->m_pMetalnessRV->m_pTextureSRV.Get() : nullptr,
-	pMaterial->m_pRoughnessRV != nullptr ? pMaterial->m_pRoughnessRV->m_pTextureSRV.Get() : nullptr ,
+		pMaterial->m_pDiffuseRV != nullptr ? pMaterial->m_pDiffuseRV->m_pTextureSRV.Get() : nullptr,
+		pMaterial->m_pNormalRV != nullptr ? pMaterial->m_pNormalRV->m_pTextureSRV.Get() : nullptr,
+		pMaterial->m_pSpecularRV != nullptr ? pMaterial->m_pSpecularRV->m_pTextureSRV.Get() : nullptr,
+		pMaterial->m_pEmissiveRV != nullptr ? pMaterial->m_pEmissiveRV->m_pTextureSRV.Get() : nullptr,
+		pMaterial->m_pOpacityRV != nullptr ? pMaterial->m_pOpacityRV->m_pTextureSRV.Get() : nullptr,
+		pMaterial->m_pMetalnessRV != nullptr ? pMaterial->m_pMetalnessRV->m_pTextureSRV.Get() : nullptr,
+		pMaterial->m_pRoughnessRV != nullptr ? pMaterial->m_pRoughnessRV->m_pTextureSRV.Get() : nullptr ,
 	};
 
 	m_pDeviceContext->PSSetShaderResources(0, 7, pNullSRV); // 한번에 7개의 텍스처를 설정한다.
@@ -98,11 +97,7 @@ void D3DRenderManager::AddMeshInstance(SkeletalMeshComponent* pModel)
 
 void D3DRenderManager::ConstantBuffUpdate()
 {
-	///  ConstantBuffer Binding  ///
-	CB_ConstantBuffer CB_Buff;
-	CB_Buff.mAmbient = m_Ambient;
-	CB_Buff.mSpecularPower = m_SpecularPower;
-
+	///  ConstantBuffer Binding  /// 
 	CB_BoolBuffer CB_Bool;
 	CB_Bool.UseGamma = isGamma;
 
@@ -124,7 +119,7 @@ void D3DRenderManager::ConstantBuffUpdate()
 	m_TransformVP.mProjection = XMMatrixTranspose(m_Projection);
 
 	m_pDeviceContext->UpdateSubresource(m_pTransformVP_Buffer, 0, nullptr, &m_TransformVP, 0, 0);
-	m_pDeviceContext->UpdateSubresource(m_pConstantBuffer, 0, nullptr, &CB_Buff, 0, 0);
+	m_pDeviceContext->UpdateSubresource(m_pIBL_Buffer, 0, nullptr, &m_IBL, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
 }
 
@@ -286,8 +281,8 @@ bool D3DRenderManager::InitD3D()
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
 
-	bd.ByteWidth = sizeof(CB_ConstantBuffer);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pConstantBuffer));
+	bd.ByteWidth = sizeof(CB_IBL);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pIBL_Buffer));
 
 	bd.ByteWidth = sizeof(CB_BoolBuffer);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pBoolBuffer));
@@ -304,8 +299,6 @@ bool D3DRenderManager::InitD3D()
 	bd.ByteWidth = sizeof(CB_MatrixPalette);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
 
-	//m_cbMatrixPallete.Create(m_pDevice);
-
 	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -321,7 +314,7 @@ bool D3DRenderManager::InitD3D()
 	CreateVS_IL();
 
 	// * Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
- 	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
 	//HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
 	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
 	HR_T(m_pDevice->CreatePixelShader(
@@ -337,8 +330,6 @@ bool D3DRenderManager::InitD3D()
 void D3DRenderManager::InitScene()
 {
 	// 쉐이더에 전달할 데이터 설정
-	// Initialize the world matrix
-	m_World = XMMatrixIdentity();
 	m_Eye = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
 	m_At = XMVectorSet(m_Cam[0], m_Cam[1], 0.0f, 0.0f);
 	m_Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -362,20 +353,20 @@ bool D3DRenderManager::InitImGUI()
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(m_hWnd);
-	ImGui_ImplDX11_Init(this->m_pDevice, this->m_pDeviceContext);	
+	ImGui_ImplDX11_Init(this->m_pDevice, this->m_pDeviceContext);
 
 	return true;
 }
 
 void D3DRenderManager::Uninitialize()
-{ 
+{
 	SAFE_RELEASE(m_pStaticVertexShader);
 	SAFE_RELEASE(m_pSkeletalVertexShader);
 	SAFE_RELEASE(m_pStaticInputLayout);
- 	SAFE_RELEASE(m_pSkeletalInputLayout);
+	SAFE_RELEASE(m_pSkeletalInputLayout);
 	SAFE_RELEASE(m_pPixelShader);
 
-	SAFE_RELEASE(m_pConstantBuffer);
+	SAFE_RELEASE(m_pIBL_Buffer);
 	SAFE_RELEASE(m_pBoolBuffer);
 	SAFE_RELEASE(m_pTransformW_Buffer);
 	SAFE_RELEASE(m_pTransformVP_Buffer);
@@ -451,33 +442,6 @@ void D3DRenderManager::CreateVS_IL()
 
 void D3DRenderManager::Update()
 {
-	// Right
-	XMMATRIX mScale = XMMatrixScaling(m_Scale, m_Scale, m_Scale);
-	XMMATRIX mSpinX = XMMatrixRotationX(m_Cb_speed[0]);
-	XMMATRIX mSpinY = XMMatrixRotationY(m_Cb_speed[0]);
-	XMMATRIX mSpinZ = XMMatrixRotationZ(m_Cb_speed[0]);
-	XMMATRIX mTranslate = XMMatrixTranslation(m_Cb_Trans[0], m_Cb_Trans[1], m_Cb_Trans[2]);
-
-	if (isAutoRotateRoll == false)
-	{
-		float radian = XMConvertToRadians(m_Cb_Rot[2]);
-		mSpinZ = XMMatrixRotationZ(radian);
-	}
-
-	if (isAutoRotatePitch == false)
-	{
-		float radian = XMConvertToRadians(m_Cb_Rot[0]);
-		mSpinX = XMMatrixRotationX(radian);
-	}
-
-	if (isAutoRotateYaw == false)
-	{
-		float radian = XMConvertToRadians(m_Cb_Rot[1]);
-		mSpinY = XMMatrixRotationY(radian);
-	}
-
-	m_World = mScale * mSpinZ * mSpinX * mSpinY * mTranslate;
-
 	// Cam Transform
 	m_Eye = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
 	m_At = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
@@ -500,10 +464,10 @@ void D3DRenderManager::Update()
 	for (auto& StaticMeshComponent : m_StaticMeshComponents)
 	{
 		// 하나의 메시 컴포넌트에 여러개의 메시 Instance 가 있을수있음.
-		AddMeshInstance(StaticMeshComponent); 
+		AddMeshInstance(StaticMeshComponent);
 		StaticMeshComponent->Update(m_deltaTime);
 	}
-	
+
 	for (auto& SkeletalMeshComponent : m_SkeletalMeshComponents)
 	{
 		// 하나의 메시 컴포넌트에 여러개의 메시 Instance 가 있을수있음.
@@ -522,15 +486,15 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// vertex shader
-	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pIBL_Buffer);
 	m_pDeviceContext->VSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(2, 1, &m_pTransformW_Buffer);
 	m_pDeviceContext->VSSetConstantBuffers(3, 1, &m_pTransformVP_Buffer);
 	m_pDeviceContext->VSSetConstantBuffers(4, 1, &m_pLightBuffer);
 	m_pDeviceContext->VSSetConstantBuffers(5, 1, &m_pMatPalette);
-	
+
 	// pixel shader
-	m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pConstantBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(0, 1, &m_pIBL_Buffer);
 	m_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pBoolBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformW_Buffer);
 	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pTransformVP_Buffer);
@@ -538,7 +502,7 @@ void D3DRenderManager::Render()
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
-	
+
 	RenderStaticMeshInstance();
 	RenderSkeletalMeshInstance();
 
@@ -566,9 +530,8 @@ void D3DRenderManager::ImguiRender()
 		GetSystemMemoryInfo(str);
 		ImGui::Text("SystemMemory: %s", str.c_str());
 
-		//ImGui::Checkbox("AutoRot_Pitch", &isAutoRotatePitch);
-		//ImGui::Checkbox("AutoRot_Yaw", &isAutoRotateYaw);
-		//ImGui::Checkbox("AutoRot_Roll", &isAutoRotateRoll);
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1000.0f, 1000.0f);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::Checkbox("NormalMap", &isNormalMap);
@@ -579,12 +542,6 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Checkbox("OpacityMap", &isOpacity);
 		ImGui::Checkbox("MetalnessMap", &isMetalness);
 		ImGui::Checkbox("RoughnessMap", &isRoughness);
-
-		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1000.0f, 1000.0f);
-		ImGui::SliderFloat3("Cube_Pos", m_Cb_Trans, -500.0f, 500.0f);
-		ImGui::SliderFloat3("Cube_Rot", m_Cb_Rot, -360.0f, 360.0f);
-		ImGui::SliderFloat("Cube_Scale", &m_Scale, 0.0f, 5.0f);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat("Far", &m_Far, 1.0f, 10000.0f);

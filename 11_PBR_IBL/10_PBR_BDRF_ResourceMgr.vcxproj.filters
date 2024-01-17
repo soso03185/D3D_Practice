@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="BasicVertexShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="BasicPixelShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="PBR_PixelShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TutorialApp.cpp" />
+    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="Material.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelResource.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DRenderManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="SkeletalMeshInstance.cpp">
+      <Filter>SkeletalMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshComponent.cpp">
+      <Filter>StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMeshInstance.cpp">
+      <Filter>StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletalMeshComponent.cpp">
+      <Filter>SkeletalMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkeletonResource.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeAnimation.cpp">
+      <Filter>Model_Resources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TutorialApp.h" />
+    <ClInclude Include="targetver.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelResource.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>etc</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DRenderManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h" />
+    <ClInclude Include="SkeletalMeshInstance.h">
+      <Filter>SkeletalMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshComponent.h">
+      <Filter>StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMeshInstance.h">
+      <Filter>StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletalMeshComponent.h">
+      <Filter>SkeletalMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonResource.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeAnimation.h">
+      <Filter>Model_Resources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="01_Basic.ico">
+      <Filter>etc</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>etc</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="etc">
+      <UniqueIdentifier>{5568fef9-5d29-48a6-9f7d-8d6022abf683}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{0c88bb8c-f324-4756-b559-d4055f9b185a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{a0e146da-d317-46d4-b8c1-2cbd6bfa455c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SkeletalMesh">
+      <UniqueIdentifier>{c993b2fd-705a-475e-a2cd-8526fef39d93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StaticMesh">
+      <UniqueIdentifier>{86583628-7a9e-48de-81e4-d1c8dcf29af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model_Resources">
+      <UniqueIdentifier>{63cd959a-a3fc-45da-8eff-55203e9d7546}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="01_Basic.rc">
+      <Filter>etc</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shared.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>
