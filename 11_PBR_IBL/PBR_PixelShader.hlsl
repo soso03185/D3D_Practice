@@ -66,7 +66,10 @@ float4 main(PS_INPUT Input) : SV_Target
     float Metalness = 0.0f;
     float Roughness = Epsilon;
     float Opacity = 1.0f;
+    float3 Emissive = 0.0f;
     
+    if (UseEmissiveMap)
+        Emissive = txEmissive.Sample(samLinear, Input.Tex).rgb;
     if (UseMetalnessMap)
         Metalness = txMetalness.Sample(samLinear, Input.Tex).r;
     if (UseRoughnessMap)
@@ -75,8 +78,10 @@ float4 main(PS_INPUT Input) : SV_Target
         Opacity = txOpacity.Sample(samLinear, Input.Tex).a;
               
     //--------------------------------------------------------------------------
+    //? PBR
+    //
     
-    //  현재 Input.mViewDir 는 카메라에서 버텍스 방향.
+    // 현재 Input.mViewDir 는 카메라에서 버텍스 방향.    
     
     // 표면 법선 방향과 나가는 빛 방향 사이의 각도입니다.
     float cosLo = max(0.0, dot(normal, -Input.mViewDir));
@@ -111,8 +116,18 @@ float4 main(PS_INPUT Input) : SV_Target
     float3 directLighting = (diffuseBRDF + specularBRDF) * vLightColor.rgb * cosLi;
         
     // --------------------------------------------------------------------------
+    //? IBL
+    //
     
-    float4 finalColor = float4(directLighting , Opacity);
+    float3 ambientLighting = 0;
+
+    if (UseIBL)
+    {
+        
+    }
+    
+    float3 final = directLighting + ambientLighting + Emissive;
+    float4 finalColor = float4(final, Opacity);
     
     if (UseGamma)
         finalColor.rgb = pow(finalColor.rgb, 1 / 2.2f); // gamma

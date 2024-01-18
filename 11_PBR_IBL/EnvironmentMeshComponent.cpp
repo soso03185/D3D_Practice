@@ -1,10 +1,13 @@
 
 #include "ResourceManager.h"
+#include "D3DRenderManager.h"
 #include "EnvironmentMeshComponent.h"
 #include "Mesh.h"
 
 EnvironmentMeshComponent::EnvironmentMeshComponent()
 {
+	D3DRenderManager::Instance->m_StaticMeshComponents.push_back(this);
+	m_iterator = --D3DRenderManager::Instance->m_StaticMeshComponents.end();
 }
 
 EnvironmentMeshComponent::~EnvironmentMeshComponent()
@@ -15,6 +18,7 @@ bool EnvironmentMeshComponent::ReadEnvironmentMeshFromFBX(std::string filePath)
 {
 	// FBX 파일 읽기	
 	m_SceneResource = ResourceManager::Instance->CreateModelResource(filePath, ModelType::STATIC);
+
 	assert(m_SceneResource != nullptr);
 	if (m_SceneResource == nullptr)
 	{

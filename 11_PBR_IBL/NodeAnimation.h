@@ -19,7 +19,6 @@ public:
 	std::vector<AnimationKey> m_AnimationKey;
 
 	int frameIndex = 0;
-	float durationTime = 0;
 
 public:
 	void Evaluate(

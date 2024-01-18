@@ -58,8 +58,11 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/Zombie_Run.fbx");
 		}
 		else if (wParam == VK_DOWN) {
-
 			D3DRenderManager::Instance->DecreaseModel();
+		}
+		else if (wParam == VK_RIGHT)
+		{
+
 		}
 		break;
 	}

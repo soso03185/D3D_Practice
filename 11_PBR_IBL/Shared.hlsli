@@ -9,13 +9,19 @@ Texture2D txOpacity : register(t4);
 Texture2D txMetalness : register(t5);
 Texture2D txRoughness : register(t6);
 
+TextureCube txEnvironment : register(t7);
+TextureCube txIBL_Diffuse : register(t8);
+TextureCube txIBL_Specular : register(t9);
+Texture2D txIBL_SpecularBRDF_LUT : register(t10);
+
 SamplerState samLinear : register(s0);
+SamplerState samClamp : register(s1);
 
 cbuffer IBL_Buffer : register(b0)
 {
-    float gCubeSpecularPower;
-    float gCubeAmbient;
-    float gpadding[2];    
+    int UseIBL = false;              // 4 
+    float AmbientOcclusion = 1.0f;   // 4
+    float IBL_pad[2];                // 8  ,  16byte
 }
 
 cbuffer BoolBuffer : register(b1)
@@ -80,4 +86,10 @@ struct PS_INPUT
     float3 mDiffuse : TEXCOORD1;
     float3 mViewDir : TEXCOORD2;
     float3 mReflection : TEXCOORD3;
+};
+
+struct PS_INPUT_ENVIRONMENT
+{
+    float4 PositionProj : SV_POSITION;
+    float3 TexCoords : TEXCOORD0;
 };

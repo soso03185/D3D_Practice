@@ -189,7 +189,7 @@ bool TutorialApp::InitScene()
 	};
 
 	ID3DBlob* vertexShaderBuffer = nullptr;
-	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_4_0", &vertexShaderBuffer));
+	HR_T(CompileShaderFromFile(L"BasicVertexShader.hlsl", "main", "vs_4_0", &vertexShaderBuffer, nullptr));
 	if (FAILED(hr))
 	{
 		MessageBoxA(m_hWnd, (char*)errorMessage->GetBufferPointer(), "오류.", MB_OK);
@@ -224,7 +224,7 @@ bool TutorialApp::InitScene()
 
 	// 5. Render에서 파이프라인에 바인딩할 픽셀 셰이더 생성
 	ID3DBlob* pixelShaderBuffer = nullptr;
-	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_4_0", &pixelShaderBuffer));
+	HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_4_0", &pixelShaderBuffer, nullptr));
 	if (FAILED(hr))
 	{
 		MessageBoxA(m_hWnd, (char*)errorMessage->GetBufferPointer(), "오류.", MB_OK);

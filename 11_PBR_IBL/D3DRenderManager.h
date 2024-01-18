@@ -5,6 +5,8 @@
 #include <directxtk/SimpleMath.h>
 #include <string>
 #include <dxgi1_4.h>
+#include <memory>
+
 
 using namespace Microsoft::WRL;
 using namespace DirectX::SimpleMath;
@@ -60,11 +62,14 @@ struct CB_MatrixPalette
 	Matrix Array[128];
 };
 
+
+class EnvironmentMeshComponent;
 class SkeletalMeshInstance;
 class SkeletalMeshComponent;
 class StaticMeshComponent;
 class StaticMeshInstance;
 class Material;
+
 
 class D3DRenderManager
 {
@@ -72,24 +77,17 @@ public:
 	D3DRenderManager();
 	~D3DRenderManager();
 
-
 public:
 	//  Need  //
 	bool Initialize(UINT Width, UINT Height, HWND hWnd);
+	bool InitImGUI();
 	bool InitD3D();
 	void InitScene();
-	bool InitImGUI();
-
-
 	void Uninitialize();
-	void CreateVS_IL();
 
-	//  Loop   //
+	//   Main Loop   //
 	void Update();
 	void Render();
-	void ImguiRender();
-	void RenderStaticMeshInstance();
-	void RenderSkeletalMeshInstance();
 
 	//  Utility  //
 	void IncreaseStaticModel(std::string pilePath);
@@ -99,62 +97,94 @@ public:
 	void AddMeshInstance(StaticMeshComponent* pModel);
 	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
+	void SetEnvironment(std::weak_ptr<EnvironmentMeshComponent> val);
 
+	void CreateIBL();
+private:
+	//?   CREATE	  ///
+	void CreateVS_IL();
+	void CreatePS();
+	void CreateEnvironment();
+
+	void CreateSamplerState();
+	void CreateBlendState();
+	void CreateConstantBuffer();
+	void CreateSwapChain();
+	void CreateStencilAndDepth();
+	void CreateRenderTargetView();
+
+	//?   Render    ///
+	void ImguiRender();
+	void RenderStaticMeshInstance();
+	void RenderSkeletalMeshInstance();
+	void RenderEnvironment();
+
+	//?   Util     ///
 	void GetVideoMemoryInfo(std::string& out);
 	void GetSystemMemoryInfo(std::string& out);
 
-public:
-	// Public Data //
+
+public: 
+	///   D3D   ///
+	static D3DRenderManager* Instance;
+	static ID3D11Device* m_pDevice;					 // 디바이스
+	
+	ID3D11DeviceContext* m_pDeviceContext = nullptr; // 즉시 디바이스 컨텍스트
+	IDXGISwapChain* m_pSwapChain = nullptr;					// 스왑체인
+	ID3D11RenderTargetView* m_pRenderTargetView = nullptr;	// 렌더링 타겟뷰
+	ID3D11DepthStencilView* m_pDepthStencilView = nullptr;  // 깊이값 처리
+	ComPtr<IDXGIFactory4> m_pDXGIFactory;		// DXGI팩토리
+	ComPtr<IDXGIAdapter3> m_pDXGIAdapter;		// 비디오카드 정보에 접근 가능한 인터페이스
 	UINT m_ClientWidth;
 	UINT m_ClientHeight;
 	HWND m_hWnd;
 
-	static D3DRenderManager* Instance;
-	static ID3D11Device* m_pDevice;					 // 디바이스
-	ID3D11DeviceContext* m_pDeviceContext = nullptr; // 즉시 디바이스 컨텍스트
 
-	ComPtr<IDXGIFactory4> m_pDXGIFactory;		// DXGI팩토리
-	ComPtr<IDXGIAdapter3> m_pDXGIAdapter;		// 비디오카드 정보에 접근 가능한 인터페이스
-
-
+public:
 	//?   CB Data   ///
 	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
-	ID3D11Buffer* m_pIBL_Buffer = nullptr;		// 상수 버퍼.
+	ID3D11Buffer* m_pIBL_Buffer = nullptr;			// 상수 버퍼.
 	ID3D11Buffer* m_pTransformW_Buffer = nullptr;		// 상수 버퍼.
 	ID3D11Buffer* m_pTransformVP_Buffer = nullptr;		// 상수 버퍼.
-	
+
 	CB_TransformW m_TransformW;
 	CB_TransformVP m_TransformVP;
 	CB_IBL m_IBL;
 
-	//  Data  //
-public: 
-	IDXGISwapChain* m_pSwapChain = nullptr;					// 스왑체인
-	ID3D11RenderTargetView* m_pRenderTargetView = nullptr;	// 렌더링 타겟뷰
-	ID3D11DepthStencilView* m_pDepthStencilView = nullptr;  // 깊이값 처리
-	ID3D11SamplerState* m_pSamplerLinear = nullptr;		// 텍스처 샘플러
-	ID3D11BlendState* m_pAlphaBlendState = nullptr;		// 블렌드 상태 변경 (반투명처리를위한 블렌드상태)
 
-	// 렌더링 파이프라인에 적용하는  객체와 정보
+	///   CONTAINER   ///
+	std::list<StaticMeshInstance*> m_StaticMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다. 
+	std::list<StaticMeshComponent*> m_StaticMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
+	std::list<SkeletalMeshInstance*> m_SkeletalMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다.
+	std::list<SkeletalMeshComponent*> m_SkeletalMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
+
+	std::weak_ptr<EnvironmentMeshComponent> m_pEnvironmentMeshComponent;
+
+	///   FOR RENDERING   ///
+	ID3D11VertexShader* m_pEnvironmentVertexShader = nullptr; // Environment 정점 셰이더.
+	ID3D11PixelShader*  m_pEnvironmentPixelShader = nullptr;	// Environment 정점 셰이더.
+
 	ID3D11VertexShader* m_pStaticVertexShader = nullptr;	// 정점 셰이더.
 	ID3D11VertexShader* m_pSkeletalVertexShader = nullptr;	// 정점 셰이더.
-
-	ID3D11InputLayout* m_pStaticInputLayout = nullptr;	// 입력 레이아웃.
+	ID3D11PixelShader*  m_pPixelShader = nullptr;	// 픽셀 셰이더.	
+ 
+ 	ID3D11InputLayout* m_pStaticInputLayout = nullptr;	// 입력 레이아웃.
 	ID3D11InputLayout* m_pSkeletalInputLayout = nullptr;	// 입력 레이아웃.
-	ID3D11PixelShader* m_pPixelShader = nullptr;	// 픽셀 셰이더.	
+
+	ID3D11SamplerState* m_pSamplerLinear = nullptr;		// 텍스처 샘플러
+	ID3D11SamplerState* m_pSamplerClamp = nullptr;		// 텍스처 샘플러
+	ID3D11BlendState*   m_pAlphaBlendState = nullptr;		// 블렌드 상태 변경 (반투명처리를위한 블렌드상태)
 		
+	///  FOR SHADER  ///
 	XMVECTOR m_Eye;
 	XMVECTOR m_At;
 	XMVECTOR m_Up;
-
-	// 쉐이더에 에 전달할 데이터
 	Matrix   m_View;		// 카메라좌표계 공간으로 변환을 위한 행렬.
 	Matrix   m_Projection;	// 단위장치좌표계( Normalized Device Coordinate) 공간으로 변환을 위한 행렬.
 
 	D3D11_VIEWPORT viewport = {};
-
 	LARGE_INTEGER m_frequency;
 	LARGE_INTEGER m_previousTime;
 	LARGE_INTEGER m_currentTime;
@@ -179,12 +209,4 @@ public:
 	bool isOpacity = true;
 	bool isMetalness = true;
 	bool isRoughness = true;
-
-
-	std::list<StaticMeshInstance*> m_StaticMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다. 
-	std::list<StaticMeshComponent*> m_StaticMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
-	
-	std::list<SkeletalMeshInstance*> m_SkeletalMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다.
-	std::list<SkeletalMeshComponent*> m_SkeletalMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
-
 };

@@ -5,11 +5,14 @@
 #include "D3DRenderManager.h"
 #include "Material.h"
 #include "ModelResource.h"
+#include "EnvironmentMeshComponent.h"
+
 
 #include <d3d11.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 #include <Psapi.h>
+
 
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
 ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
@@ -29,7 +32,7 @@ D3DRenderManager::~D3DRenderManager()
 	Uninitialize();
 }
 
-void  D3DRenderManager::GetVideoMemoryInfo(std::string& out)
+void D3DRenderManager::GetVideoMemoryInfo(std::string& out)
 {
 	DXGI_QUERY_VIDEO_MEMORY_INFO videoMemoryInfo;
 	m_pDXGIAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &videoMemoryInfo);
@@ -45,7 +48,6 @@ void D3DRenderManager::GetSystemMemoryInfo(std::string& out)
 	GetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 	out = std::to_string((pmc.PagefileUsage) / 1024 / 1024) + " MB";
 }
-
 
 void D3DRenderManager::ApplyMaterial(Material* pMaterial)
 {
@@ -131,6 +133,8 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
+	
+	CreateIBL();
 
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_previousTime);
@@ -185,38 +189,6 @@ bool D3DRenderManager::InitD3D()
 	HR_T(CreateDXGIFactory1(__uuidof(IDXGIFactory4), (void**)m_pDXGIFactory.GetAddressOf()));
 	HR_T(m_pDXGIFactory->EnumAdapters(0, reinterpret_cast<IDXGIAdapter**>(m_pDXGIAdapter.GetAddressOf())));
 
-	// 스왑체인 속성 설정 구조체 생성.
-	DXGI_SWAP_CHAIN_DESC swapDesc = {};
-	swapDesc.BufferCount = 1;
-	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapDesc.OutputWindow = m_hWnd;	// 스왑체인 출력할 창 핸들 값.
-	swapDesc.Windowed = true;		// 창 모드 여부 설정.
-	swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	// 백버퍼(텍스처)의 가로/세로 크기 설정.
-	swapDesc.BufferDesc.Width = m_ClientWidth;
-	swapDesc.BufferDesc.Height = m_ClientHeight;
-	// 화면 주사율 설정.
-	swapDesc.BufferDesc.RefreshRate.Numerator = 60;
-	swapDesc.BufferDesc.RefreshRate.Denominator = 1;
-	// 샘플링 관련 설정.
-	swapDesc.SampleDesc.Count = 1;
-	swapDesc.SampleDesc.Quality = 0;
-
-	UINT creationFlags = 0;
-#ifdef _DEBUG
-	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-	// 1. 장치 생성.   2.스왑체인 생성. 3.장치 컨텍스트 생성.
-	HR_T(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, creationFlags, NULL, NULL,
-		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pDeviceContext));
-
-	// 4. 렌더타겟뷰 생성.  (백버퍼를 이용하는 렌더타겟뷰)	
-	ID3D11Texture2D* pBackBufferTexture = nullptr;
-	HR_T(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBufferTexture));
-	HR_T(m_pDevice->CreateRenderTargetView(pBackBufferTexture, NULL, &m_pRenderTargetView));  // 텍스처는 내부 참조 증가
-
-	SAFE_RELEASE(pBackBufferTexture);	//외부 참조 카운트를 감소시킨다.
-
 	// 모니터 해상도를 얻어온다고 가정합니다.
 	int monitorWidth = (float)m_ClientWidth;  // 모니터의 가로 해상도
 	int monitorHeight = (float)m_ClientHeight;  // 모니터의 세로 해상도
@@ -229,101 +201,33 @@ bool D3DRenderManager::InitD3D()
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
-	// 6. depth & stencil view 생성
-	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width = m_ClientWidth;
-	descDepth.Height = m_ClientHeight;
-	descDepth.MipLevels = 1;
-	descDepth.ArraySize = 1;
-	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	descDepth.SampleDesc.Count = 1;
-	descDepth.SampleDesc.Quality = 0;
-	descDepth.Usage = D3D11_USAGE_DEFAULT;
-	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	descDepth.CPUAccessFlags = 0;
-	descDepth.MiscFlags = 0;
+	// 스왑체인 속성 설정 구조체 생성.
+	CreateSwapChain();
 
-	ID3D11Texture2D* textureDepthStencil = nullptr;
-	HR_T(m_pDevice->CreateTexture2D(&descDepth, nullptr, &textureDepthStencil));
+	// 렌더타겟뷰 생성.  (백버퍼를 이용하는 렌더타겟뷰)	
+	CreateRenderTargetView();
 
-	// Create the depth stencil view
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
-	descDSV.Format = descDepth.Format;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0;
-	HR_T(m_pDevice->CreateDepthStencilView(textureDepthStencil, &descDSV, &m_pDepthStencilView));
-	SAFE_RELEASE(textureDepthStencil);
+	// depth & stencil view 생성
+	CreateStencilAndDepth();
 
-	m_pDeviceContext->OMSetRenderTargets(1, &m_pRenderTargetView, m_pDepthStencilView);
+	// 알파블렌딩을 위한 블렌드 상태 생성
+	CreateBlendState();
 
-	// 7. 알파블렌딩을 위한 블렌드 상태 생성
-	// FinalAlpha = (SrcAlpha * SrcBlendAlpha) + (DestAlpha * DestBlendAlpha)
-	// FinalRGB = (SrcRGB * SrcBlend) + (DestRGB * DestBlend)
-	D3D11_RENDER_TARGET_BLEND_DESC rtBlendDesc = {};
-	rtBlendDesc.BlendEnable = true;						// 블렌드 사용 여부
-	rtBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;	    // SrcBlend는 SrcColor의 알파값
-	rtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;	// DestBlend는 (1-SourceColor.a)
-	rtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;			// 컬러 블렌딩 연산을 정의합니다.
-	rtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;		// 알파 블렌딩 연산을 정의합니다.
-	rtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;		// SrcBlendAlpha = 1
-	rtBlendDesc.DestBlendAlpha = D3D11_BLEND_ONE;		// DestBlendAlpha = 1	
-	rtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL; // 렌더타겟에 RGBA 모두 Write	// 현재 렌더 타겟에 대한 컬러 컴포넌트 쓰기 마스크를 정의합니다.
+	// Render() 에서 파이프라인에 바인딩할 상수 버퍼 생성  //  Create the constant buffer 
+	CreateConstantBuffer();
 
-	D3D11_BLEND_DESC blendDesc = {};
-	blendDesc.AlphaToCoverageEnable = false;  // 다중 샘플링 앤틸리어싱(Anti-aliasing)을 지원하기 위해 사용
-	blendDesc.IndependentBlendEnable = false; // 각 렌더 타겟에 대한 독립적인 블렌딩 설정을 사용할지 여부
-	blendDesc.RenderTarget[0] = rtBlendDesc;
-	HR_T(m_pDevice->CreateBlendState(&blendDesc, &m_pAlphaBlendState));
+	// Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
+	CreateSamplerState();
 
-	// 6. Render() 에서 파이프라인에 바인딩할 상수 버퍼 생성     Create the constant buffer 
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-	bd.ByteWidth = sizeof(CB_IBL);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pIBL_Buffer));
-
-	bd.ByteWidth = sizeof(CB_BoolBuffer);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pBoolBuffer));
-
-	bd.ByteWidth = sizeof(CB_TransformW);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformW_Buffer));
-
-	bd.ByteWidth = sizeof(CB_TransformVP);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformVP_Buffer));
-
-	bd.ByteWidth = sizeof(CB_LightDirBuffer);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pLightBuffer));
-
-	bd.ByteWidth = sizeof(CB_MatrixPalette);
-	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
-
-	// 7. Render() 에서 파이프라인에 바인딩할 쉐이더 리소스와 샘플러 생성 (텍스처 로드 & sample state 생성 )
-	D3D11_SAMPLER_DESC sampDesc = {};
-	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sampDesc.MinLOD = 0;
-	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	HR_T(m_pDevice->CreateSamplerState(&sampDesc, &m_pSamplerLinear));
-
-	// * Render() 에서 파이프라인에 바인딩할 버텍스 셰이더 생성
+	// Render() 에서 파이프라인에 바인딩할 버텍스 셰이더 생성
 	CreateVS_IL();
 
-	// * Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
-	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
-	//HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
-	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
-	HR_T(m_pDevice->CreatePixelShader(
-		pixelShaderBuffer->GetBufferPointer(),
-		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
-	SAFE_RELEASE(pixelShaderBuffer);
+	// Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
+	CreatePS();
 
 	// 데이터 초기화
 	InitScene();
+
 	return true;
 }
 
@@ -342,9 +246,8 @@ void D3DRenderManager::InitScene()
 
 bool D3DRenderManager::InitImGUI()
 {
-	/*
-	ImGui 초기화.
-*/
+	// ImGui 초기화.
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -365,6 +268,12 @@ void D3DRenderManager::Uninitialize()
 	SAFE_RELEASE(m_pStaticInputLayout);
 	SAFE_RELEASE(m_pSkeletalInputLayout);
 	SAFE_RELEASE(m_pPixelShader);
+
+	SAFE_RELEASE(m_pSamplerLinear);
+	SAFE_RELEASE(m_pSamplerClamp);
+
+	SAFE_RELEASE(m_pEnvironmentVertexShader);
+	SAFE_RELEASE(m_pEnvironmentPixelShader);
 
 	SAFE_RELEASE(m_pIBL_Buffer);
 	SAFE_RELEASE(m_pBoolBuffer);
@@ -437,7 +346,205 @@ void D3DRenderManager::CreateVS_IL()
 			vertexShaderBuffer->GetBufferSize(), NULL, &m_pStaticVertexShader));
 		SAFE_RELEASE(vertexShaderBuffer);
 	}
+}
 
+void D3DRenderManager::CreatePS()
+{
+	ID3D10Blob* pixelShaderBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+	//HR_T(CompileShaderFromFile(L"BasicPixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
+	HR_T(CompileShaderFromFile(L"PBR_PixelShader.hlsl", "main", "ps_5_0", &pixelShaderBuffer, nullptr));
+	HR_T(m_pDevice->CreatePixelShader(
+		pixelShaderBuffer->GetBufferPointer(),
+		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
+	SAFE_RELEASE(pixelShaderBuffer);
+}
+
+void D3DRenderManager::CreateEnvironment()
+{
+	// 2. Render() 에서 파이프라인에 바인딩할 InputLayout 생성 	
+	D3D_SHADER_MACRO defines[] =
+	{
+		{"",""}, // 매크로 이름과 값을 설정
+		{nullptr, nullptr}    // 배열의 끝을 나타내기 위해 nullptr로 끝낸다.
+	};
+
+	ComPtr<ID3D10Blob> buffer = nullptr;
+	HR_T(CompileShaderFromFile(L"../Resource/VS_Environment.hlsl", "main", "vs_5_0", buffer.GetAddressOf(), nullptr));
+	HR_T(m_pDevice->CreateVertexShader(buffer->GetBufferPointer(), buffer->GetBufferSize(), NULL, &m_pEnvironmentVertexShader));
+	buffer.Reset();
+
+	HR_T(CompileShaderFromFile(L"../Resource/PS_Environment.hlsl", "main", "ps_5_0", buffer.GetAddressOf(), nullptr));
+	HR_T(m_pDevice->CreatePixelShader(buffer->GetBufferPointer(), buffer->GetBufferSize(), NULL, &m_pEnvironmentPixelShader));
+}
+
+void D3DRenderManager::CreateSamplerState()
+{
+	D3D11_SAMPLER_DESC sampDesc = {};
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	HR_T(m_pDevice->CreateSamplerState(&sampDesc, &m_pSamplerLinear));
+
+	sampDesc = {};
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.MaxAnisotropy = (sampDesc.Filter == D3D11_FILTER_ANISOTROPIC) ? D3D11_REQ_MAXANISOTROPY : 1;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	HR_T(m_pDevice->CreateSamplerState(&sampDesc, &m_pSamplerClamp));
+
+	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
+	m_pDeviceContext->PSSetSamplers(1, 1, &m_pSamplerClamp);
+}
+
+void D3DRenderManager::CreateBlendState()
+{
+	D3D11_RENDER_TARGET_BLEND_DESC rtBlendDesc = {};
+	rtBlendDesc.BlendEnable = true;						// 블렌드 사용 여부
+	// FinalRGB = (SrcRGB * SrcBlend) + (DestRGB * DestBlend)
+	rtBlendDesc.SrcBlend = D3D11_BLEND_SRC_ALPHA;	    // SrcBlend는 SrcColor의 알파값
+	rtBlendDesc.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;	// DestBlend는 (1-SourceColor.a)
+	rtBlendDesc.BlendOp = D3D11_BLEND_OP_ADD;			// 컬러 블렌딩 연산을 정의합니다.
+	// FinalAlpha = (SrcAlpha * SrcBlendAlpha) + (DestAlpha * DestBlendAlpha)
+	rtBlendDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;		// 알파 블렌딩 연산을 정의합니다.
+	rtBlendDesc.SrcBlendAlpha = D3D11_BLEND_ONE;		// SrcBlendAlpha = 1
+	rtBlendDesc.DestBlendAlpha = D3D11_BLEND_ONE;		// DestBlendAlpha = 1	
+	rtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL; // 렌더타겟에 RGBA 모두 Write	// 현재 렌더 타겟에 대한 컬러 컴포넌트 쓰기 마스크를 정의합니다.
+
+	D3D11_BLEND_DESC blendDesc = {};
+	blendDesc.AlphaToCoverageEnable = false;  // 다중 샘플링 앤틸리어싱(Anti-aliasing)을 지원하기 위해 사용
+	blendDesc.IndependentBlendEnable = false; // 각 렌더 타겟에 대한 독립적인 블렌딩 설정을 사용할지 여부
+	blendDesc.RenderTarget[0] = rtBlendDesc;
+	HR_T(m_pDevice->CreateBlendState(&blendDesc, &m_pAlphaBlendState));
+}
+
+void D3DRenderManager::CreateConstantBuffer()
+{
+	D3D11_BUFFER_DESC bd = {};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	bd.ByteWidth = sizeof(CB_IBL);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pIBL_Buffer));
+
+	bd.ByteWidth = sizeof(CB_BoolBuffer);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pBoolBuffer));
+
+	bd.ByteWidth = sizeof(CB_TransformW);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformW_Buffer));
+
+	bd.ByteWidth = sizeof(CB_TransformVP);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pTransformVP_Buffer));
+
+	bd.ByteWidth = sizeof(CB_LightDirBuffer);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pLightBuffer));
+
+	bd.ByteWidth = sizeof(CB_MatrixPalette);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
+
+}
+
+void D3DRenderManager::CreateSwapChain()
+{
+	DXGI_SWAP_CHAIN_DESC swapDesc = {};
+	swapDesc.BufferCount = 1;
+	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapDesc.OutputWindow = m_hWnd;	// 스왑체인 출력할 창 핸들 값.
+	swapDesc.Windowed = true;		// 창 모드 여부 설정.
+	swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	// 백버퍼(텍스처)의 가로/세로 크기 설정.
+	swapDesc.BufferDesc.Width = m_ClientWidth;
+	swapDesc.BufferDesc.Height = m_ClientHeight;
+	// 화면 주사율 설정.
+	swapDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapDesc.BufferDesc.RefreshRate.Denominator = 1;
+	// 샘플링 관련 설정.
+	swapDesc.SampleDesc.Count = 1;
+	swapDesc.SampleDesc.Quality = 0;
+
+	UINT creationFlags = 0;
+#ifdef _DEBUG
+	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+	// 1. 장치 생성.   2.스왑체인 생성. 3.장치 컨텍스트 생성.
+	HR_T(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, creationFlags, NULL, NULL,
+		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pDeviceContext));
+}
+
+void D3DRenderManager::CreateStencilAndDepth()
+{
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width = m_ClientWidth;
+	descDepth.Height = m_ClientHeight;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+
+	ID3D11Texture2D* textureDepthStencil = nullptr;
+	HR_T(m_pDevice->CreateTexture2D(&descDepth, nullptr, &textureDepthStencil));
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	HR_T(m_pDevice->CreateDepthStencilView(textureDepthStencil, &descDSV, &m_pDepthStencilView));
+	SAFE_RELEASE(textureDepthStencil);
+
+	m_pDeviceContext->OMSetRenderTargets(1, &m_pRenderTargetView, m_pDepthStencilView);
+
+}
+
+void D3DRenderManager::CreateRenderTargetView()
+{
+	ID3D11Texture2D* pBackBufferTexture = nullptr;
+	HR_T(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBufferTexture));
+	HR_T(m_pDevice->CreateRenderTargetView(pBackBufferTexture, NULL, &m_pRenderTargetView));  // 텍스처는 내부 참조 증가
+
+	SAFE_RELEASE(pBackBufferTexture);	//외부 참조 카운트를 감소시킨다.
+}
+
+void D3DRenderManager::CreateIBL()
+{
+	m_pEnvironmentActor = m_World.CreateGameObject<EnvironmentActor>().get();
+
+	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
+	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
+	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/BakerSampleEnvHDR.dds");
+	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
+	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
+	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
+	pComponent->SetLocalScale(Vector3(100.0f, 100.0f, 100.0f));
+
+	auto wpComponent = m_pEnvironmentActor->GetComponentWeakPtrByName("EnvironmentMeshComponent");
+	SetEnvironment(std::dynamic_pointer_cast<EnvironmentMeshComponent>(wpComponent.lock()));
+}
+
+void D3DRenderManager::SetEnvironment(std::weak_ptr<EnvironmentMeshComponent> val)
+{	
+	m_pEnvironmentMeshComponent = val;
+	auto component = m_pEnvironmentMeshComponent.lock();	// Shared.hlsli 에서 텍스처 slot7 확인
+
+	// Shared.hlsli 에서 텍스처 slot7 확인
+	m_pDeviceContext->PSSetShaderResources(7, 1, component->m_EnvironmentTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(8, 1, component->m_IBLDiffuseTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(9, 1, component->m_IBLSpecularTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(10, 1, component->m_IBLBRDFTextureResource->m_pTextureSRV.GetAddressOf());
+	m_IBL.UseIBL = true;
+	m_pDeviceContext->UpdateSubresource(m_pIBL_Buffer, 0, nullptr, &m_IBL, 0, 0);
 }
 
 void D3DRenderManager::Update()
@@ -476,7 +583,6 @@ void D3DRenderManager::Update()
 	}
 }
 
-
 void D3DRenderManager::Render()
 {
 	// Draw계열 함수를 호출하기전에 렌더링 파이프라인에 필수 스테이지 설정을 해야한다	
@@ -505,6 +611,9 @@ void D3DRenderManager::Render()
 
 	RenderStaticMeshInstance();
 	RenderSkeletalMeshInstance();
+
+	if (m_pEnvironmentMeshComponent.expired() == false)
+		RenderEnvironment();
 
 	ImguiRender();
 	m_pSwapChain->Present(0, 0);
@@ -620,4 +729,18 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 		meshInstance->Render(m_pDeviceContext);
 	}
 	m_SkeletalMeshInstance.clear();
+}
+
+void D3DRenderManager::RenderEnvironment()
+{
+	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
+	m_pDeviceContext->VSSetShader(m_pEnvironmentVertexShader, nullptr, 0);
+	m_pDeviceContext->PSSetShader(m_pEnvironmentPixelShader, nullptr, 0);
+	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pTransformW_Buffer); //debugdraw에서 변경시켜서 설정한다.
+	// m_pDeviceContext->RSSetState(m_pRasterizerStateCCW.Get());
+
+	auto component = m_pEnvironmentMeshComponent.lock();
+	m_TransformW.mWorld = component->m_World.Transpose();
+	m_pDeviceContext->UpdateSubresource(m_pTransformW_Buffer, 0, nullptr, &m_TransformW, 0, 0);
+	component->m_MeshInstance.Render(m_pDeviceContext);
 }

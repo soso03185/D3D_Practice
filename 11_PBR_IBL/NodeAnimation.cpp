@@ -10,7 +10,6 @@
 void NodeAnimation::Evaluate(float progressTime, Math::Vector3& position, Math::Quaternion& rotation, Math::Vector3& scaling)
 {
 	assert(m_AnimationKey.size() > 0);
-	durationTime = progressTime;
 
 	if (m_AnimationKey.size() == 1)
 	{
