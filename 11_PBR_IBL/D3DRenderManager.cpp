@@ -7,7 +7,6 @@
 #include "ModelResource.h"
 #include "EnvironmentMeshComponent.h"
 
-
 #include <d3d11.h>
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
@@ -519,7 +518,7 @@ void D3DRenderManager::CreateRenderTargetView()
 
 void D3DRenderManager::CreateIBL()
 {
-	m_pEnvironmentActor = m_World.CreateGameObject<EnvironmentActor>().get();
+	/*m_pEnvironmentActor = m_World.CreateGameObject<EnvironmentActor>().get();
 
 	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
 	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
@@ -530,7 +529,7 @@ void D3DRenderManager::CreateIBL()
 	pComponent->SetLocalScale(Vector3(100.0f, 100.0f, 100.0f));
 
 	auto wpComponent = m_pEnvironmentActor->GetComponentWeakPtrByName("EnvironmentMeshComponent");
-	SetEnvironment(std::dynamic_pointer_cast<EnvironmentMeshComponent>(wpComponent.lock()));
+	SetEnvironment(std::dynamic_pointer_cast<EnvironmentMeshComponent>(wpComponent.lock()));*/
 }
 
 void D3DRenderManager::SetEnvironment(std::weak_ptr<EnvironmentMeshComponent> val)

@@ -11,8 +11,6 @@ class NodeAnimation;
 struct ModelResource;
 struct aiNode;
 
-using namespace DirectX::SimpleMath;
-using namespace DirectX;
 namespace Math = DirectX::SimpleMath;
 
 class Node : public Transform

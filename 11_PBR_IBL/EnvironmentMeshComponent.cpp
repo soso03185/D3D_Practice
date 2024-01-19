@@ -6,8 +6,8 @@
 
 EnvironmentMeshComponent::EnvironmentMeshComponent()
 {
-	D3DRenderManager::Instance->m_StaticMeshComponents.push_back(this);
-	m_iterator = --D3DRenderManager::Instance->m_StaticMeshComponents.end();
+//	D3DRenderManager::Instance->m_StaticMeshComponents.push_back(this);
+//	m_iterator = --D3DRenderManager::Instance->m_StaticMeshComponents.end();
 }
 
 EnvironmentMeshComponent::~EnvironmentMeshComponent()

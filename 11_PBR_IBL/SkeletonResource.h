@@ -5,7 +5,6 @@
 
 #include "..\Common\Helper.h"
 
-using namespace DirectX::SimpleMath;
 namespace Math = DirectX::SimpleMath;
 
 struct BoneInfo
