@@ -564,7 +564,7 @@ void D3DRenderManager::CreateIBL()
 	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
 	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
-	pComponent->SetLocalScale(Vector3(1000.0f, 1000.0f, 1000.0f));
+	pComponent->SetLocalScale(Vector3(100.0f, 100.0f, 100.0f));
 
 	SetEnvironment(pComponent);
 }
