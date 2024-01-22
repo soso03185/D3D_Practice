@@ -132,8 +132,7 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
-	
-	CreateIBL();
+
 
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_previousTime);
@@ -147,8 +146,7 @@ void D3DRenderManager::IncreaseStaticModel(std::string pilePath)
 	// 8. FBX Load	
 	StaticMeshComponent* newModel = new StaticMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
-
-	int range = 500;
+ 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
@@ -200,11 +198,18 @@ bool D3DRenderManager::InitD3D()
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
+
 	// 스왑체인 속성 설정 구조체 생성.
 	CreateSwapChain();
 
 	// 렌더타겟뷰 생성.  (백버퍼를 이용하는 렌더타겟뷰)	
 	CreateRenderTargetView();
+
+	// 레스터라이저 생성
+	CreateRasterizerState();
+
+	//? DepthStencil 상태 설정
+	CreateDepthStencilState();
 
 	// depth & stencil view 생성
 	CreateStencilAndDepth();
@@ -224,6 +229,12 @@ bool D3DRenderManager::InitD3D()
 	// Render() 에서 파이프라인에 바인딩할 픽셀 셰이더 생성
 	CreatePS();
 
+	// Render() 에서 파이프라인에 바인딩할 환경 픽셀 셰이더 생성
+	CreateEnvironment();
+
+	// 환경 맵 생성
+	CreateIBL();
+
 	// 데이터 초기화
 	InitScene();
 
@@ -241,6 +252,8 @@ void D3DRenderManager::InitScene()
 
 	// Initialize the projection matrix  	// fov
 	m_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, m_ClientWidth / (FLOAT)m_ClientHeight, 0.1f, 1000.0f);
+
+
 }
 
 bool D3DRenderManager::InitImGUI()
@@ -368,11 +381,11 @@ void D3DRenderManager::CreateEnvironment()
 	};
 
 	ComPtr<ID3D10Blob> buffer = nullptr;
-	HR_T(CompileShaderFromFile(L"../Resource/VS_Environment.hlsl", "main", "vs_5_0", buffer.GetAddressOf(), nullptr));
+	HR_T(CompileShaderFromFile(L"VS_Environment.hlsl", "main", "vs_5_0", buffer.GetAddressOf(), nullptr));
 	HR_T(m_pDevice->CreateVertexShader(buffer->GetBufferPointer(), buffer->GetBufferSize(), NULL, &m_pEnvironmentVertexShader));
 	buffer.Reset();
 
-	HR_T(CompileShaderFromFile(L"../Resource/PS_Environment.hlsl", "main", "ps_5_0", buffer.GetAddressOf(), nullptr));
+	HR_T(CompileShaderFromFile(L"PS_Environment.hlsl", "main", "ps_5_0", buffer.GetAddressOf(), nullptr));
 	HR_T(m_pDevice->CreatePixelShader(buffer->GetBufferPointer(), buffer->GetBufferSize(), NULL, &m_pEnvironmentPixelShader));
 }
 
@@ -516,26 +529,50 @@ void D3DRenderManager::CreateRenderTargetView()
 	SAFE_RELEASE(pBackBufferTexture);	//외부 참조 카운트를 감소시킨다.
 }
 
+void D3DRenderManager::CreateRasterizerState()
+{
+	HRESULT hr = 0; 
+
+	D3D11_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.AntialiasedLineEnable = true;
+	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;
+	rasterizerDesc.FrontCounterClockwise = true;
+	rasterizerDesc.DepthClipEnable = true;
+	HR_T(m_pDevice->CreateRasterizerState(&rasterizerDesc, m_pRasterizerStateCCW.GetAddressOf()));
+
+	rasterizerDesc.FrontCounterClockwise = false;
+	HR_T(m_pDevice->CreateRasterizerState(&rasterizerDesc, m_pRasterizerStateCW.GetAddressOf()));
+}
+
+void D3DRenderManager::CreateDepthStencilState()
+{
+	D3D11_DEPTH_STENCIL_DESC lessEqualDesc;
+	lessEqualDesc.DepthEnable = true;
+	lessEqualDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	lessEqualDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // 깊이 판정할 때 같은 넘도 통과
+	lessEqualDesc.StencilEnable = false;
+
+	HR_T(m_pDevice->CreateDepthStencilState(&lessEqualDesc, &m_LessEqualDSS));
+}
+
 void D3DRenderManager::CreateIBL()
 {
-	/*m_pEnvironmentActor = m_World.CreateGameObject<EnvironmentActor>().get();
-
 	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
 	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
 	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/BakerSampleEnvHDR.dds");
 	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
 	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
-	pComponent->SetLocalScale(Vector3(100.0f, 100.0f, 100.0f));
+	pComponent->SetLocalScale(Vector3(1000.0f, 1000.0f, 1000.0f));
 
-	auto wpComponent = m_pEnvironmentActor->GetComponentWeakPtrByName("EnvironmentMeshComponent");
-	SetEnvironment(std::dynamic_pointer_cast<EnvironmentMeshComponent>(wpComponent.lock()));*/
+	SetEnvironment(pComponent);
 }
 
-void D3DRenderManager::SetEnvironment(std::weak_ptr<EnvironmentMeshComponent> val)
+void D3DRenderManager::SetEnvironment(EnvironmentMeshComponent* val)
 {	
 	m_pEnvironmentMeshComponent = val;
-	auto component = m_pEnvironmentMeshComponent.lock();	// Shared.hlsli 에서 텍스처 slot7 확인
+	auto component = m_pEnvironmentMeshComponent;	// Shared.hlsli 에서 텍스처 slot7 확인
 
 	// Shared.hlsli 에서 텍스처 slot7 확인
 	m_pDeviceContext->PSSetShaderResources(7, 1, component->m_EnvironmentTextureResource->m_pTextureSRV.GetAddressOf());
@@ -611,7 +648,7 @@ void D3DRenderManager::Render()
 	RenderStaticMeshInstance();
 	RenderSkeletalMeshInstance();
 
-	if (m_pEnvironmentMeshComponent.expired() == false)
+	if (m_pEnvironmentMeshComponent != nullptr)
 		RenderEnvironment();
 
 	ImguiRender();
@@ -639,7 +676,7 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("SystemMemory: %s", str.c_str());
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1000.0f, 1000.0f);
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -200.0f, 200.0f);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::Checkbox("NormalMap", &isNormalMap);
@@ -673,6 +710,7 @@ void D3DRenderManager::RenderStaticMeshInstance()
 	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
 	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
 	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
+	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
 
 	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)
 		{
@@ -704,6 +742,7 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 	m_pDeviceContext->IASetInputLayout(m_pSkeletalInputLayout);
 	m_pDeviceContext->VSSetShader(m_pSkeletalVertexShader, nullptr, 0);
 	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
+	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
 
 	m_SkeletalMeshInstance.sort([](const SkeletalMeshInstance* lhs, const SkeletalMeshInstance* rhs)
 		{
@@ -732,14 +771,16 @@ void D3DRenderManager::RenderSkeletalMeshInstance()
 
 void D3DRenderManager::RenderEnvironment()
 {
+	// 지금 스탠실 상태는 이것만 쓰는중임.
+	m_pDeviceContext->OMSetDepthStencilState(m_LessEqualDSS.Get(), 0);
+
 	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
 	m_pDeviceContext->VSSetShader(m_pEnvironmentVertexShader, nullptr, 0);
 	m_pDeviceContext->PSSetShader(m_pEnvironmentPixelShader, nullptr, 0);
 	m_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pTransformW_Buffer); //debugdraw에서 변경시켜서 설정한다.
-	// m_pDeviceContext->RSSetState(m_pRasterizerStateCCW.Get());
+	m_pDeviceContext->RSSetState(m_pRasterizerStateCCW.Get());
 
-	auto component = m_pEnvironmentMeshComponent.lock();
-	m_TransformW.mWorld = component->m_World.Transpose();
+	m_TransformW.mWorld = m_pEnvironmentMeshComponent->m_World.Transpose();
 	m_pDeviceContext->UpdateSubresource(m_pTransformW_Buffer, 0, nullptr, &m_TransformW, 0, 0);
-	component->m_MeshInstance.Render(m_pDeviceContext);
-}
+	m_pEnvironmentMeshComponent->m_MeshInstance.Render(m_pDeviceContext);
+ }

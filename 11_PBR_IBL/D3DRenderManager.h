@@ -97,7 +97,7 @@ public:
 	void AddMeshInstance(StaticMeshComponent* pModel);
 	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
-	void SetEnvironment(std::weak_ptr<EnvironmentMeshComponent> val);
+	void SetEnvironment(EnvironmentMeshComponent* val);
 
 	void CreateIBL();
 private:
@@ -112,6 +112,8 @@ private:
 	void CreateSwapChain();
 	void CreateStencilAndDepth();
 	void CreateRenderTargetView();
+	void CreateRasterizerState();
+	void CreateDepthStencilState();
 
 	//?   Render    ///
 	void ImguiRender();
@@ -160,7 +162,8 @@ public:
 	std::list<SkeletalMeshInstance*> m_SkeletalMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다.
 	std::list<SkeletalMeshComponent*> m_SkeletalMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
 
-	std::weak_ptr<EnvironmentMeshComponent> m_pEnvironmentMeshComponent;
+	//std::weak_ptr<EnvironmentMeshComponent> m_pEnvironmentMeshComponent;
+	EnvironmentMeshComponent* m_pEnvironmentMeshComponent;
 
 	///   FOR RENDERING   ///
 	ID3D11VertexShader* m_pEnvironmentVertexShader = nullptr; // Environment 정점 셰이더.
@@ -176,7 +179,11 @@ public:
 	ID3D11SamplerState* m_pSamplerLinear = nullptr;		// 텍스처 샘플러
 	ID3D11SamplerState* m_pSamplerClamp = nullptr;		// 텍스처 샘플러
 	ID3D11BlendState*   m_pAlphaBlendState = nullptr;		// 블렌드 상태 변경 (반투명처리를위한 블렌드상태)
-		
+
+	ComPtr<ID3D11RasterizerState> m_pRasterizerStateCCW; // 컬 모드 CCW
+	ComPtr<ID3D11RasterizerState> m_pRasterizerStateCW; // 컬 모드 CW
+	ComPtr<ID3D11DepthStencilState> m_LessEqualDSS;  
+	 
 	///  FOR SHADER  ///
 	XMVECTOR m_Eye;
 	XMVECTOR m_At;
