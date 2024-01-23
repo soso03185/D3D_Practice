@@ -564,7 +564,9 @@ void D3DRenderManager::CreateIBL()
 	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
 	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
-	pComponent->SetLocalScale(Vector3(100.0f, 100.0f, 100.0f));
+	
+	pComponent->SetLocalPosition(Vector3(100, 100, 100));
+	pComponent->SetLocalScale(Vector3(1000, 1000, 1000));
 
 	SetEnvironment(pComponent);
 }
@@ -587,7 +589,8 @@ void D3DRenderManager::Update()
 {
 	// Cam Transform
 	m_Eye = XMVectorSet(m_Cam[0], m_Cam[1], m_Cam[2], 0.0f);
-	m_At = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	// m_At = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	m_At = XMVectorSet(m_Look[0], m_Look[1], m_Look[2], 0.0f);
 	m_Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	m_View = XMMatrixLookToLH(m_Eye, m_At, m_Up);
 
@@ -617,6 +620,12 @@ void D3DRenderManager::Update()
 		AddMeshInstance(SkeletalMeshComponent);
 		SkeletalMeshComponent->Update(m_deltaTime);
 	}
+
+	if (m_pEnvironmentMeshComponent != nullptr)
+	{
+		m_pEnvironmentMeshComponent->Update(m_deltaTime);
+		isIBL ? m_IBL.UseIBL = true : m_IBL.UseIBL = false;
+	}
 }
 
 void D3DRenderManager::Render()
@@ -645,11 +654,11 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 
-	RenderStaticMeshInstance();
-	RenderSkeletalMeshInstance();
-
 	if (m_pEnvironmentMeshComponent != nullptr)
 		RenderEnvironment();
+
+	RenderStaticMeshInstance();
+	RenderSkeletalMeshInstance();
 
 	ImguiRender();
 	m_pSwapChain->Present(0, 0);
@@ -676,9 +685,11 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("SystemMemory: %s", str.c_str());
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::SliderFloat3("Cam_Pos", m_Cam, -200.0f, 200.0f);
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -500.0f, 500.0f);
+		ImGui::SliderFloat3("Look_Pos", m_Look, -180, 180);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::Checkbox("IBL", &isIBL);
 		ImGui::Checkbox("NormalMap", &isNormalMap);
 		ImGui::Checkbox("SpecularMap", &isSpecularMap);
 		ImGui::Checkbox("Gamma_Correction", &isGamma);
@@ -690,7 +701,7 @@ void D3DRenderManager::ImguiRender()
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat("Far", &m_Far, 1.0f, 10000.0f);
-		ImGui::SliderFloat("Near", &m_Near, 0.01f, 10.0f);
+		ImGui::SliderFloat("Near", &m_Near, 0.01f, 1000.0f);
 		ImGui::SliderFloat("Fov", &m_Fov, -20.0f, 180.0f);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));

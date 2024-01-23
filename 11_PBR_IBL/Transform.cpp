@@ -38,7 +38,6 @@ Math::Vector3 Transform::GetWorldPosition()
 	return m_World.Translation();
 }
 
-//Todo 지금 Local 을 옮겨주고 있는데 나중에 매핑해서 World pos를 옮기는걸로 바꾸기
 void Transform::SetLocalPosition(const Math::Vector3& val)
 {
 	m_bDirty = true;

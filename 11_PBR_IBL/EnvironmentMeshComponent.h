@@ -14,7 +14,7 @@ public:
 	EnvironmentMeshComponent();
 	~EnvironmentMeshComponent();
 
-	std::shared_ptr<ModelResource> m_SceneResource;
+	std::shared_ptr<ModelResource>		m_SceneResource;
 	std::shared_ptr<MaterialTexture>	m_EnvironmentTextureResource;
 	std::shared_ptr<MaterialTexture>	m_IBLDiffuseTextureResource;
 	std::shared_ptr<MaterialTexture>	m_IBLSpecularTextureResource;
@@ -32,5 +32,6 @@ public:
 	bool ReadIBLDiffuseTextureFromDDS(std::wstring filePath);
 	bool ReadIBLSpecularTextureFromDDS(std::wstring filePath);
 	bool ReadIBLBRDFTextureFromDDS(std::wstring filePath);
+
 };
 

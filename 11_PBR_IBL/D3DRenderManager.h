@@ -185,7 +185,7 @@ public:
 	ComPtr<ID3D11DepthStencilState> m_LessEqualDSS;  
 	 
 	///  FOR SHADER  ///
-	XMVECTOR m_Eye;
+	XMVECTOR m_Eye;	
 	XMVECTOR m_At;
 	XMVECTOR m_Up;
 	Matrix   m_View;		// 카메라좌표계 공간으로 변환을 위한 행렬.
@@ -198,6 +198,8 @@ public:
 	float m_deltaTime = 0;
 
 	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
+	float m_Look[3] = { 0.0f, 0.0f, 1.0f };
+
 	float m_Fov = 100.0f;
 	float m_Near = 0.01f;
 	float m_Far = 10000.0f;
@@ -208,6 +210,7 @@ public:
 	float m_vLightColor[3] = { 1, 1, 1 };
 	float m_vLightDir[3] = { 0, 0, 1 };
 
+	bool isIBL = true;
 	bool isNormalMap = true;
 	bool isSpecularMap = true;
 	bool isGamma = true;
