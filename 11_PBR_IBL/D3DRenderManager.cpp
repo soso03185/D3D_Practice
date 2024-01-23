@@ -565,7 +565,7 @@ void D3DRenderManager::CreateIBL()
 	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
 	
-	pComponent->SetLocalPosition(Vector3(100, 100, 100));
+	//pComponent->SetLocalPosition(Vector3(100, 100, 100));
 	pComponent->SetLocalScale(Vector3(1000, 1000, 1000));
 
 	SetEnvironment(pComponent);
@@ -654,7 +654,7 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
 
-	if (m_pEnvironmentMeshComponent != nullptr)
+	if (m_pEnvironmentMeshComponent != nullptr && Use_CubeMap)
 		RenderEnvironment();
 
 	RenderStaticMeshInstance();
@@ -690,6 +690,7 @@ void D3DRenderManager::ImguiRender()
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::Checkbox("IBL", &isIBL);
+		ImGui::Checkbox("Use_CubeMap", &Use_CubeMap);
 		ImGui::Checkbox("NormalMap", &isNormalMap);
 		ImGui::Checkbox("SpecularMap", &isSpecularMap);
 		ImGui::Checkbox("Gamma_Correction", &isGamma);

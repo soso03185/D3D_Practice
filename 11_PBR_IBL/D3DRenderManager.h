@@ -210,6 +210,7 @@ public:
 	float m_vLightColor[3] = { 1, 1, 1 };
 	float m_vLightDir[3] = { 0, 0, 1 };
 
+	bool Use_CubeMap = true;
 	bool isIBL = true;
 	bool isNormalMap = true;
 	bool isSpecularMap = true;

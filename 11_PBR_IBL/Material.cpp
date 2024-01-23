@@ -85,6 +85,7 @@ MaterialTexture::~MaterialTexture()
 
 void MaterialTexture::Create(const std::wstring& filePath)
 {
+	//ToDo :: DDS 말고 다른 파일형식도 가능하게끔 만들어야함.
 	HR_T(CreateTextureFromFile(D3DRenderManager::m_pDevice, filePath.c_str(), &m_pTextureSRV));
 	m_FilePath = filePath;
 }
