@@ -11,6 +11,8 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 #include <Psapi.h>
+#include <DirectXTex.h>
+#include <filesystem>
 
 
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
@@ -566,7 +568,7 @@ void D3DRenderManager::CreateIBL()
 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
 	
 	//pComponent->SetLocalPosition(Vector3(100, 100, 100));
-	pComponent->SetLocalScale(Vector3(1000, 1000, 1000));
+	pComponent->SetLocalScale(Vector3(100, 100, 100));
 
 	SetEnvironment(pComponent);
 }
@@ -796,3 +798,40 @@ void D3DRenderManager::RenderEnvironment()
 	m_pDeviceContext->UpdateSubresource(m_pTransformW_Buffer, 0, nullptr, &m_TransformW, 0, 0);
 	m_pEnvironmentMeshComponent->m_MeshInstance.Render(m_pDeviceContext);
  }
+
+
+HRESULT D3DRenderManager::CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView)
+{
+	std::filesystem::path path(szFileName);
+	std::wstring strExtension = path.extension();
+	std::transform(strExtension.begin(), strExtension.end(), strExtension.begin(), ::towlower);
+
+	DirectX::TexMetadata metadata1;
+	DirectX::ScratchImage scratchImage;
+
+	HRESULT hr = S_OK;
+	if (strExtension == L".dds")
+	{
+		HR_T(hr = DirectX::LoadFromDDSFile(szFileName, DirectX::DDS_FLAGS_NONE, &metadata1, scratchImage));
+	}
+	else if (strExtension == L".tga")
+	{
+		HR_T(hr = DirectX::LoadFromTGAFile(szFileName, &metadata1, scratchImage));
+	}
+	else if (strExtension == L".hdr")
+	{
+		HR_T(hr = DirectX::LoadFromHDRFile(szFileName, &metadata1, scratchImage));
+	}
+	else // ±‚≈∏..
+	{
+		HR_T(hr = DirectX::LoadFromWICFile(szFileName, DirectX::WIC_FLAGS_NONE, &metadata1, scratchImage));
+	}
+
+	HR_T(hr = DirectX::CreateShaderResourceView(m_pDevice, scratchImage.GetImages(), scratchImage.GetImageCount(), metadata1, textureView));
+
+	if (FAILED(hr))
+	{
+		MessageBoxW(NULL, GetComErrorString(hr), szFileName, MB_OK);
+		return hr;
+	}
+}

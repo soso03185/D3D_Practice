@@ -22,7 +22,7 @@ void StaticMeshComponent::Update(float DeltaTime)
 bool StaticMeshComponent::ReadSceneResourceFromFBX(std::string filePath)
 {
 	// FBX 파일 읽기
-	std::shared_ptr<ModelResource> sceneResource = ResourceManager::Instance->CreateModelResource(filePath, ModelType::STATIC);
+	std::shared_ptr<ModelResource> sceneResource = ResourceManager::Instance->CreateStaticModelResource(filePath);
 	if (sceneResource == nullptr)
 	{
 		return false;

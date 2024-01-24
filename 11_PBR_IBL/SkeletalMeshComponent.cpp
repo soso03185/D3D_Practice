@@ -31,7 +31,7 @@ void SkeletalMeshComponent::Update(float DeltaTime)
 bool SkeletalMeshComponent::ReadSceneResourceFromFBX(std::string filePath)
 {
 	 //FBX 파일 읽기
-	std::shared_ptr<ModelResource> sceneResource = ResourceManager::Instance->CreateModelResource(filePath, ModelType::SKELETAL);
+	std::shared_ptr<ModelResource> sceneResource = ResourceManager::Instance->CreateSkeletalModelResource(filePath);
 	if (sceneResource == nullptr)
 	{
 		return false;

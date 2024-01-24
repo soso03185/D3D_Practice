@@ -8,12 +8,6 @@
 
 struct aiScene;
 
-enum class ModelType
-{
-	STATIC,
-	SKELETAL
-};
-
 // 그냥 mesh 랑 material , anim  만들어서 갖고 있는 애임.
 class ModelResource
 {
@@ -28,7 +22,8 @@ public:
 	std::vector<std::shared_ptr<Animation>> m_Animations;
 
 public:
-	bool ReadFile(std::string filePath, ModelType modelType);
+	bool ReadStaticFile(std::string filePath);
+	bool ReadSkeletalFile(std::string filePath);
 	Material* GetMeshMaterial(UINT index);
 };
 

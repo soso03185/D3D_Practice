@@ -17,7 +17,7 @@ EnvironmentMeshComponent::~EnvironmentMeshComponent()
 bool EnvironmentMeshComponent::ReadEnvironmentMeshFromFBX(std::string filePath)
 {
 	// FBX 파일 읽기	
-	m_SceneResource = ResourceManager::Instance->CreateModelResource(filePath, ModelType::STATIC);
+	m_SceneResource = ResourceManager::Instance->CreateStaticModelResource(filePath);
 
 	assert(m_SceneResource != nullptr);
 	if (m_SceneResource == nullptr)

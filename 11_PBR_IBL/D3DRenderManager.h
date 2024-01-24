@@ -98,8 +98,8 @@ public:
 	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
 	void SetEnvironment(EnvironmentMeshComponent* val);
+	HRESULT CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView);
 
-	void CreateIBL();
 private:
 	//?   CREATE	  ///
 	void CreateVS_IL();
@@ -114,6 +114,7 @@ private:
 	void CreateRenderTargetView();
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
+	void CreateIBL();
 
 	//?   Render    ///
 	void ImguiRender();
@@ -124,8 +125,7 @@ private:
 	//?   Util     ///
 	void GetVideoMemoryInfo(std::string& out);
 	void GetSystemMemoryInfo(std::string& out);
-
-
+	
 public: 
 	///   D3D   ///
 	static D3DRenderManager* Instance;
