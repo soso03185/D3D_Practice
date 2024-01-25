@@ -282,6 +282,7 @@ void D3DRenderManager::Uninitialize()
 	SAFE_RELEASE(m_pStaticInputLayout);
 	SAFE_RELEASE(m_pSkeletalInputLayout);
 	SAFE_RELEASE(m_pPixelShader);
+	SAFE_RELEASE(m_pCartoonPS);
 
 	SAFE_RELEASE(m_pSamplerLinear);
 	SAFE_RELEASE(m_pSamplerClamp);
@@ -371,6 +372,13 @@ void D3DRenderManager::CreatePS()
 		pixelShaderBuffer->GetBufferPointer(),
 		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
 	SAFE_RELEASE(pixelShaderBuffer);
+
+	ID3D10Blob* cartoonPSBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+ 	HR_T(CompileShaderFromFile(L"CartoonPS.hlsl", "main", "ps_5_0", &cartoonPSBuffer, nullptr));
+	HR_T(m_pDevice->CreatePixelShader(
+		cartoonPSBuffer->GetBufferPointer(),
+		cartoonPSBuffer->GetBufferSize(), NULL, &m_pCartoonPS));
+	SAFE_RELEASE(cartoonPSBuffer);
 }
 
 void D3DRenderManager::CreateEnvironment()
@@ -562,12 +570,12 @@ void D3DRenderManager::CreateIBL()
 {
 	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
 	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
-	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/BakerSampleEnvHDR.dds");
-	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
-	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
-	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
+	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/DaySkyEnvHDR.dds");
+	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/DaySkyDiffuseHDR.dds");
+	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/DaySkySpecularHDR.dds");
+	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/DaySkyBRDF.dds");
 	
-	//pComponent->SetLocalPosition(Vector3(100, 100, 100));
+//	pComponent->SetLocalPosition(Vector3(100, 100, 100));
 	pComponent->SetLocalScale(Vector3(100, 100, 100));
 
 	SetEnvironment(pComponent);
@@ -723,7 +731,8 @@ void D3DRenderManager::RenderStaticMeshInstance()
 {
 	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
 	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
-	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
+//	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
+	m_pDeviceContext->PSSetShader(m_pCartoonPS, nullptr, 0);
 	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
 
 	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)

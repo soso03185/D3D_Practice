@@ -172,6 +172,7 @@ public:
 	ID3D11VertexShader* m_pStaticVertexShader = nullptr;	// Á¤Á¡ ¼ÎÀÌ´õ.
 	ID3D11VertexShader* m_pSkeletalVertexShader = nullptr;	// Á¤Á¡ ¼ÎÀÌ´õ.
 	ID3D11PixelShader*  m_pPixelShader = nullptr;	// ÇÈ¼¿ ¼ÎÀÌ´õ.	
+	ID3D11PixelShader*  m_pCartoonPS = nullptr;	// ÇÈ¼¿ ¼ÎÀÌ´õ.	
  
  	ID3D11InputLayout* m_pStaticInputLayout = nullptr;	// ÀÔ·Â ·¹ÀÌ¾Æ¿ô.
 	ID3D11InputLayout* m_pSkeletalInputLayout = nullptr;	// ÀÔ·Â ·¹ÀÌ¾Æ¿ô.
@@ -200,9 +201,9 @@ public:
 	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
 	float m_Look[3] = { 0.0f, 0.0f, 1.0f };
 
-	float m_Fov = 100.0f;
+	float m_Fov = 90.0f;
 	float m_Near = 0.01f;
-	float m_Far = 10000.0f;
+	float m_Far = 100000.0f;
 
 	float m_SpecularPower = 4.0f;
 	float m_Ambient = 0.369f;
