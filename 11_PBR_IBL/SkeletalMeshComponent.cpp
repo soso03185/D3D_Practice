@@ -22,7 +22,23 @@ void SkeletalMeshComponent::Update(float DeltaTime)
 	if (!m_ModelResource->m_Animations.empty())
 	{
 		m_AnimationProgressTime += DeltaTime;
-		m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
+		m_durationTimer += DeltaTime;
+
+		if (m_AnimationDurationTime < 0)
+		{
+			// Current Duration Time
+			m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
+		}
+		else
+		{			
+			// Next Duration Time
+			m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_AnimationDurationTime);
+
+			if (m_durationTimer >= m_AnimationDurationTime)
+			{
+				m_AnimationDurationTime = -1.0f;
+			}
+		}
 	}
 
 	m_RootNode.Update(DeltaTime);
