@@ -864,10 +864,7 @@ void D3DRenderManager::ChangeAnimation(int index)
 				pBone->m_pNextNodeAnimation = &animation->m_NodeAnims[i];
 			}
 
-			m_pNewModel->m_AnimationIndex = index;
-			
-			// Next Duration Time
-			m_pNewModel->m_AnimationDurationTime = animation->m_Duration;
+			m_pNewModel->m_AnimationIndex = index;			
 		}
 	}
 
