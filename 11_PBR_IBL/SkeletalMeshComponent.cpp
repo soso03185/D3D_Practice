@@ -70,7 +70,7 @@ void SkeletalMeshComponent::UpdateBoneAnimationReference(UINT index)
 		NodeAnimation& nodeAnimation = animation->m_NodeAnims[i];
 		Node* pBone = m_RootNode.FindNode(nodeAnimation.m_NodeName);
 		assert(pBone != nullptr);
-		pBone->m_pNodeAnimation = &animation->m_NodeAnims[i];
+		pBone->m_pCurNodeAnimation = &animation->m_NodeAnims[i];
 	}
 }
 

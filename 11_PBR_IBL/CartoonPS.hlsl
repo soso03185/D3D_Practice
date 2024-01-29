@@ -4,16 +4,16 @@
 // Pixel Shader
 //--------------------------------------------------------------------------------------
 
-float4 main(PS_INPUT Input) : SV_Target
-{
-    float3 normal = normalize(Input.Norm);
-    float3 vTangent = normalize(Input.TangentWorld);
-    float3 vBiTangent = cross(normal, vTangent);
+//float4 main(PS_INPUT Input) : SV_Target
+//{
+//    float3 normal = normalize(Input.Norm);
+//    float3 vTangent = normalize(Input.TangentWorld);
+//    float3 vBiTangent = cross(normal, vTangent);
     
-    float3 vNormalTangentSpace = txNormal.Sample(samLinear, Input.Tex).rgb * 2.0f - 1.0f;
+//    float3 vNormalTangentSpace = txNormal.Sample(samLinear, Input.Tex).rgb * 2.0f - 1.0f;
 
     
-}
+//}
 
 
 

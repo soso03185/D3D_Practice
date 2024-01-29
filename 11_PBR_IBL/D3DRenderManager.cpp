@@ -160,7 +160,8 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	// 8. FBX Load	
 	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
-	newModel->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
+//	newModel->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
+	newModel->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 
 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
@@ -168,6 +169,8 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	float posz = (float)(rand() % range) - range * 0.5f;
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
 	newModel->PlayAnimation(0);
+
+	m_pNewModel = newModel;
 }
 
 void D3DRenderManager::DecreaseModel()
@@ -235,7 +238,7 @@ bool D3DRenderManager::InitD3D()
 	CreateEnvironment();
 
 	// 환경 맵 생성
-	CreateIBL();
+	//CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
 
 	// 데이터 초기화
 	InitScene();
@@ -843,4 +846,25 @@ HRESULT D3DRenderManager::CreateTextureFromFile(const wchar_t* szFileName, ID3D1
 		MessageBoxW(NULL, GetComErrorString(hr), szFileName, MB_OK);
 		return hr;
 	}
+}
+
+void D3DRenderManager::ChangeAnimation(int index)
+{
+	if (m_pNewModel != nullptr)
+	{
+		if (index <= m_pNewModel->m_ModelResource->m_Animations.size())
+		{
+			auto animation = m_pNewModel->m_ModelResource->m_Animations[index];
+
+			for (size_t i = 0; i < animation->m_NodeAnims.size(); i++)
+			{
+				NodeAnimation& nodeAnimation = animation->m_NodeAnims[i];
+				Node* pBone = m_pNewModel->m_RootNode.FindNode(nodeAnimation.m_NodeName);
+				assert(pBone != nullptr);
+				pBone->m_pNextNodeAnimation = &animation->m_NodeAnims[i];
+			}
+			m_pNewModel->m_AnimationIndex = index;
+		}
+	}
+
 }

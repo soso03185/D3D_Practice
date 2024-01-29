@@ -100,6 +100,11 @@ public:
 	void SetEnvironment(EnvironmentMeshComponent* val);
 	HRESULT CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView);
 
+
+	// Test
+	void ChangeAnimation(int index);
+	SkeletalMeshComponent* m_pNewModel;
+
 private:
 	//?   CREATE	  ///
 	void CreateVS_IL();

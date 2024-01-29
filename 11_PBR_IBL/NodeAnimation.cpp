@@ -7,9 +7,13 @@
 #include <assimp\scene.h>
 
 // Animaiton 보간 작업
-void NodeAnimation::Evaluate(float progressTime, Math::Vector3& position, Math::Quaternion& rotation, Math::Vector3& scaling)
+Math::Matrix NodeAnimation::Evaluate(float progressTime)
 {
 	assert(m_AnimationKey.size() > 0);
+
+	Math::Vector3 position;
+	Math::Quaternion rotation;
+	Math::Vector3 scaling;
 
 	if (m_AnimationKey.size() == 1)
 	{
@@ -48,6 +52,12 @@ void NodeAnimation::Evaluate(float progressTime, Math::Vector3& position, Math::
 			scaling = Math::Vector3::Lerp(m_AnimationKey[i - 1].m_Scaling, m_AnimationKey[i].m_Scaling, t);
 		}
 	}
+
+	Math::Matrix transform = 
+	Math::Matrix::CreateScale(scaling) *
+	Math::Matrix::CreateFromQuaternion(rotation) *
+	Math::Matrix::CreateTranslation(position);
+	return transform;
 }
 
 // 구면 보간 함수

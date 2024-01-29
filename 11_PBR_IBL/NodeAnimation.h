@@ -21,12 +21,7 @@ public:
 	int frameIndex = 0;
 
 public:
-	void Evaluate(
-		float progressTime,
-		Math::Vector3& position,
-		Math::Quaternion& rotation,
-		Math::Vector3& scaling
-	);	
+	Math::Matrix Evaluate(float progressTime);	
 
 	// 구면 보간 함수
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);

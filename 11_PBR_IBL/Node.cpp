@@ -10,65 +10,41 @@
 
 namespace Math = DirectX::SimpleMath;
 
-void Node::Create(ModelResource* model, aiNode* node, Animation* anim)
+void Node::Update(float deltaTime)
 {
-	m_Local = Math::Matrix(&node->mTransformation.a1).Transpose();
-	m_Name = node->mName.C_Str();
-
-	for (UINT i = 0; i < node->mNumMeshes; ++i)
+	if (m_pCurNodeAnimation != nullptr)
 	{
-		UINT meshIndex = node->mMeshes[i];
+		Math::Matrix transform = m_pCurNodeAnimation->Evaluate(*m_pAnimationTime);
+		m_Local = transform;
 
-		// Mesh와 Node의 WorldMatrix를 연결한다.
-		 model->m_Meshes[meshIndex].m_pNodeWorld = &m_World; 
-	}
-
-	for (auto& mesh : model->m_Meshes)
-	{
-		for (auto& boneRef : mesh.m_BoneReferences)
+		// 애니메이션 전환될 상황인 경우
+		if (m_pNextNodeAnimation != nullptr)
 		{
-			if (boneRef.NodeName.compare(m_Name) == 0)
+			m_AnimChangeTime += deltaTime;
+			float changingAnimTime = 1.f;
+
+			// 전환 될 애니메이션의 키 값을 Matrix로 가져오기
+			Math::Matrix nextTransform = m_pNextNodeAnimation->Evaluate(*m_pAnimationTime);
+			m_Local = Math::Matrix::Lerp(transform, nextTransform, m_AnimChangeTime);
+
+			if (m_AnimChangeTime >= changingAnimTime)
 			{
-				boneRef.NodeWorldMatrixPtr = &m_World;
+				m_pCurNodeAnimation = m_pNextNodeAnimation;
+				m_pNextNodeAnimation = nullptr;
+				m_AnimChangeTime = 0;
 			}
 		}
 	}
 
-	for (auto& child : anim->m_NodeAnims)
+	if (m_pParent != nullptr) 
 	{
-		if (child.m_NodeName.compare(m_Name) == 0) // if  equal
-		{
-			m_pNodeAnimation = &child;
-			break;
-		}
-	}
-
-	m_Children.resize(node->mNumChildren);
-	for (UINT i = 0; i < node->mNumChildren; ++i)
-	{
-		m_Children[i].m_pParent = this;
-		m_Children[i].Create(model, node->mChildren[i], anim);
-	}
-}
-
-void Node::Update(float deltaTime)
-{
-	if (m_pNodeAnimation != nullptr)
-	{
-		Math::Vector3 position, scaling;
-		Math::Quaternion rotation;
-
-		m_pNodeAnimation->Evaluate(*m_pAnimationTime, position, rotation, scaling);
-
-		m_Local = Math::Matrix::CreateScale(scaling) *
-			Math::Matrix::CreateFromQuaternion(rotation) *
-			Math::Matrix::CreateTranslation(position);
-	}	
-
-	if (m_pParent != nullptr)
 		m_World = m_Local * m_pParent->m_World;
+	}
 	else
+	{
 		m_World = m_Local;
+	}
+
 
 	for (auto& child : m_Children)
 	{
