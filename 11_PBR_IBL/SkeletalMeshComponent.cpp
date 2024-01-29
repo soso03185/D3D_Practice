@@ -22,7 +22,7 @@ void SkeletalMeshComponent::Update(float DeltaTime)
 	if (!m_ModelResource->m_Animations.empty())
 	{
 		m_AnimationProgressTime += DeltaTime;
-		m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, 0.53f);
+		m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, 2.5f);
 		//m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
 	}
 
