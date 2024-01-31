@@ -53,11 +53,12 @@ uint querySpecularTextureLevels()
 float4 main(PS_INPUT Input) : SV_Target
 {
     float3 normal = normalize(Input.Norm);
+    float3x3 Wtransform;
     
     if (UseNormalMap)
     {
         float3 vTangent = normalize(Input.TangentWorld);
-        float3 vBiTangent = cross(normal, vTangent);    
+        float3 vBiTangent = cross(normal, vTangent);
         float3 vNormalTangentSpace = txNormal.Sample(samLinear, Input.Tex).rgb * 2.0f - 1.0f;
         
         float3x3 WorldTransform = float3x3(vTangent, vBiTangent, normal);
@@ -68,7 +69,8 @@ float4 main(PS_INPUT Input) : SV_Target
     float4 normLightDir = normalize(vLightDir);
     float3 texAlbedo = txDiffuse.Sample(samLinear, Input.Tex).rgb;
     
-    if (UseGamma)  texAlbedo.rgb = pow(texAlbedo.rgb, 2.2f); // gamma
+    if (UseGamma)
+        texAlbedo.rgb = pow(texAlbedo.rgb, 2.2f); // gamma
     
     float Metalness = 0.0f;
     float Roughness = Epsilon;
@@ -127,9 +129,9 @@ float4 main(PS_INPUT Input) : SV_Target
         
     // --------------------------------------------------------------------------
     //? IBL
-    //
     
     float3 ambientLighting = 0;
+    float3 pointAmbientLighting = 0;
 
     if (UseIBL)
     {
@@ -168,11 +170,46 @@ float4 main(PS_INPUT Input) : SV_Target
 		// Total ambient lighting contribution.
         ambientLighting = (diffuseIBL + specularIBL) * AmbientOcclusion;
     }
+           
+    if (UseLightIBL)
+    {
+        float3 rotMatrix = mul(normal, (float3x3)m_TestLocal);
+
+        float3 irradiance = txLightIBL_Diffuse.Sample(samLinear, rotMatrix).rgb;
+        // float3 irradiance = txLightIBL_Diffuse.Sample(samLinear, normal).rgb;
+        
+        float3 F = fresnelSchlick(F0, cosLo);
+        float3 kd = lerp(1.0 - F, 0.0, Metalness);
+        float3 diffuseIBL = kd * texAlbedo * irradiance; // IBL의 diffuse 항
+        uint specularTextureLevels = querySpecularTextureLevels(); // 전체 LOD 밉맵 레벨수 
+
+        float3 specularIrradiance = txLightIBL_Specular.SampleLevel(samLinear, Lr, Roughness * specularTextureLevels).rgb;
+        float2 specularBRDF = txLightIBL_SpecularBRDF_LUT.Sample(samClamp, float2(cosLo, Roughness)).rg;
+        float3 specularIBL = (F0 * specularBRDF.x + specularBRDF.y) * specularIrradiance;
+
+        pointAmbientLighting = (diffuseIBL + specularIBL) * AmbientOcclusion;
+    }
     
-    float3 final = directLighting + ambientLighting + Emissive;
+    float3 final = directLighting + ambientLighting + pointAmbientLighting * 2 + Emissive;
     float4 finalColor = float4(final, Opacity);
     
     if (UseGamma)
         finalColor.rgb = pow(finalColor.rgb, 1 / 2.2f); // gamma
     return finalColor;
 };
+
+//// 캐릭터 위치
+//float3 characterPosition = ...;
+
+//// 큐브맵 텍스처 좌표
+//float3 cubemapTexCoord = normalize(characterPosition - CameraPosition);
+
+//// 카메라의 뷰 행렬의 역행렬로 회전 변환
+//float3 rotatedTexCoord = mul(cubemapTexCoord, (float3x3) inverse(ViewMatrix));
+
+//// 회전된 텍스처 좌표를 사용하여 큐브맵 샘플링
+//float3 IBLColor = txIBL.Sample(samLinear, rotatedTexCoord).rgb;
+
+//// 이후 계산에 IBLColor를 사용
+
+

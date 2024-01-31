@@ -22,11 +22,11 @@ void Node::Update(float deltaTime)
 		{
 			m_AnimChangeTime += deltaTime;
 
-			float changingAnimTime = 1.f;
+			float changingAnimTime = 0.2f;
 
 			// 전환 될 애니메이션의 키 값을 Matrix로 가져오기
 			Math::Matrix nextTransform = m_pNextNodeAnimation->Evaluate(*m_pAnimationTime);
-			m_Local = Math::Matrix::Lerp(transform, nextTransform, m_AnimChangeTime );
+			m_Local = Math::Matrix::Lerp(transform, nextTransform, m_AnimChangeTime * 5);
 
 			if (m_AnimChangeTime >= changingAnimTime)
 			{

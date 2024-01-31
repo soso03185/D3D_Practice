@@ -135,7 +135,6 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
 
-
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_previousTime);
 	QueryPerformanceCounter(&m_currentTime);
@@ -152,6 +151,7 @@ void D3DRenderManager::IncreaseStaticModel(std::string pilePath)
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
+
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
 }
 
@@ -160,15 +160,15 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	// 8. FBX Load	
 	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
-//	newModel->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
-	newModel->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
+//	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
+	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 
 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
-	newModel->PlayAnimation(0);
+	newModel->m_pAnimator->SetAnimation(0);
 
 	m_pNewModel = newModel;
 }
@@ -238,7 +238,8 @@ bool D3DRenderManager::InitD3D()
 	CreateEnvironment();
 
 	// 환경 맵 생성
-	//CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
+//	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
+//	CreateLightIBL(); // Test Light CubeMap
 
 	// 데이터 초기화
 	InitScene();
@@ -573,29 +574,48 @@ void D3DRenderManager::CreateIBL()
 {
 	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
 	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
-	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/DaySkyEnvHDR.dds");
-	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/DaySkyDiffuseHDR.dds");
-	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/DaySkySpecularHDR.dds");
-	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/DaySkyBRDF.dds");
-	
-//	pComponent->SetLocalPosition(Vector3(100, 100, 100));
+ 	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/BakerSampleEnvHDR.dds");
+ 	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
+ 	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
+ 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
 	pComponent->SetLocalScale(Vector3(100, 100, 100));
-
 	SetEnvironment(pComponent);
+
+	m_IBL.UseIBL = true;
+}
+
+void D3DRenderManager::CreateLightIBL()
+{
+	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
+	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
+	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/LightCubeMapEnvHDR.dds");
+	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/LightCubeMapDiffuseHDR.dds");
+	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/LightCubeMapSpecularHDR.dds");
+	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/LightCubeMapBRDF.dds");
+	pComponent->SetLocalScale(Vector3(0, 0, 0));
+	SetLightEnvironment(pComponent);
+
+	m_IBL.UseLightIBL = true;
 }
 
 void D3DRenderManager::SetEnvironment(EnvironmentMeshComponent* val)
 {	
-	m_pEnvironmentMeshComponent = val;
-	auto component = m_pEnvironmentMeshComponent;	// Shared.hlsli 에서 텍스처 slot7 확인
+	m_pEnvironmentMeshComponent = val; 
 
-	// Shared.hlsli 에서 텍스처 slot7 확인
-	m_pDeviceContext->PSSetShaderResources(7, 1, component->m_EnvironmentTextureResource->m_pTextureSRV.GetAddressOf());
-	m_pDeviceContext->PSSetShaderResources(8, 1, component->m_IBLDiffuseTextureResource->m_pTextureSRV.GetAddressOf());
-	m_pDeviceContext->PSSetShaderResources(9, 1, component->m_IBLSpecularTextureResource->m_pTextureSRV.GetAddressOf());
-	m_pDeviceContext->PSSetShaderResources(10, 1, component->m_IBLBRDFTextureResource->m_pTextureSRV.GetAddressOf());
-	m_IBL.UseIBL = true;
-	m_pDeviceContext->UpdateSubresource(m_pIBL_Buffer, 0, nullptr, &m_IBL, 0, 0);
+	m_pDeviceContext->PSSetShaderResources(7,  1, val->m_EnvironmentTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(8,  1, val->m_IBLDiffuseTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(9,  1, val->m_IBLSpecularTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(10, 1, val->m_IBLBRDFTextureResource->m_pTextureSRV.GetAddressOf());
+}
+
+void D3DRenderManager::SetLightEnvironment(EnvironmentMeshComponent* val)
+{
+	m_pLightEnvironment = val;
+
+	m_pDeviceContext->PSSetShaderResources(12, 1, val->m_EnvironmentTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(13, 1, val->m_IBLDiffuseTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(14, 1, val->m_IBLSpecularTextureResource->m_pTextureSRV.GetAddressOf());
+	m_pDeviceContext->PSSetShaderResources(15, 1, val->m_IBLBRDFTextureResource->m_pTextureSRV.GetAddressOf());
 }
 
 void D3DRenderManager::Update()
@@ -637,7 +657,9 @@ void D3DRenderManager::Update()
 	if (m_pEnvironmentMeshComponent != nullptr)
 	{
 		m_pEnvironmentMeshComponent->Update(m_deltaTime);
+
 		isIBL ? m_IBL.UseIBL = true : m_IBL.UseIBL = false;
+		isPointIBL ? m_IBL.UseLightIBL = true : m_IBL.UseLightIBL = false;
 	}
 }
 
@@ -666,6 +688,19 @@ void D3DRenderManager::Render()
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
+
+
+
+	//? for Test 
+	Math::Vector3 m_LocalPosition = Math::Vector3(0.0f, 0.0f, 0.0f);
+	Math::Vector3 m_LocalScale = Math::Vector3(1.0f, 1.0f, 1.0f);
+	Math::Vector3 m_LocalRotation = Math::Vector3(TestTransformRotation[0], TestTransformRotation[1], TestTransformRotation[2]);	// radian
+
+	m_IBL.m_TestLocal =
+		Math::Matrix::CreateScale(m_LocalScale) *
+		Math::Matrix::CreateFromYawPitchRoll(m_LocalRotation) *
+		Math::Matrix::CreateTranslation(m_LocalPosition);
+
 
 	if (m_pEnvironmentMeshComponent != nullptr && Use_CubeMap)
 		RenderEnvironment();
@@ -696,13 +731,15 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("VideoMemory: %s", str.c_str());
 		GetSystemMemoryInfo(str);
 		ImGui::Text("SystemMemory: %s", str.c_str());
+		ImGui::SliderFloat3("TestRot", TestTransformRotation, -5.0f, 5.0f);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::SliderFloat3("Cam_Pos", m_Cam, -500.0f, 500.0f);
+		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1500.0f, 500.0f);
 		ImGui::SliderFloat3("Look_Pos", m_Look, -180, 180);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::Checkbox("IBL", &isIBL);
+		ImGui::Checkbox("Point IBL", &isPointIBL);
 		ImGui::Checkbox("Use_CubeMap", &Use_CubeMap);
 		ImGui::Checkbox("NormalMap", &isNormalMap);
 		ImGui::Checkbox("SpecularMap", &isSpecularMap);
@@ -734,8 +771,8 @@ void D3DRenderManager::RenderStaticMeshInstance()
 {
 	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
 	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
-//	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
-	m_pDeviceContext->PSSetShader(m_pCartoonPS, nullptr, 0);
+	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
+//	m_pDeviceContext->PSSetShader(m_pCartoonPS, nullptr, 0);
 	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
 
 	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)
@@ -863,9 +900,8 @@ void D3DRenderManager::ChangeAnimation(int index)
 				assert(pBone != nullptr);
 				pBone->m_pNextNodeAnimation = &animation->m_NodeAnims[i];
 			}
-
-			m_pNewModel->m_AnimationIndex = index;			
+			m_pNewModel->m_pAnimator->m_animChange = true;
+			m_pNewModel->m_pAnimator->m_AnimationIndex = index;
 		}
 	}
-
 }

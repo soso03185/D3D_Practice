@@ -56,6 +56,12 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/Primrose_Egypt.fbx");
 			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/Zombie_Run.fbx");
 			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/zeldaPosed001.fbx");
+		//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/cerberus2.fbx");
+			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/rock_lo.fbx");
+			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/tree2_test3_low.fbx");
+
+		//	D3DRenderManager::Instance->IncreaseStaticModel("../Resource/test_tree_BaseARMN.fbx");
+		//	D3DRenderManager::Instance->IncreaseStaticModel("../Resource/TOTEM_1.fbx");
 		}
 		else if (wParam == VK_DOWN) {
 			D3DRenderManager::Instance->DecreaseModel();
@@ -76,3 +82,4 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
 	return __super::WndProc(hWnd, message, wParam, lParam);
 }
+

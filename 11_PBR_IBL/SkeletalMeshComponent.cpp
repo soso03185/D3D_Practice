@@ -8,6 +8,8 @@ SkeletalMeshComponent::SkeletalMeshComponent()
 {
 	D3DRenderManager::Instance->m_SkeletalMeshComponents.push_back(this);
 	m_iterator = --D3DRenderManager::Instance->m_SkeletalMeshComponents.end();
+
+	m_pAnimator = make_shared<Animator>();
 }
 
 SkeletalMeshComponent::~SkeletalMeshComponent()
@@ -15,18 +17,16 @@ SkeletalMeshComponent::~SkeletalMeshComponent()
 	D3DRenderManager::Instance->m_SkeletalMeshComponents.erase(m_iterator);
 }
 
-void SkeletalMeshComponent::Update(float DeltaTime)
+void SkeletalMeshComponent::Update(float deltaTime)
 {
-	__super::Update(DeltaTime);
+	__super::Update(deltaTime);
 
 	if (!m_ModelResource->m_Animations.empty())
 	{
-		m_AnimationProgressTime += DeltaTime;
-		m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, 2.5f);
-		//m_AnimationProgressTime = (float)fmod(m_AnimationProgressTime, m_ModelResource->m_Animations[m_AnimationIndex]->m_Duration);
+		m_pAnimator->Update(deltaTime);
 	}
 
-	m_RootNode.Update(DeltaTime);
+	m_RootNode.Update(deltaTime);
 }
 
 bool SkeletalMeshComponent::ReadSceneResourceFromFBX(std::string filePath)
@@ -55,32 +55,10 @@ void SkeletalMeshComponent::SetSceneResource(std::shared_ptr<ModelResource> val)
 		Mesh* meshResource = &m_ModelResource->m_Meshes[i];
 		Material* material = &m_ModelResource->m_Materials[i];
 		m_MeshInstances[i].Create(meshResource, &m_RootNode, material); 
-	}
-	UpdateBoneAnimationReference(0);	// 각 노드의 애니메이션 정보참조 연결	
-	
-	//	m_BoundingBox.Center = Math::Vector3(m_ModelResource->m_AABBmin + m_ModelResource->m_AABBmax) * 0.5f;	// Calculate extent
-	//	m_BoundingBox.Extents = Math::Vector3(m_ModelResource->m_AABBmax - m_ModelResource->m_AABBmin);	// Calculate extent
-}
+	}	
 
-void SkeletalMeshComponent::UpdateBoneAnimationReference(UINT index)
-{
-	assert(index < m_ModelResource->m_Animations.size());
-	auto animation = m_ModelResource->m_Animations[index];
-	for (size_t i = 0; i < animation->m_NodeAnims.size(); i++)
-	{
-		NodeAnimation& nodeAnimation = animation->m_NodeAnims[i];
-		Node* pBone = m_RootNode.FindNode(nodeAnimation.m_NodeName);
-		assert(pBone != nullptr);
-		pBone->m_pCurNodeAnimation = &animation->m_NodeAnims[i];
-	}
-}
-
-void SkeletalMeshComponent::PlayAnimation(UINT index)
-{
-	assert(index < m_ModelResource->m_Animations.size());
-	m_AnimationIndex = index;
-	m_AnimationProgressTime = 0.0f;
-	UpdateBoneAnimationReference(index);
+	m_pAnimator->Binding(m_ModelResource, &m_RootNode);
+	m_pAnimator->UpdateReference(0);	// 각 노드의 애니메이션 정보참조 연결		
 }
 
 void SkeletalMeshComponent::CreateHierachy(SkeletonResource* skeleton)
@@ -107,22 +85,10 @@ void SkeletalMeshComponent::CreateHierachy(SkeletonResource* skeleton)
 		ChildBone.m_Local = pBoneInfo->RelativeTransform;
 		ChildBone.m_Children.reserve(pBoneInfo->NumChildren);
 		ChildBone.m_pParent = pParentBone;
-		ChildBone.m_pAnimationTime = &m_AnimationProgressTime;
+		ChildBone.m_pAnimationTime = &m_pAnimator->m_AnimationProgressTime;
 	}
 }
 
-bool SkeletalMeshComponent::AddSceneAnimationFromFBX(std::string filePath)
-{
-	assert(m_ModelResource);
-	auto animation = ResourceManager::Instance->CreateAnimationResource(filePath);
-	if (!animation) {
-		return false;
-	}
-
-	m_AnimationFilePath.push_back(filePath);
-	m_ModelResource->m_Animations.push_back(animation);
-	return true;
-}
 Material* SkeletalMeshComponent::GetMaterial(UINT index)
 {
 	assert(index < m_ModelResource->m_Materials.size());
@@ -138,4 +104,5 @@ void SkeletalMeshComponent::OnBeginPlay()
 
 void SkeletalMeshComponent::OnEndPlay()
 {
+
 }

@@ -46,9 +46,12 @@ struct CB_LightDirBuffer
 
 struct CB_IBL
 {
-	int UseIBL = false;							// 4  16byte
+	int UseIBL = false;							// 4  
+	int UseLightIBL = false;					// 4  
 	float AmbientOcclusion = 1.0f;				// 4
-	Vector2 pad;								// 12	16
+	float pad;									// 4	16byte
+
+	Matrix m_TestLocal;
 };
 
 // 버텍스 셰이더에 옮겨주기 위해 사용하는, 휘발성 저장 공간.
@@ -98,6 +101,8 @@ public:
 	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
 	void SetEnvironment(EnvironmentMeshComponent* val);
+	void SetLightEnvironment(EnvironmentMeshComponent* val);
+
 	HRESULT CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView);
 
 
@@ -120,6 +125,7 @@ private:
 	void CreateRasterizerState();
 	void CreateDepthStencilState();
 	void CreateIBL();
+	void CreateLightIBL();
 
 	//?   Render    ///
 	void ImguiRender();
@@ -146,6 +152,7 @@ public:
 	UINT m_ClientHeight;
 	HWND m_hWnd;
 
+	float TestTransformRotation[3] = {0,0,0};
 
 public:
 	//?   CB Data   ///
@@ -169,6 +176,7 @@ public:
 
 	//std::weak_ptr<EnvironmentMeshComponent> m_pEnvironmentMeshComponent;
 	EnvironmentMeshComponent* m_pEnvironmentMeshComponent;
+	EnvironmentMeshComponent* m_pLightEnvironment;
 
 	///   FOR RENDERING   ///
 	ID3D11VertexShader* m_pEnvironmentVertexShader = nullptr; // Environment 정점 셰이더.
@@ -218,6 +226,7 @@ public:
 
 	bool Use_CubeMap = true;
 	bool isIBL = true;
+	bool isPointIBL = true;
 	bool isNormalMap = true;
 	bool isSpecularMap = true;
 	bool isGamma = true;

@@ -24,13 +24,23 @@ Math::Matrix NodeAnimation::Evaluate(float progressTime)
 	else
 	{	
 		size_t i = 0;
+
 		for (i = 0; i < m_AnimationKey.size(); i++)
 		{
+			UINT lastIndex = m_AnimationKey.size() - 1;
+
+			// for animation change
+			if (progressTime > m_AnimationKey[lastIndex].m_Time)
+			{
+				progressTime = (float)fmod(progressTime, m_AnimationKey[lastIndex].m_Time);
+			}
+
 			if (m_AnimationKey[i].m_Time > progressTime)
 			{
 				break;
 			}
 		}
+
 
 		if (i == 0)
 		{

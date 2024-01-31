@@ -61,6 +61,7 @@
       <Filter>StaticMesh</Filter>
     </ClCompile>
     <ClCompile Include="EnvironmentMeshComponent.cpp" />
+    <ClCompile Include="Animator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Transform.h" />
@@ -111,6 +112,7 @@
       <Filter>StaticMesh</Filter>
     </ClInclude>
     <ClInclude Include="EnvironmentMeshComponent.h" />
+    <ClInclude Include="Animator.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="01_Basic.ico">

@@ -9,10 +9,17 @@ Texture2D txOpacity : register(t4);
 Texture2D txMetalness : register(t5);
 Texture2D txRoughness : register(t6);
 
+
 TextureCube txEnvironment : register(t7);
 TextureCube txIBL_Diffuse : register(t8);
 TextureCube txIBL_Specular : register(t9);
 Texture2D txIBL_SpecularBRDF_LUT : register(t10);
+
+TextureCube txLightEnvironment : register(t12);
+TextureCube txLightIBL_Diffuse : register(t13);
+TextureCube txLightIBL_Specular : register(t14);
+Texture2D txLightIBL_SpecularBRDF_LUT : register(t15);
+
 
 SamplerState samLinear : register(s0);
 SamplerState samClamp : register(s1);
@@ -20,8 +27,11 @@ SamplerState samClamp : register(s1);
 cbuffer IBL_Buffer : register(b0)
 {
     int UseIBL = false;              // 4 
+    int UseLightIBL = false;         // 4 
     float AmbientOcclusion = 1.0f;   // 4
-    float IBL_pad[2];                // 8  ,  16byte
+    float IBL_pad;                   // 4  ,  16byte
+    
+    Matrix m_TestLocal;
 }
 
 cbuffer BoolBuffer : register(b1)

@@ -147,6 +147,7 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Animator.h" />
     <ClInclude Include="D3DRenderManager.h" />
     <ClInclude Include="EnvironmentMeshComponent.h" />
     <ClInclude Include="framework.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="TutorialApp.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animator.cpp" />
     <ClCompile Include="D3DRenderManager.cpp" />
     <ClCompile Include="EnvironmentMeshComponent.cpp" />
     <ClCompile Include="Material.cpp" />
