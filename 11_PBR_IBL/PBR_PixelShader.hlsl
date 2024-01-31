@@ -211,5 +211,3 @@ float4 main(PS_INPUT Input) : SV_Target
 //float3 IBLColor = txIBL.Sample(samLinear, rotatedTexCoord).rgb;
 
 //// 이후 계산에 IBLColor를 사용
-
-

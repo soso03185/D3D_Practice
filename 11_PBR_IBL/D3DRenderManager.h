@@ -174,8 +174,7 @@ public:
 	std::list<SkeletalMeshInstance*> m_SkeletalMeshInstance;		//  렌더링할 모델들의 포인터 저장해둔다.
 	std::list<SkeletalMeshComponent*> m_SkeletalMeshComponents;		//  렌더링할 모델들의 포인터 저장해둔다.
 
-	//std::weak_ptr<EnvironmentMeshComponent> m_pEnvironmentMeshComponent;
-	EnvironmentMeshComponent* m_pEnvironmentMeshComponent;
+ 	EnvironmentMeshComponent* m_pEnvironmentMeshComponent;
 	EnvironmentMeshComponent* m_pLightEnvironment;
 
 	///   FOR RENDERING   ///
@@ -214,7 +213,7 @@ public:
 	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
 	float m_Look[3] = { 0.0f, 0.0f, 1.0f };
 
-	float m_Fov = 90.0f;
+	float m_Fov = 45.0f;
 	float m_Near = 0.01f;
 	float m_Far = 100000.0f;
 
