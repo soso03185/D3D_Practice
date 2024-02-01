@@ -25,6 +25,24 @@ void HR_T(HRESULT hr)
 	}
 }
 
+HRESULT CreateTextureFromFile(ID3D11Device* d3dDevice, const wchar_t* szFileName, ID3D11ShaderResourceView** textureView)
+{
+	HRESULT hr = S_OK;
+
+	// Load the Texture
+	hr = DirectX::CreateDDSTextureFromFile(d3dDevice, szFileName, nullptr, textureView);
+	if (FAILED(hr))
+	{
+		hr = DirectX::CreateWICTextureFromFile(d3dDevice, szFileName, nullptr, textureView);
+		if (FAILED(hr))
+		{
+			MessageBoxW(NULL, GetComErrorString(hr), szFileName, MB_OK);
+			return hr;
+		}
+	}
+	return S_OK;
+}
+
 HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut, const D3D_SHADER_MACRO* pDefines )
 {
 	HRESULT hr = S_OK;

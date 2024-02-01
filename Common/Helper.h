@@ -119,6 +119,8 @@ private:
 // Helper utility converts D3D API failures into exceptions.
 void HR_T(HRESULT hr);
 
+HRESULT CreateTextureFromFile(ID3D11Device* d3dDevice, const wchar_t* szFileName, ID3D11ShaderResourceView** textureView);
+
 //--------------------------------------------------------------------------------------
 // Helper for compiling shaders with D3DCompile
 //

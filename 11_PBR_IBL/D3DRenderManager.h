@@ -212,7 +212,7 @@ public:
 
 	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
 	float m_Look[3] = { 0.0f, 0.0f, 1.0f };
-
+	
 	float m_Fov = 45.0f;
 	float m_Near = 0.01f;
 	float m_Far = 100000.0f;

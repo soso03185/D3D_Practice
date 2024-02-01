@@ -14,7 +14,6 @@
 #include <DirectXTex.h>
 #include <filesystem>
 
-
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
 ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
 
@@ -238,7 +237,7 @@ bool D3DRenderManager::InitD3D()
 	CreateEnvironment();
 
 	// 환경 맵 생성
-//	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
+	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
 	CreateLightIBL(); // Test Light CubeMap
 
 	// 데이터 초기화

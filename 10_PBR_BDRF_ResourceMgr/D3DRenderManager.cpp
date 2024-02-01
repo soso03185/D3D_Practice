@@ -10,7 +10,8 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 #include <Psapi.h>
-
+#include <filesystem>
+#include <DirectXTex.h>
 D3DRenderManager* D3DRenderManager::Instance = nullptr;
 ID3D11Device* D3DRenderManager::m_pDevice = nullptr;
 
@@ -162,14 +163,14 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	// 8. FBX Load	
 	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
-	newModel->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
+	newModel->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 
 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
 	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
-	newModel->PlayAnimation(0);
+	newModel->PlayAnimation(1);
 }
 
 void D3DRenderManager::DecreaseModel()
@@ -395,6 +396,41 @@ void D3DRenderManager::Uninitialize()
 	ImGui::DestroyContext();
 }
 
+HRESULT D3DRenderManager::CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView)
+{
+	std::filesystem::path path(szFileName);
+	std::wstring strExtension = path.extension();
+	std::transform(strExtension.begin(), strExtension.end(), strExtension.begin(), ::towlower);
+
+	DirectX::TexMetadata metadata1;
+	DirectX::ScratchImage scratchImage;
+
+	HRESULT hr = S_OK;
+	if (strExtension == L".dds")
+	{
+		HR_T(hr = DirectX::LoadFromDDSFile(szFileName, DirectX::DDS_FLAGS_NONE, &metadata1, scratchImage));
+	}
+	else if (strExtension == L".tga")
+	{
+		HR_T(hr = DirectX::LoadFromTGAFile(szFileName, &metadata1, scratchImage));
+	}
+	else if (strExtension == L".hdr")
+	{
+		HR_T(hr = DirectX::LoadFromHDRFile(szFileName, &metadata1, scratchImage));
+	}
+	else // 기타..
+	{
+		HR_T(hr = DirectX::LoadFromWICFile(szFileName, DirectX::WIC_FLAGS_NONE, &metadata1, scratchImage));
+	}
+
+	HR_T(hr = DirectX::CreateShaderResourceView(m_pDevice, scratchImage.GetImages(), scratchImage.GetImageCount(), metadata1, textureView));
+
+	if (FAILED(hr))
+	{
+		MessageBoxW(NULL, GetComErrorString(hr), szFileName, MB_OK);
+		return hr;
+	}
+}
 void D3DRenderManager::CreateVS_IL()
 {
 	HRESULT hr = 0; // 결과값.

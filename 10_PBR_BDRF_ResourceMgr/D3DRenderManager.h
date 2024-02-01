@@ -102,6 +102,7 @@ public:
 
 	void GetVideoMemoryInfo(std::string& out);
 	void GetSystemMemoryInfo(std::string& out);
+	HRESULT CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView);
 
 public:
 	// Public Data //
