@@ -41,7 +41,7 @@ bool ModelResource::ReadStaticFile(std::string filePath)
 	{
 		m_Materials[i].Create(fbxModel->mMaterials[i]);
 	}
-
+	
 	// vertex , index 정보 바인딩
 	m_Meshes.resize(fbxModel->mNumMeshes);
 	for (int i = 0; i < fbxModel->mNumMeshes; i++)

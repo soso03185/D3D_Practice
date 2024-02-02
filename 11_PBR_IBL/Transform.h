@@ -14,6 +14,7 @@ public:
 	std::string m_Name;
 	Math::Matrix m_Local;
 	Math::Matrix m_World;
+// 바인드포즈 행렬을 추가
 
 	void SetParent(Transform* pParent) {
 		m_pParent = pParent;

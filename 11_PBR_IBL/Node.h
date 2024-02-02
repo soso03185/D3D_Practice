@@ -20,7 +20,6 @@ public:
 	NodeAnimation* m_pCurNodeAnimation = nullptr;
 	NodeAnimation* m_pNextNodeAnimation = nullptr;
 	float* m_pAnimationTime = nullptr;	// 현재 노드가 애니메이션에서 어느 시간에 있는지
-
 	float m_AnimChangeTime = 0;
 
 public:

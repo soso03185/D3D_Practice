@@ -34,6 +34,11 @@ BoneInfo* SkeletonResource::AddBone(const aiScene* pScene, const aiNode* pNode)
 	BoneInfo& bone = Bones.emplace_back();
 	bone.Set(pNode);
 
+	if (bone.Name == "mixamorig:RightToe_End")
+	{
+		int a = 0;
+	}
+
 	int BoneIndex = (int)(Bones.size() - 1);
 	BoneMappingTable[bone.Name] = BoneIndex;
 	UINT numMesh = pNode->mNumMeshes;

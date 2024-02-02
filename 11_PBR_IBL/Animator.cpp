@@ -38,7 +38,7 @@ void Animator::UpdateReference(int index)
 	for (size_t i = 0; i < animation->m_NodeAnims.size(); i++)
 	{
 		NodeAnimation& nodeAnimation = animation->m_NodeAnims[i];
-		Node* pBone = m_pRootNode->FindNode(nodeAnimation.m_NodeName);
+		Node* pBone = m_pRootNode->FindNode(nodeAnimation.m_NodeName);		
 		assert(pBone != nullptr);
 		pBone->m_pCurNodeAnimation = &animation->m_NodeAnims[i];
 	}

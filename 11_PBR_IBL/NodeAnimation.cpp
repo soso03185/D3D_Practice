@@ -41,7 +41,6 @@ Math::Matrix NodeAnimation::Evaluate(float progressTime)
 			}
 		}
 
-
 		if (i == 0)
 		{
 			position = m_AnimationKey[i].m_Position;
@@ -69,6 +68,7 @@ Math::Matrix NodeAnimation::Evaluate(float progressTime)
 	Math::Matrix::CreateTranslation(position);
 	return transform;
 }
+ 
 
 // 구면 보간 함수
 Math::Quaternion NodeAnimation::SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor) 

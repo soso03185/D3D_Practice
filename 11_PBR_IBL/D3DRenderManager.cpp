@@ -161,13 +161,16 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	newModel->ReadSceneResourceFromFBX(pilePath);
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
 	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
+	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
 
-	int range = 500;
+	int range = 100;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
-	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
-	newModel->m_pAnimator->SetAnimation(0);
+	//newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
+	newModel->SetLocalPosition(Math::Vector3(posx, 0, 0));
+	//newModel->SetLocalPosition(Math::Vector3(0, 0, 0));
+	newModel->m_pAnimator->SetAnimation(1);
 
 	m_pNewModel = newModel;
 }
@@ -237,7 +240,7 @@ bool D3DRenderManager::InitD3D()
 	CreateEnvironment();
 
 	// 환경 맵 생성
-	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
+//	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
 	CreateLightIBL(); // Test Light CubeMap
 
 	// 데이터 초기화
@@ -499,8 +502,19 @@ void D3DRenderManager::CreateSwapChain()
 	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 	// 1. 장치 생성.   2.스왑체인 생성. 3.장치 컨텍스트 생성.
-	HR_T(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, creationFlags, NULL, NULL,
-		D3D11_SDK_VERSION, &swapDesc, &m_pSwapChain, &m_pDevice, NULL, &m_pDeviceContext));
+	HR_T(D3D11CreateDeviceAndSwapChain(
+		NULL,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+		creationFlags,
+		NULL, 
+		NULL,
+		D3D11_SDK_VERSION,
+		&swapDesc, 
+		&m_pSwapChain, 
+		&m_pDevice,
+		NULL,
+		&m_pDeviceContext));
 }
 
 void D3DRenderManager::CreateStencilAndDepth()
@@ -577,7 +591,7 @@ void D3DRenderManager::CreateIBL()
  	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/BakerSampleDiffuseHDR.dds");
  	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/BakerSampleSpecularHDR.dds");
  	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/BakerSampleBRDF.dds");
-	pComponent->SetLocalScale(Vector3(100, 100, 100));
+	pComponent->SetLocalScale(Vector3(100.f, 100.f, 100.f));
 	SetEnvironment(pComponent);
 
 	m_IBL.UseIBL = true;
@@ -591,7 +605,7 @@ void D3DRenderManager::CreateLightIBL()
 	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/LightCubeMapDiffuseHDR.dds");
 	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/LightCubeMapSpecularHDR.dds");
 	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/LightCubeMapBRDF.dds");
-	pComponent->SetLocalScale(Vector3(0, 0, 0));
+//	pComponent->SetLocalScale(Vector3(10, 10, 10));
 	SetLightEnvironment(pComponent);
 
 	m_IBL.UseLightIBL = true;
@@ -690,7 +704,7 @@ void D3DRenderManager::Render()
 
 
 
-	//? for Test 
+	//? for Test    Light IBL
 	Math::Vector3 m_LocalPosition = Math::Vector3(0.0f, 0.0f, 0.0f);
 	Math::Vector3 m_LocalScale = Math::Vector3(1.0f, 1.0f, 1.0f);
 	Math::Vector3 m_LocalRotation = Math::Vector3(TestTransformRotation[0], TestTransformRotation[1], TestTransformRotation[2]);	// radian

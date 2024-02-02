@@ -27,6 +27,14 @@ public:
 	Math::Quaternion SphericalInterpolation(const Math::Quaternion& start, const Math::Quaternion& end, float factor);
 
 	void Create(aiNodeAnim* nodeAnimation, double tickPerSecond);
+
+
+	void EvaluateTest(
+		float progressTime,
+		Math::Vector3& position,
+		Math::Quaternion& rotation,
+		Math::Vector3& scaling
+	);
 };
 
 class Animation

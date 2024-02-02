@@ -35,6 +35,11 @@ void Node::Update(float deltaTime)
 				m_AnimChangeTime = 0;
 			}
 		}
+		else
+		{
+			// setting bindpose matrix
+
+		}
 	}
 
 	if (m_pParent != nullptr) 
