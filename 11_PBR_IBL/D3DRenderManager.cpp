@@ -159,11 +159,11 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	// 8. FBX Load	
 	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
-//	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
-	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
+	//newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
 	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
+	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 
-	int range = 100;
+	int range = 150;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
@@ -241,7 +241,7 @@ bool D3DRenderManager::InitD3D()
 
 	// 환경 맵 생성
 //	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
-	CreateLightIBL(); // Test Light CubeMap
+//	CreateLightIBL(); // Test Light CubeMap
 
 	// 데이터 초기화
 	InitScene();
@@ -904,15 +904,33 @@ void D3DRenderManager::ChangeAnimation(int index)
 	{
 		if (index <= m_pNewModel->m_ModelResource->m_Animations.size())
 		{
-			auto animation = m_pNewModel->m_ModelResource->m_Animations[index];
-
-			for (size_t i = 0; i < animation->m_NodeAnims.size(); i++)
+		
+			shared_ptr<Animation> curAnimation = m_pNewModel->m_ModelResource->m_Animations[index];
+			for (size_t i = 0; i < curAnimation->m_NodeAnims.size(); i++)
 			{
-				NodeAnimation& nodeAnimation = animation->m_NodeAnims[i];
+				NodeAnimation& nodeAnimation = curAnimation->m_NodeAnims[i];
 				Node* pBone = m_pNewModel->m_RootNode.FindNode(nodeAnimation.m_NodeName);
 				assert(pBone != nullptr);
-				pBone->m_pNextNodeAnimation = &animation->m_NodeAnims[i];
+				pBone->m_pNextNodeAnimation = &curAnimation->m_NodeAnims[i];
+			}	
+
+			// 여기에선 애니메이션이 바뀔 경우 안쓸 본의 행렬 초기화 작업.
+			// Setting Bindpose Matrix 
+			SkeletonResource* pSkeleton = &m_pNewModel->m_ModelResource->m_Skeleton;
+			for (size_t i = 0; i < pSkeleton->Bones.size(); i++)
+			{
+				BoneInfo* pBoneInfo = pSkeleton->GetBone(i);
+				Node* pBone = m_pNewModel->m_RootNode.FindNode(pBoneInfo->Name);
+
+				assert(pBone != nullptr);
+				if (pBone->m_pNextNodeAnimation == nullptr)
+				{
+					pBone->m_pCurNodeAnimation = nullptr;
+					pBone->m_Local = pBoneInfo->RelativeTransform; // T포즈
+				}
 			}
+
+
 			m_pNewModel->m_pAnimator->m_animChange = true;
 			m_pNewModel->m_pAnimator->m_AnimationIndex = index;
 		}

@@ -129,13 +129,13 @@ void Mesh::CreateIndexBuffer(UINT* vertices, UINT vertexCount)
 
 void Mesh::UpdateMatrixPalette(Matrix* MatrixPalettePtr)
 {
-	assert(m_BoneReferences.size() < 128);
+	//assert(m_BoneReferences.size() < 128);
 
-	for (UINT i = 0; i < m_BoneReferences.size(); ++i)
-	{
-		Matrix& BoneNodeWorldMatrix = *m_BoneReferences[i].NodeWorldMatrixPtr;
+	//for (UINT i = 0; i < m_BoneReferences.size(); ++i)
+	//{
+	//	Matrix& BoneNodeWorldMatrix = *m_BoneReferences[i].NodeWorldMatrixPtr;
 
-		// HLSL 상수버퍼에 업데이트할 때, 바로 복사할 수 있도록 전치해서 저장.
-		MatrixPalettePtr[i] = (m_BoneReferences[i].OffsetMatrix * BoneNodeWorldMatrix).Transpose();
-	}
+	//	// HLSL 상수버퍼에 업데이트할 때, 바로 복사할 수 있도록 전치해서 저장.
+	//	MatrixPalettePtr[i] = (m_BoneReferences[i].OffsetMatrix * BoneNodeWorldMatrix).Transpose();
+	//}
 }
