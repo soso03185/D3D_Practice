@@ -62,7 +62,7 @@ struct CB_IBL
 // 판단은 bone의 name이나 index로 같은지 판단해서 사용함.
 struct CB_MatrixPalette
 {
-	Matrix Array[128];
+	Matrix Array[1024];
 };
 
 

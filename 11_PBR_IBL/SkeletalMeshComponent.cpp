@@ -53,7 +53,13 @@ void SkeletalMeshComponent::SetSceneResource(std::shared_ptr<ModelResource> val)
 	for (UINT i = 0; i < m_ModelResource->m_Meshes.size(); i++)
 	{
 		Mesh* meshResource = &m_ModelResource->m_Meshes[i];
-		Material* material = &m_ModelResource->m_Materials[i];
+		Material* material = nullptr;
+
+		if (m_ModelResource->m_Materials.size() > i) 
+		{
+			material = &m_ModelResource->m_Materials[i];
+		}
+
 		m_MeshInstances[i].Create(meshResource, &m_RootNode, material); 
 	}	
 

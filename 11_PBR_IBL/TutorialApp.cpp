@@ -54,11 +54,12 @@ LRESULT CALLBACK TutorialApp::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	case WM_KEYDOWN:
 		if (wParam == VK_UP) {
 			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/Primrose_Egypt.fbx");
-			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/SkinningTest.fbx");
-			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/Zombie_Run.fbx");
+			//D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/SkinningTest.fbx");
+			//D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/Zombie_Run.fbx");
 			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/sphere_alpha1.fbx");
 			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/zeldaPosed001.fbx");
 			//D3DRenderManager::Instance->IncreaseStaticModel("../Resource/cerberus2.fbx");
+			D3DRenderManager::Instance->IncreaseSkeletalModel("../Resource/bear_ animation_2.fbx");
 		}
 		else if (wParam == VK_DOWN) {
 			D3DRenderManager::Instance->DecreaseModel();

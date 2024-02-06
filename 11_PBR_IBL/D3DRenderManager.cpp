@@ -160,7 +160,7 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	SkeletalMeshComponent* newModel = new SkeletalMeshComponent();
 	newModel->ReadSceneResourceFromFBX(pilePath);
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
-	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
+//	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
 
 	int range = 100;
@@ -170,7 +170,7 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	//newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
 	newModel->SetLocalPosition(Math::Vector3(posx, 0, 0));
 	//newModel->SetLocalPosition(Math::Vector3(0, 0, 0));
-	newModel->m_pAnimator->SetAnimation(1);
+	newModel->m_pAnimator->SetAnimation(0);
 
 	m_pNewModel = newModel;
 }
@@ -240,7 +240,7 @@ bool D3DRenderManager::InitD3D()
 	CreateEnvironment();
 
 	// 환경 맵 생성
-//	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
+	CreateIBL();  // 리소스 너무 커서 지웠음. 실행 안됨.
 	CreateLightIBL(); // Test Light CubeMap
 
 	// 데이터 초기화

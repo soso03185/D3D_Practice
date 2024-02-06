@@ -68,7 +68,7 @@ cbuffer LightDirBuffer : register(b4)
 
 cbuffer MatrixPalette : register(b5)
 {
-    matrix MatrixPaletteArray[128];
+    matrix MatrixPaletteArray[1024];
 }
 
 //--------------------------------------------------------------------------------------

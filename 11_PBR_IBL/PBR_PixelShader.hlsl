@@ -197,17 +197,3 @@ float4 main(PS_INPUT Input) : SV_Target
         finalColor.rgb = pow(finalColor.rgb, 1 / 2.2f); // gamma
     return finalColor;
 };
-
-//// 캐릭터 위치
-//float3 characterPosition = ...;
-
-//// 큐브맵 텍스처 좌표
-//float3 cubemapTexCoord = normalize(characterPosition - CameraPosition);
-
-//// 카메라의 뷰 행렬의 역행렬로 회전 변환
-//float3 rotatedTexCoord = mul(cubemapTexCoord, (float3x3) inverse(ViewMatrix));
-
-//// 회전된 텍스처 좌표를 사용하여 큐브맵 샘플링
-//float3 IBLColor = txIBL.Sample(samLinear, rotatedTexCoord).rgb;
-
-//// 이후 계산에 IBLColor를 사용

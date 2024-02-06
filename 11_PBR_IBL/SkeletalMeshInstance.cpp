@@ -39,7 +39,14 @@ void SkeletalMeshInstance::UpdateMatrixPallete(Math::Matrix* MatrixPalettePtr)
 
 		// HLSL 상수버퍼에 업데이트할때 바로 복사할수있도록 전치해서 저장한다.
 		BoneReference& br = m_pMeshResource->m_BoneReferences[i];
+		auto k = br.BoneIndex;
+		auto a = BoneNodeWorldMatrix;
+		auto b1 = MatrixPalettePtr[br.BoneIndex - 1];
+		auto b = MatrixPalettePtr[br.BoneIndex];
+		auto c = br.OffsetMatrix;
+		auto d = br.OffsetMatrix * BoneNodeWorldMatrix;
 		MatrixPalettePtr[br.BoneIndex] = (br.OffsetMatrix * BoneNodeWorldMatrix).Transpose();
+		int f = 0;
 	}
 }
 void SkeletalMeshInstance::Render(ID3D11DeviceContext* deviceContext)
