@@ -162,7 +162,7 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
-
+		
 	int range = 100;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
@@ -744,7 +744,6 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("VideoMemory: %s", str.c_str());
 		GetSystemMemoryInfo(str);
 		ImGui::Text("SystemMemory: %s", str.c_str());
-		ImGui::SliderFloat3("TestRot", TestTransformRotation, -5.0f, 5.0f);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1500.0f, 500.0f);
@@ -754,14 +753,7 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Checkbox("IBL", &isIBL);
 		ImGui::Checkbox("Point IBL", &isPointIBL);
 		ImGui::Checkbox("Use_CubeMap", &Use_CubeMap);
-		ImGui::Checkbox("NormalMap", &isNormalMap);
-		ImGui::Checkbox("SpecularMap", &isSpecularMap);
 		ImGui::Checkbox("Gamma_Correction", &isGamma);
-		ImGui::Checkbox("DiffuseMap", &isDiffuse);
-		ImGui::Checkbox("EmissiveMap", &isEmissive);
-		ImGui::Checkbox("OpacityMap", &isOpacity);
-		ImGui::Checkbox("MetalnessMap", &isMetalness);
-		ImGui::Checkbox("RoughnessMap", &isRoughness);
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat("Far", &m_Far, 1.0f, 10000.0f);
