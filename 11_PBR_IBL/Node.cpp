@@ -20,13 +20,12 @@ void Node::Update(float deltaTime)
 		// 애니메이션 전환될 상황인 경우
 		if (m_pNextNodeAnimation != nullptr)
 		{
-			m_AnimChangeTime += deltaTime;
-
-			float changingAnimTime = 0.2f;
-
 			// 전환 될 애니메이션의 키 값을 Matrix로 가져오기
 			Math::Matrix nextTransform = m_pNextNodeAnimation->Evaluate(*m_pAnimationTime);
-			m_Local = Math::Matrix::Lerp(transform, nextTransform, m_AnimChangeTime * 5);
+
+			float changingAnimTime = 0.2f;
+			m_AnimChangeTime += deltaTime;
+			m_Local = Math::Matrix::Lerp(transform, nextTransform, m_AnimChangeTime *  (1 / changingAnimTime));
 
 			if (m_AnimChangeTime >= changingAnimTime)
 			{
@@ -35,11 +34,10 @@ void Node::Update(float deltaTime)
 				m_AnimChangeTime = 0;
 			}
 		}
-		else
-		{
-			// setting bindpose matrix
+	}
+	else
+	{
 
-		}
 	}
 
 	if (m_pParent != nullptr) 

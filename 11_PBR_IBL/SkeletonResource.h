@@ -9,7 +9,7 @@ namespace Math = DirectX::SimpleMath;
 
 struct BoneInfo
 {
-	Math::Matrix RelativeTransform;			//부모로부터의 상대적인 변환
+	Math::Matrix RelativeTransform;			//부모로부터의 상대적인 변환 , 기본 T Pose
 	Math::Matrix OffsetMatrix;				// 본에서의 메쉬의 상대적인 위치(변환)
 	std::string Name;						// 본이름
 	int NumChildren = 0;						// 자식의 수
