@@ -71,6 +71,17 @@ cbuffer MatrixPalette : register(b5)
     matrix MatrixPaletteArray[1024];
 }
 
+cbuffer PointLight : register(b6)
+{
+    float4 lightPosition;
+    float lightRange;
+    float linearTerm;
+    float quadraticTerm;
+    float lightIntensity;
+    
+    float4 lightColor;
+};
+
 //--------------------------------------------------------------------------------------
 struct VS_INPUT
 {
@@ -89,6 +100,7 @@ struct VS_INPUT
 struct PS_INPUT
 {
     float4 Pos : SV_POSITION;
+    float4 WorldPos : Position;
     float2 Tex : UV;
     float3 Norm : NORMAL;
     float3 TangentWorld : TANGENT;
@@ -102,17 +114,4 @@ struct PS_INPUT_ENVIRONMENT
 {
     float4 PositionProj : SV_POSITION;
     float3 TexCoords : TEXCOORD0;
-};
-
-struct PointLight
-{
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular;
-
-    float3 Position;
-    float Range;
-
-    float3 Att;
-    float pad;
 };

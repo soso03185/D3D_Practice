@@ -50,6 +50,34 @@ uint querySpecularTextureLevels()
 }
 
 
+float3 ComputePointLight(PS_INPUT Input)
+{
+    float3 normal = normalize(Input.Norm);
+
+     // Light Vector  ->  [obj -> PointLight]
+    float3 toLightVec = normalize(lightPosition.xyz - Input.WorldPos.xyz);
+    float3 reflection = reflect(-toLightVec.xyz, normal);
+       
+    float3 diffuse = saturate(dot(toLightVec.xyz, normal));
+    float3 specualr = saturate(dot(reflection, -normalize(Input.mViewDir)));
+     
+     // 표면으로부터 광원까지 거리
+    float d = distance(lightPosition, Input.WorldPos);
+    
+    if (d > lightRange)
+        return float3(0, 0, 0);
+    
+    // Normalize Light Vector
+    toLightVec /= d;
+    
+    float att = 1.0f /( 1 + ( linearTerm * d) + (quadraticTerm * d * d)); // * d;
+    float3 FinalColor = att * lightIntensity * (diffuse + specualr);
+    return FinalColor;
+     
+ // lightColor.rgb
+    
+}
+
 float4 main(PS_INPUT Input) : SV_Target
 {
     float3 normal = normalize(Input.Norm);
@@ -190,10 +218,14 @@ float4 main(PS_INPUT Input) : SV_Target
         pointAmbientLighting = (diffuseIBL + specularIBL) * AmbientOcclusion;
     }
     
+    float3 pointLighting = float3(0, 0, 0);
+    pointLighting = ComputePointLight(Input) * lightColor.rgb;
+    
     float3 Ambient = ambientLighting + pointAmbientLighting * 2;
-    float4 finalColor = float4(directLighting + Ambient + Emissive, Opacity);
+    float4 finalColor = float4(directLighting + Ambient + Emissive + pointLighting, Opacity);
     
     if (UseGamma)
         finalColor.rgb = pow(finalColor.rgb, 1 / 2.2f); // gamma
     return finalColor;
 };
+

@@ -119,10 +119,31 @@ void D3DRenderManager::ConstantBuffUpdate()
 
 	m_TransformVP.mView = XMMatrixTranspose(m_View);
 	m_TransformVP.mProjection = XMMatrixTranspose(m_Projection);
+	
+	UpdatePointLightInfo();
 
+	m_pDeviceContext->UpdateSubresource(m_pPointLightBuffer, 0, nullptr, &m_PointLight, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pTransformVP_Buffer, 0, nullptr, &m_TransformVP, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pIBL_Buffer, 0, nullptr, &m_IBL, 0, 0);
-	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0);
+	m_pDeviceContext->UpdateSubresource(m_pLightBuffer, 0, nullptr, &CB_Light, 0, 0); 
+}
+
+void D3DRenderManager::UpdatePointLightInfo()
+{
+	m_PointLight.lightPosition.x = m_PointLightPos[0];
+	m_PointLight.lightPosition.y = m_PointLightPos[1];
+	m_PointLight.lightPosition.z = m_PointLightPos[2];
+	m_PointLight.lightPosition.w = m_PointLightPos[3];
+
+	m_PointLight.lightColor.x = m_PointLightColor[0];
+	m_PointLight.lightColor.y = m_PointLightColor[1];
+	m_PointLight.lightColor.z = m_PointLightColor[2];
+	m_PointLight.lightColor.w = 1.0f;
+
+	m_PointLight.lightRange = m_PointLightRange;
+	m_PointLight.linearTerm = m_PointLightLinearTerm;
+	m_PointLight.quadraticTerm = m_PointLightQuadraTicTerm;
+	m_PointLight.lightIntensity = m_PointLightIntencity;
 }
 
 bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
@@ -303,6 +324,7 @@ void D3DRenderManager::Uninitialize()
 	SAFE_RELEASE(m_pLightBuffer);
 	SAFE_RELEASE(m_pAlphaBlendState);
 	SAFE_RELEASE(m_pMatPalette);
+	SAFE_RELEASE(m_pPointLightBuffer);
 
 	// Cleanup DirectX
 	SAFE_RELEASE(m_pDevice);
@@ -477,6 +499,8 @@ void D3DRenderManager::CreateConstantBuffer()
 	bd.ByteWidth = sizeof(CB_MatrixPalette);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pMatPalette));
 
+	bd.ByteWidth = sizeof(CB_PointLight);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pPointLightBuffer));
 }
 
 void D3DRenderManager::CreateSwapChain()
@@ -698,6 +722,7 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->PSSetConstantBuffers(2, 1, &m_pTransformW_Buffer);
 	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pTransformVP_Buffer);
 	m_pDeviceContext->PSSetConstantBuffers(4, 1, &m_pLightBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(6, 1, &m_pPointLightBuffer);
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -746,6 +771,14 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("SystemMemory: %s", str.c_str());
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::SliderFloat4("PL_Pos", m_PointLightPos, -1000, 1000);
+		ImGui::SliderFloat("PL_Range", &m_PointLightRange, 0, 100);
+		ImGui::SliderFloat("PL_Linear", &m_PointLightLinearTerm, 0, 100);
+		ImGui::SliderFloat("PL_QuadraTic", &m_PointLightQuadraTicTerm, 0, 100);
+		ImGui::SliderFloat("PL_Intencity", &m_PointLightIntencity, 0, 100);
+		ImGui::ColorEdit3("PL_Color", m_PointLightColor);
+
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat3("Cam_Pos", m_Cam, -1500.0f, 500.0f);
 		ImGui::SliderFloat3("Look_Pos", m_Look, -180, 180);
 
@@ -777,7 +810,6 @@ void D3DRenderManager::RenderStaticMeshInstance()
 	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
 	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
 	m_pDeviceContext->PSSetShader(m_pPixelShader, nullptr, 0);
-//	m_pDeviceContext->PSSetShader(m_pCartoonPS, nullptr, 0);
 	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
 
 	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)

@@ -44,19 +44,6 @@ struct CB_LightDirBuffer
 	Vector4 pad[1];
 };
 
-struct CB_PointLight
-{
-	Vector4 Ambient;
-	Vector4 Diffuse;
-	Vector4 Specular;
-
-	Vector3 Position;
-	float Range;
-
-	Vector3 Att;
-	float pad;
-};
-
 struct CB_IBL
 {
 	int UseIBL = false;							// 4  
@@ -77,6 +64,18 @@ struct CB_MatrixPalette
 {
 	Matrix Array[1024];
 };
+
+struct CB_PointLight // register (6)
+{
+	Vector4 lightPosition;	// 16
+
+	float lightRange;
+	float linearTerm;
+	float quadraticTerm;
+ 	float lightIntensity;	// 16
+
+	Vector4 lightColor;  // 16
+ };
 
 
 class EnvironmentMeshComponent;
@@ -113,9 +112,9 @@ public:
 	void AddMeshInstance(StaticMeshComponent* pModel);
 	void AddMeshInstance(SkeletalMeshComponent* pModel);
 	void ConstantBuffUpdate();
+	void UpdatePointLightInfo();
 	void SetEnvironment(EnvironmentMeshComponent* val);
 	void SetLightEnvironment(EnvironmentMeshComponent* val);
-
 
 	HRESULT CreateTextureFromFile(const wchar_t* szFileName, ID3D11ShaderResourceView** textureView);
 
@@ -170,6 +169,7 @@ public:
 	//?   CB Data   ///
 	ID3D11Buffer* m_pBoolBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pLightBuffer = nullptr;		    // 상수 버퍼.
+	ID3D11Buffer* m_pPointLightBuffer = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pMatPalette = nullptr;		    // 상수 버퍼.
 	ID3D11Buffer* m_pIBL_Buffer = nullptr;			// 상수 버퍼.
 	ID3D11Buffer* m_pTransformW_Buffer = nullptr;		// 상수 버퍼.
@@ -225,6 +225,13 @@ public:
 	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
 	float m_Look[3] = { 0.0f, 0.0f, 1.0f };
 	
+	float m_PointLightPos[4] = {0,0,0,0};
+	float m_PointLightRange = 100.0f;
+	float m_PointLightLinearTerm = 0.0f;
+	float m_PointLightQuadraTicTerm = 0.0f;
+	float m_PointLightIntencity = 0.0f;
+	float m_PointLightColor[3] = { 1, 1, 1 };
+
 	float m_Fov = 45.0f;
 	float m_Near = 0.01f;
 	float m_Far = 100000.0f;
@@ -239,4 +246,5 @@ public:
 	bool isIBL = true;
 	bool isPointIBL = true;
 	bool isGamma = true;
+
 };
