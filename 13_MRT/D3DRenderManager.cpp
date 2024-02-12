@@ -122,6 +122,17 @@ void D3DRenderManager::ConstantBuffUpdate()
 	
 	UpdatePointLightInfo();
 
+	{
+		m_OutLine.outlineColor.x = m_OutLineColor[0];
+		m_OutLine.outlineColor.y = m_OutLineColor[1];
+		m_OutLine.outlineColor.z = m_OutLineColor[2];
+		m_OutLine.outlineColor.w = 1.0f;
+
+		m_OutLine.outlineThickness = m_OutLineTickness;
+		m_OutLine.outlineThreshHold = m_OutLineThreshHold;
+	}
+
+	m_pDeviceContext->UpdateSubresource(m_pOutLineBuffer, 0, nullptr, &m_OutLine, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pPointLightBuffer, 0, nullptr, &m_PointLight, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pTransformVP_Buffer, 0, nullptr, &m_TransformVP, 0, 0);
 	m_pDeviceContext->UpdateSubresource(m_pIBL_Buffer, 0, nullptr, &m_IBL, 0, 0);
@@ -155,6 +166,14 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	if (!InitD3D())		return false;
 	if (!InitImGUI())	return false;
 
+	// Test
+	m_StencilMask = make_shared<Stencil>();
+	m_StencilWrite = make_shared<Stencil>();
+	m_StencilOff = make_shared<Stencil>();
+	m_StencilMask->Init(m_pDevice, Mode::Mask);
+	m_StencilWrite->Init(m_pDevice, Mode::Write);
+	m_StencilOff->Init(m_pDevice, Mode::Off);
+
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_previousTime);
 	QueryPerformanceCounter(&m_currentTime);
@@ -184,12 +203,12 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
 	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
 		
-	int range = 100;
+	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
 	float posy = (float)(rand() % range) - range * 0.5f;
 	float posz = (float)(rand() % range) - range * 0.5f;
 	//newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
-	newModel->SetLocalPosition(Math::Vector3(posx, 0, 0));
+	newModel->SetLocalPosition(Math::Vector3(posx, posy, posz));
 	//newModel->SetLocalPosition(Math::Vector3(0, 0, 0));
 	newModel->m_pAnimator->SetAnimation(0);
 
@@ -237,7 +256,7 @@ bool D3DRenderManager::InitD3D()
 	CreateRasterizerState();
 
 	//? DepthStencil 상태 설정
-	CreateDepthStencilState();
+	SetDepthStencilState();
 
 	// depth & stencil view 생성
 	CreateStencilAndDepth();
@@ -309,7 +328,7 @@ void D3DRenderManager::Uninitialize()
 	SAFE_RELEASE(m_pStaticInputLayout);
 	SAFE_RELEASE(m_pSkeletalInputLayout);
 	SAFE_RELEASE(m_pPixelShader);
-	SAFE_RELEASE(m_pCartoonPS);
+	SAFE_RELEASE(m_pOutLinePS);
 
 	SAFE_RELEASE(m_pSamplerLinear);
 	SAFE_RELEASE(m_pSamplerClamp);
@@ -325,6 +344,7 @@ void D3DRenderManager::Uninitialize()
 	SAFE_RELEASE(m_pAlphaBlendState);
 	SAFE_RELEASE(m_pMatPalette);
 	SAFE_RELEASE(m_pPointLightBuffer);
+	SAFE_RELEASE(m_pOutLineBuffer);
 
 	// Cleanup DirectX
 	SAFE_RELEASE(m_pDevice);
@@ -401,12 +421,12 @@ void D3DRenderManager::CreatePS()
 		pixelShaderBuffer->GetBufferSize(), NULL, &m_pPixelShader));
 	SAFE_RELEASE(pixelShaderBuffer);
 
-	ID3D10Blob* cartoonPSBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
- 	HR_T(CompileShaderFromFile(L"CartoonPS.hlsl", "main", "ps_5_0", &cartoonPSBuffer, nullptr));
+	ID3D10Blob* outLinePSBuffer = nullptr;	// 픽셀 셰이더 코드가 저장될 버퍼.
+ 	HR_T(CompileShaderFromFile(L"OutLine_PS.hlsl", "main", "ps_5_0", &outLinePSBuffer, nullptr));
 	HR_T(m_pDevice->CreatePixelShader(
-		cartoonPSBuffer->GetBufferPointer(),
-		cartoonPSBuffer->GetBufferSize(), NULL, &m_pCartoonPS));
-	SAFE_RELEASE(cartoonPSBuffer);
+		outLinePSBuffer->GetBufferPointer(),
+		outLinePSBuffer->GetBufferSize(), NULL, &m_pOutLinePS));
+	SAFE_RELEASE(outLinePSBuffer);
 }
 
 void D3DRenderManager::CreateEnvironment()
@@ -501,6 +521,9 @@ void D3DRenderManager::CreateConstantBuffer()
 
 	bd.ByteWidth = sizeof(CB_PointLight);
 	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pPointLightBuffer));
+	
+	bd.ByteWidth = sizeof(CB_OutLine);
+	HR_T(m_pDevice->CreateBuffer(&bd, nullptr, &m_pOutLineBuffer));
 }
 
 void D3DRenderManager::CreateSwapChain()
@@ -596,7 +619,7 @@ void D3DRenderManager::CreateRasterizerState()
 	HR_T(m_pDevice->CreateRasterizerState(&rasterizerDesc, m_pRasterizerStateCW.GetAddressOf()));
 }
 
-void D3DRenderManager::CreateDepthStencilState()
+void D3DRenderManager::SetDepthStencilState()
 {
 	D3D11_DEPTH_STENCIL_DESC lessEqualDesc;
 	lessEqualDesc.DepthEnable = true;
@@ -705,7 +728,7 @@ void D3DRenderManager::Render()
 	// Draw계열 함수를 호출하기전에 렌더링 파이프라인에 필수 스테이지 설정을 해야한다	
 	float color[4] = { 0.0f, 0.5f, 0.5f, 1.0f };
 	m_pDeviceContext->ClearRenderTargetView(m_pRenderTargetView, color);
-	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	m_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// vertex shader
@@ -723,6 +746,7 @@ void D3DRenderManager::Render()
 	m_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pTransformVP_Buffer);
 	m_pDeviceContext->PSSetConstantBuffers(4, 1, &m_pLightBuffer);
 	m_pDeviceContext->PSSetConstantBuffers(6, 1, &m_pPointLightBuffer);
+	m_pDeviceContext->PSSetConstantBuffers(7, 1, &m_pOutLineBuffer);
 
 	m_pDeviceContext->PSSetSamplers(0, 1, &m_pSamplerLinear);
 	m_pDeviceContext->RSSetViewports(1, &viewport);
@@ -739,15 +763,50 @@ void D3DRenderManager::Render()
 		Math::Matrix::CreateFromYawPitchRoll(m_LocalRotation) *
 		Math::Matrix::CreateTranslation(m_LocalPosition);
 
+//	if (m_pEnvironmentMeshComponent != nullptr && Use_CubeMap)
+//		RenderEnvironment();
 
-	if (m_pEnvironmentMeshComponent != nullptr && Use_CubeMap)
-		RenderEnvironment();
-
+	m_StencilMask->Bind(m_pDeviceContext);
+	RenderOutLine();
+	m_StencilWrite->Bind(m_pDeviceContext);
 	RenderStaticMeshInstance();
+	m_StencilOff->Bind(m_pDeviceContext);
 	RenderSkeletalMeshInstance();
 
 	ImguiRender();
+	
 	m_pSwapChain->Present(0, 0);
+}
+
+void D3DRenderManager::RenderOutLine()
+{
+	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
+	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
+	m_pDeviceContext->PSSetShader(m_pOutLinePS, nullptr, 0);
+	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
+
+	m_StaticMeshInstance.sort([](const StaticMeshInstance* lhs, const StaticMeshInstance* rhs)
+		{
+			return lhs->m_pMaterial < rhs->m_pMaterial;
+		});
+
+	Material* pPrevMaterial = nullptr;
+	for (const auto& meshInstance : m_StaticMeshInstance)
+	{
+		if (pPrevMaterial != meshInstance->m_pMaterial)
+		{
+			ApplyMaterial(meshInstance->m_pMaterial);	// 머터리얼 적용
+			pPrevMaterial = meshInstance->m_pMaterial;
+		}
+
+		//? Static Mesh
+		m_TransformW.mWorld = meshInstance->m_pNodeWorldTransform->Transpose();
+		m_pDeviceContext->UpdateSubresource(m_pTransformW_Buffer, 0, nullptr, &m_TransformW, 0, 0);
+
+		// Draw
+		meshInstance->Render(m_pDeviceContext);
+	}
+//	m_StaticMeshInstance.clear();
 }
 
 void D3DRenderManager::ImguiRender()
@@ -771,8 +830,13 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("SystemMemory: %s", str.c_str());
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::ColorEdit3("OL_Color", m_OutLineColor);
+		ImGui::SliderFloat("OL_Tickness", &m_OutLineTickness, 0, 100);
+		ImGui::SliderFloat("OL_ThreshHold", &m_OutLineThreshHold, 0, 100);
+
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 		ImGui::SliderFloat4("PL_Pos", m_PointLightPos, -1000, 1000);
-		ImGui::SliderFloat("PL_Range", &m_PointLightRange, 0, 100);
+		ImGui::SliderFloat("PL_Range", &m_PointLightRange, 0, 2000);
 		ImGui::SliderFloat("PL_Linear", &m_PointLightLinearTerm, 0, 100);
 		ImGui::SliderFloat("PL_QuadraTic", &m_PointLightQuadraTicTerm, 0, 100);
 		ImGui::SliderFloat("PL_Intencity", &m_PointLightIntencity, 0, 100);
