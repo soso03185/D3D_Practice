@@ -170,8 +170,8 @@ bool D3DRenderManager::Initialize(UINT Width, UINT Height, HWND hWnd)
 	m_StencilMask = make_shared<Stencil>();
 	m_StencilWrite = make_shared<Stencil>();
 	m_StencilOff = make_shared<Stencil>();
-	m_StencilMask->Init(m_pDevice, Mode::Mask);
-	m_StencilWrite->Init(m_pDevice, Mode::Write);
+	m_StencilMask->Init(m_pDevice, Mode::Mask, 33);
+	m_StencilWrite->Init(m_pDevice, Mode::Write, 33);
 	m_StencilOff->Init(m_pDevice, Mode::Off);
 
 	QueryPerformanceFrequency(&m_frequency);
@@ -201,7 +201,7 @@ void D3DRenderManager::IncreaseSkeletalModel(std::string pilePath)
 	newModel->ReadSceneResourceFromFBX(pilePath);
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Zombie_Run.fbx");
 //	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/SkinningTest.fbx");
-	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
+//	newModel->m_pAnimator->AddSceneAnimationFromFBX("../Resource/Shuffling.fbx");
 		
 	int range = 500;
 	float posx = (float)(rand() % range) - range * 0.5f;
@@ -763,18 +763,19 @@ void D3DRenderManager::Render()
 		Math::Matrix::CreateFromYawPitchRoll(m_LocalRotation) *
 		Math::Matrix::CreateTranslation(m_LocalPosition);
 
-//	if (m_pEnvironmentMeshComponent != nullptr && Use_CubeMap)
-//		RenderEnvironment();
+	if (m_pEnvironmentMeshComponent != nullptr && Use_CubeMap)
+		RenderEnvironment();
 
-	m_StencilMask->Bind(m_pDeviceContext);
-	RenderOutLine();
 	m_StencilWrite->Bind(m_pDeviceContext);
-	RenderStaticMeshInstance();
-	m_StencilOff->Bind(m_pDeviceContext);
 	RenderSkeletalMeshInstance();
+	m_StencilOff->Bind(m_pDeviceContext);
+	RenderStaticMeshInstance();
+	m_StencilMask->Bind(m_pDeviceContext);	
+	RenderOutLine();
+	
+	m_StaticMeshInstance.clear(); //
 
 	ImguiRender();
-	
 	m_pSwapChain->Present(0, 0);
 }
 
@@ -830,7 +831,7 @@ void D3DRenderManager::ImguiRender()
 		ImGui::Text("SystemMemory: %s", str.c_str());
 
 		ImGui::Dummy(ImVec2(0.0f, 10.0f));
-		ImGui::ColorEdit3("OL_Color", m_OutLineColor);
+		ImGui::ColorEdit4("OL_Color", m_OutLineColor);
 		ImGui::SliderFloat("OL_Tickness", &m_OutLineTickness, 0, 100);
 		ImGui::SliderFloat("OL_ThreshHold", &m_OutLineThreshHold, 0, 100);
 
@@ -898,7 +899,7 @@ void D3DRenderManager::RenderStaticMeshInstance()
 		// Draw
 		meshInstance->Render(m_pDeviceContext);
 	}
-	m_StaticMeshInstance.clear();
+//	m_StaticMeshInstance.clear();
 }
 
 void D3DRenderManager::RenderSkeletalMeshInstance()
