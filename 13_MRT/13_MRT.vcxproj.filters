@@ -19,6 +19,9 @@
     <FxCompile Include="VS_Environment.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="OutLine_VS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EnvironmentMeshComponent.cpp" />

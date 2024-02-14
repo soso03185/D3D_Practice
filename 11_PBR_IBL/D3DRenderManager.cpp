@@ -601,10 +601,10 @@ void D3DRenderManager::CreateLightIBL()
 {
 	EnvironmentMeshComponent* pComponent = new EnvironmentMeshComponent();
 	pComponent->ReadEnvironmentMeshFromFBX("../Resource/EnvironmentCube.fbx");
-	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/LightCubeMapEnvHDR.dds");
-	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/LightCubeMapDiffuseHDR.dds");
-	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/LightCubeMapSpecularHDR.dds");
-	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/LightCubeMapBRDF.dds");
+	pComponent->ReadEnvironmentTextureFromDDS(L"../Resource/LightCubeMapddsEnvHDR.dds");
+	pComponent->ReadIBLDiffuseTextureFromDDS(L"../Resource/LightCubeMapddsDiffuseHDR.dds");
+	pComponent->ReadIBLSpecularTextureFromDDS(L"../Resource/LightCubeMapddsSpecularHDR.dds");
+	pComponent->ReadIBLBRDFTextureFromDDS(L"../Resource/LightCubeMapddsBrdf.dds");
 //	pComponent->SetLocalScale(Vector3(10, 10, 10));
 	SetLightEnvironment(pComponent);
 

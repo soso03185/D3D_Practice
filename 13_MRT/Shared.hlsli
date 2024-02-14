@@ -84,7 +84,7 @@ cbuffer PointLight : register(b6)
 cbuffer OutLine : register(b7)
 {
     float4 outlineColor = float4(1, 0, 0, 1);
-    float outlineThickness = 5.0f;
+    float outlineThickness = 10.0f;
     float outlineThreshHold = 1.0f;
     float outlinePad[2];
 }

@@ -209,10 +209,13 @@ public:
 	ID3D11VertexShader* m_pStaticVertexShader = nullptr;	// Á¤Á¡ ¼ÎÀÌ´õ.
 	ID3D11VertexShader* m_pSkeletalVertexShader = nullptr;	// Á¤Á¡ ¼ÎÀÌ´õ.
 	ID3D11PixelShader*  m_pPixelShader = nullptr;	// ÇÈ¼¿ ¼ÎÀÌ´õ.	
+
+	ID3D11VertexShader* m_pOutLineVS = nullptr;	// Á¤Á¡ ¼ÎÀÌ´õ.
 	ID3D11PixelShader*  m_pOutLinePS = nullptr;	// ÇÈ¼¿ ¼ÎÀÌ´õ.	
  
  	ID3D11InputLayout* m_pStaticInputLayout = nullptr;	// ÀÔ·Â ·¹ÀÌ¾Æ¿ô.
 	ID3D11InputLayout* m_pSkeletalInputLayout = nullptr;	// ÀÔ·Â ·¹ÀÌ¾Æ¿ô.
+	ID3D11InputLayout* m_pOutLineInputLayout = nullptr;	// ÀÔ·Â ·¹ÀÌ¾Æ¿ô.
 
 	ID3D11SamplerState* m_pSamplerLinear = nullptr;		// ÅØ½ºÃ³ »ùÇÃ·¯
 	ID3D11SamplerState* m_pSamplerClamp = nullptr;		// ÅØ½ºÃ³ »ùÇÃ·¯
@@ -242,7 +245,7 @@ public:
 	float m_Cam[3] = { 0.0f, 0.0f, -500.0f };
 	float m_Look[3] = { 0.0f, 0.0f, 1.0f };
 	
-	float m_PointLightPos[4] = {0,0,0,0};
+	float m_PointLightPos[3] = {0,0,0};
 	float m_PointLightRange = 100.0f;
 	float m_PointLightLinearTerm = 1.0f;
 	float m_PointLightQuadraTicTerm = 0.0f;

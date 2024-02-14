@@ -13,6 +13,7 @@ struct PS_Out
 {
     float4 color : SV_TARGET0;
 };
+ 
 
 PS_Out main(PS_INPUT Input)
 {
@@ -34,6 +35,7 @@ PS_Out main(PS_INPUT Input)
     grid[6] = length(dot(image.Sample(samClamp, Input.Tex - tx - ty).xyz, greyScale));
     grid[7] = length(dot(image.Sample(samClamp, Input.Tex - ty).xyz, greyScale));
     grid[8] = length(dot(image.Sample(samClamp, Input.Tex + tx - ty).xyz, greyScale));
+    
     float sx = 0.0f, sy = 0.0f;
     for (int i = 0; i < 9; ++i)
     {

@@ -144,12 +144,11 @@ void D3DRenderManager::UpdatePointLightInfo()
 	m_PointLight.lightPosition.x = m_PointLightPos[0];
 	m_PointLight.lightPosition.y = m_PointLightPos[1];
 	m_PointLight.lightPosition.z = m_PointLightPos[2];
-	m_PointLight.lightPosition.w = m_PointLightPos[3];
+	m_PointLight.lightPosition.w = 1;
 
 	m_PointLight.lightColor.x = m_PointLightColor[0];
 	m_PointLight.lightColor.y = m_PointLightColor[1];
 	m_PointLight.lightColor.z = m_PointLightColor[2];
-	m_PointLight.lightColor.w = 1.0f;
 
 	m_PointLight.lightRange = m_PointLightRange;
 	m_PointLight.linearTerm = m_PointLightLinearTerm;
@@ -329,6 +328,7 @@ void D3DRenderManager::Uninitialize()
 	SAFE_RELEASE(m_pSkeletalInputLayout);
 	SAFE_RELEASE(m_pPixelShader);
 	SAFE_RELEASE(m_pOutLinePS);
+	SAFE_RELEASE(m_pOutLineVS);
 
 	SAFE_RELEASE(m_pSamplerLinear);
 	SAFE_RELEASE(m_pSamplerClamp);
@@ -409,6 +409,28 @@ void D3DRenderManager::CreateVS_IL()
 			vertexShaderBuffer->GetBufferSize(), NULL, &m_pStaticVertexShader));
 		SAFE_RELEASE(vertexShaderBuffer);
 	}
+
+	{
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "UV", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		ID3D10Blob* vertexShaderBuffer = nullptr;	// 정점 셰이더 코드가 저장될 버퍼.
+		HR_T(CompileShaderFromFile(L"OutLine_VS.hlsl", "main", "vs_5_0", &vertexShaderBuffer, nullptr));
+		HR_T(m_pDevice->CreateInputLayout(layout, ARRAYSIZE(layout),
+			vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), &m_pOutLineInputLayout));
+
+		// 3. Render() 에서 파이프라인에 바인딩할  버텍스 셰이더 생성
+		HR_T(m_pDevice->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(),
+			vertexShaderBuffer->GetBufferSize(), NULL, &m_pOutLineVS));
+		SAFE_RELEASE(vertexShaderBuffer);
+	}
+
+
 }
 
 void D3DRenderManager::CreatePS()
@@ -781,7 +803,7 @@ void D3DRenderManager::Render()
 
 void D3DRenderManager::RenderOutLine()
 {
-	m_pDeviceContext->IASetInputLayout(m_pStaticInputLayout);
+	m_pDeviceContext->IASetInputLayout(m_pOutLineInputLayout);
 	m_pDeviceContext->VSSetShader(m_pStaticVertexShader, nullptr, 0);
 	m_pDeviceContext->PSSetShader(m_pOutLinePS, nullptr, 0);
 	m_pDeviceContext->RSSetState(m_pRasterizerStateCW.Get());
